@@ -236,5 +236,15 @@ void PulseForgeAudioProcessorEditor::timerCallback()
             s->updatePlayheadAndState();
     }
 
+    if (++deviceCheckCounter >= 60)
+    {
+        deviceCheckCounter = 0;
+        for (auto& s : strips)
+        {
+            if (s != nullptr)
+                s->updateOutputDeviceList();
+        }
+    }
+
     repaint (getWidth() - 380, getHeight() - 26, 360, 24);
 }

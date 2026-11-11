@@ -120,7 +120,7 @@ public:
             else if (id == 2)
                 processor.setTrackTargetHardwareMidi (trackIndex, "All USB Synths");
             else if (id >= 3)
-                processor.setTrackTargetHardwareMidi (trackIndex, outputBox.getItemText (outputBox.getSelectedItemIndex()));
+                processor.setTrackTargetHardwareMidi (trackIndex, outputBox.getText());
         };
         addAndMakeVisible (outputBox);
         updateOutputDeviceList();
@@ -170,6 +170,9 @@ public:
 
     void updateOutputDeviceList()
     {
+        if (outputBox.isPopupActive())
+            return;
+
         const juce::String currentTarget = processor.getTrackTargetHardwareMidi (trackIndex);
         outputBox.clear (juce::dontSendNotification);
         outputBox.addItem ("DAW Only", 1);

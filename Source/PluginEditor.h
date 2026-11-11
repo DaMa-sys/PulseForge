@@ -46,6 +46,7 @@ private:
 
     // 2. The 3 Horizontal Sequence Strips (Lanes)
     std::array<std::unique_ptr<SequenceStripComponent>, PulseForge::kNumTracks> strips;
+    int deviceCheckCounter = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PulseForgeAudioProcessorEditor)
 };

@@ -784,6 +784,14 @@ void PulseForgeAudioProcessor::sendMidiOut (int trackIdx, const juce::MidiMessag
             if (target == "All USB Synths" || port.name == target || port.name.containsIgnoreCase (target))
             {
                 port.device->sendMessageNow (msg);
+                // When targeting a dedicated hardware synth port and the sequence is on Channel 2 or 3,
+                // also mirror on Channel 1 so synths set to factory default Channel 1 play seamlessly!
+                if (target != "All USB Synths" && msg.getChannel() != 1)
+                {
+                    auto ch1Msg = msg;
+                    ch1Msg.setChannel (1);
+                    port.device->sendMessageNow (ch1Msg);
+                }
             }
         }
     }
