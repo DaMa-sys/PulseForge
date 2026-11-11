@@ -22,11 +22,6 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     rootBox.setLookAndFeel (&customLookAndFeel);
     addAndMakeVisible (rootBox);
 
-    const juce::StringArray rates { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32" };
-    rateBox.addItemList (rates, 1);
-    rateBox.setLookAndFeel (&customLookAndFeel);
-    addAndMakeVisible (rateBox);
-
     // 2. Global Header Action Buttons
     trioGenBtn.getProperties().set ("primary", true);
     trioGenBtn.setLookAndFeel (&customLookAndFeel);
@@ -62,7 +57,6 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     // 3. Attachments for Global Parameters
     scaleAttach   = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "scale",        scaleBox);
     rootAttach    = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "rootNote",     rootBox);
-    rateAttach    = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "rate",         rateBox);
     runAttach     = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "autoPlay",     runBtn);
     previewAttach = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "previewSynth", previewBtn);
 
@@ -154,7 +148,6 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
     g.setFont (font (8.5f, true, 0.06f));
     g.drawText ("MUSICAL SCALE", scaleBox.getX(), 15, scaleBox.getWidth(), 12, juce::Justification::centredLeft);
     g.drawText ("ROOT",          rootBox.getX(),  15, rootBox.getWidth(),  12, juce::Justification::centredLeft);
-    g.drawText ("STEP GRID",     rateBox.getX(),  15, rateBox.getWidth(),  12, juce::Justification::centredLeft);
 
     // 3. Footer Telemetry & Status
     const int footerY = getHeight() - 24;
@@ -185,23 +178,20 @@ void PulseForgeAudioProcessorEditor::resized()
     const int headH = 28;
 
     int x = 205;
-    scaleBox.setBounds (x, headY, 155, headH);
-    x += 162;
+    scaleBox.setBounds (x, headY, 160, headH);
+    x += 168;
 
-    rootBox.setBounds (x, headY, 68, headH);
-    x += 74;
+    rootBox.setBounds (x, headY, 72, headH);
+    x += 80;
 
-    rateBox.setBounds (x, headY, 78, headH);
-    x += 86;
+    trioGenBtn.setBounds (x, headY, 140, headH);
+    x += 148;
 
-    trioGenBtn.setBounds (x, headY, 134, headH);
-    x += 142;
+    runBtn.setBounds (x, headY, 84, headH);
+    x += 92;
 
-    runBtn.setBounds (x, headY, 78, headH);
-    x += 84;
-
-    previewBtn.setBounds (x, headY, 114, headH);
-    x += 120;
+    previewBtn.setBounds (x, headY, 120, headH);
+    x += 128;
 
     dragMidiBtn.setBounds (x, headY, 100, headH);
 

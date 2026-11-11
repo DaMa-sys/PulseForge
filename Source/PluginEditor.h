@@ -31,7 +31,6 @@ private:
     // 1. Global Header Controls
     juce::ComboBox scaleBox;
     juce::ComboBox rootBox;
-    juce::ComboBox rateBox;
 
     juce::TextButton trioGenBtn    { "TRIO HARMONIZE" };
     juce::TextButton runBtn        { "FREE RUN" };
@@ -42,7 +41,7 @@ private:
     using ComboAttachment  = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
     using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
-    std::unique_ptr<ComboAttachment> scaleAttach, rootAttach, rateAttach;
+    std::unique_ptr<ComboAttachment> scaleAttach, rootAttach;
     std::unique_ptr<ButtonAttachment> runAttach, previewAttach;
 
     // 2. The 3 Horizontal Sequence Strips (Lanes)

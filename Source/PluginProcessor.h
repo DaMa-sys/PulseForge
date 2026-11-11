@@ -73,6 +73,8 @@ public:
     bool isTrackMuted (int idx) const noexcept;
     void setTrackMuted (int idx, bool muted);
     void toggleTrackMuted (int idx);
+    int  getTrackNumSteps (int trackIdx) const noexcept;
+    void setTrackNumSteps (int trackIdx, int numSteps);
 
     void triggerGeneratePattern (bool applyRecommendedScaleAndSwing = true);
     void triggerGenerateTrack (int trackIdx);

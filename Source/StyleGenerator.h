@@ -133,6 +133,126 @@ public:
         }
     }
 
+    static void generateHarmonyChords (PatternBank& bank, const GenerationParams& p, std::mt19937& rng)
+    {
+        auto randInt   = [&](int lo, int hi) { return std::uniform_int_distribution<int> (lo, hi) (rng); };
+        auto randFloat = [&]() { return std::uniform_real_distribution<float> (0.0f, 1.0f) (rng); };
+
+        const int n = juce::jlimit (4, kMaxSteps, p.numSteps);
+        bank.numSteps = n;
+
+        for (int i = 0; i < kMaxSteps; ++i)
+        {
+            auto& s = bank.steps[static_cast<size_t>(i)];
+            s.active = false;
+            s.semitoneOffset = 0;
+            s.octaveShift = 0;
+            s.accent = false;
+            s.slide = false;
+            s.ratchet = 1;
+            s.probability = 100;
+            s.chordType = 3;
+        }
+
+        struct ChordChange
+        {
+            int step;
+            int degree;
+            int octave;
+            float gateSteps;
+        };
+
+        std::vector<ChordChange> changes;
+
+        if (n <= 4)
+        {
+            if (randFloat() < 0.65f)
+            {
+                changes.push_back ({ 0, 0, 0, 3.8f });
+            }
+            else
+            {
+                changes.push_back ({ 0, 0, 0, 1.9f });
+                changes.push_back ({ 2, (p.scale == ScaleType::MajorNatural) ? 3 : 3, 0, 1.9f });
+            }
+        }
+        else if (n <= 8)
+        {
+            const int changeStep = (randFloat() < 0.7f) ? 4 : 6;
+            const int secondDegreeChoices[] = { 3, 5, 4, 6 };
+            const int secondDegree = secondDegreeChoices[randInt (0, 3)];
+
+            changes.push_back ({ 0, 0, 0, static_cast<float> (changeStep) * 0.95f });
+            changes.push_back ({ changeStep, secondDegree, (secondDegree >= 4 ? -1 : 0), static_cast<float> (n - changeStep) * 0.95f });
+        }
+        else if (n <= 16)
+        {
+            const int styleType = randInt (0, 3);
+            if (styleType == 0)
+            {
+                const int deg2 = (p.scale == ScaleType::MajorNatural) ? 3 : (randFloat() < 0.5f ? 3 : 5);
+                changes.push_back ({ 0, 0, 0, 7.8f });
+                changes.push_back ({ 8, deg2, (deg2 >= 4 ? -1 : 0), 7.8f });
+            }
+            else if (styleType == 1)
+            {
+                const int deg2 = (p.scale == ScaleType::Phrygian) ? 1 : 3;
+                const int deg3 = 4;
+                changes.push_back ({ 0,  0,    0, 5.8f });
+                changes.push_back ({ 6,  deg2, (deg2 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 10, deg3, -1, 5.8f });
+            }
+            else
+            {
+                int d1 = 0, d2 = 5, d3 = 2, d4 = 6;
+                if (p.scale == ScaleType::Phrygian || p.scale == ScaleType::PhrygianDominant)
+                {
+                    d1 = 0; d2 = 1; d3 = 0; d4 = 6;
+                }
+                else if (p.scale == ScaleType::MajorNatural || p.scale == ScaleType::Mixolydian)
+                {
+                    d1 = 0; d2 = 4; d3 = 5; d4 = 3;
+                }
+
+                changes.push_back ({ 0,  d1, 0, 3.8f });
+                changes.push_back ({ 4,  d2, (d2 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 8,  d3, 0, 3.8f });
+                changes.push_back ({ 12, d4, (d4 >= 4 ? -1 : 0), 3.8f });
+            }
+        }
+        else // 32 steps
+        {
+            int d1 = 0, d2 = 5, d3 = 2, d4 = 6;
+            if (p.scale == ScaleType::MajorNatural)
+            {
+                d1 = 0; d2 = 4; d3 = 5; d4 = 3;
+            }
+            changes.push_back ({ 0,  d1, 0, 7.8f });
+            changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 7.8f });
+            changes.push_back ({ 16, d3, 0, 7.8f });
+            changes.push_back ({ 24, d4, (d4 >= 4 ? -1 : 0), 7.8f });
+        }
+
+        for (const auto& ch : changes)
+        {
+            if (ch.step >= 0 && ch.step < n)
+            {
+                auto& s = bank.steps[static_cast<size_t>(ch.step)];
+                s.active = true;
+                s.semitoneOffset = scaleDegreeToSemitone (ch.degree, p.scale);
+                s.octaveShift = ch.octave;
+                s.velocity = randInt (96, 108);
+                s.gate = ch.gateSteps;
+                s.accent = (ch.step == 0);
+                s.slide = false;
+                s.ratchet = 1;
+                s.probability = 100;
+                s.ccValue = s.accent ? 95 : 75;
+                s.chordType = (randFloat() < 0.75f) ? 3 : 2;
+            }
+        }
+    }
+
     static void generatePattern (PatternBank& bank, const GenerationParams& p, uint32_t seed = 0)
     {
         std::mt19937 rng (seed != 0 ? seed : std::random_device{}());
@@ -140,6 +260,12 @@ public:
         auto randInt   = [&](int lo, int hi) { return std::uniform_int_distribution<int> (lo, hi) (rng); };
 
         bank.numSteps = juce::jlimit (1, kMaxSteps, p.numSteps);
+
+        if (p.role == InstrumentRole::HarmonyChords)
+        {
+            generateHarmonyChords (bank, p, rng);
+            return;
+        }
 
         //======================================================================
         // Curated Library of Real Musical Templates Distilled from G:\samples\MIDI
@@ -258,7 +384,14 @@ public:
         for (int i = 0; i < kMaxSteps; ++i)
         {
             auto& s = bank.steps[static_cast<size_t>(i)];
-            const char maskChar = tmpl.rhythmMask[i];
+            if (i >= bank.numSteps)
+            {
+                s.active = false;
+                continue;
+            }
+
+            const int mod16 = i % 16;
+            const char maskChar = tmpl.rhythmMask[mod16];
 
             // 1. Rhythmic Activation (preserves the core groove, scales density smoothly!)
             if (maskChar == 'X')
@@ -281,7 +414,7 @@ public:
                 s.active = (randFloat() < 0.25f * p.syncopation);
 
             // 2. Musical Pitch (Quantized to Scale, preserving Call-and-Response symmetry!)
-            int rawSemi = tmpl.semitones[static_cast<size_t>(i)];
+            int rawSemi = tmpl.semitones[static_cast<size_t>(mod16)];
             if (rawSemi != 0)
             {
                 rawSemi = static_cast<int> (std::round ((rawSemi + motifShift) * rangeScale));
@@ -289,7 +422,7 @@ public:
             s.semitoneOffset = juce::jlimit (-12, 24, quantizeSemitoneToScale (rawSemi, p.scale));
 
             // 3. Octave Shift (from template + controlled Spice variation)
-            s.octaveShift = tmpl.octaves[static_cast<size_t>(i)];
+            s.octaveShift = tmpl.octaves[static_cast<size_t>(mod16)];
             if (p.pitchRange < 0.25f)
                 s.octaveShift = 0;
             else if (p.spice > 0.65f && (i == 7 || i == 15) && randFloat() < 0.35f)
@@ -355,7 +488,8 @@ public:
         {
             for (int i = 0; i < 6; ++i)
             {
-                bank.steps[static_cast<size_t>(i + 8)].active = bank.steps[static_cast<size_t>(i)].active;
+                if (i + 8 < bank.numSteps)
+                    bank.steps[static_cast<size_t>(i + 8)].active = bank.steps[static_cast<size_t>(i)].active;
             }
         }
 

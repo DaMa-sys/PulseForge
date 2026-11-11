@@ -63,21 +63,50 @@ public:
         };
         addAndMakeVisible (expandBtn);
 
-        // 3. Dropdowns (Genre, Role, and Per-Track USB Output!)
+        // 3. Dropdowns (Genre, Role, Steps Length, and Per-Track USB Output!)
         const juce::StringArray genres {
             "Classic House", "Acid 303", "Italo/Synthwave", "Berlin School",
             "Melodic Techno", "Detroit Electro", "Funk Boogie", "Euclidean IDM"
         };
         genreBox.addItemList (genres, 1);
         genreBox.setLookAndFeel (&customLnF);
+        genreBox.onChange = [this]()
+        {
+            processor.triggerGenerateTrack (trackIndex);
+            repaint();
+        };
         addAndMakeVisible (genreBox);
 
         const juce::StringArray roles {
-            "Mono Bass", "Acid Line", "Classic Arp", "Lead Hook", "Chord Stabs", "Modular Ratchet"
+            "Mono Bass", "Acid Line", "Classic Arp", "Lead Hook", "Chord Stabs", "Harmony Chords", "Modular Ratchet"
         };
         roleBox.addItemList (roles, 1);
         roleBox.setLookAndFeel (&customLnF);
+        roleBox.onChange = [this]()
+        {
+            processor.triggerGenerateTrack (trackIndex);
+            repaint();
+        };
         addAndMakeVisible (roleBox);
+
+        // Per-track Steps Selector (4, 8, 16, 32)
+        const juce::StringArray stepOptions { "4", "8", "16", "32" };
+        stepsBox.addItemList (stepOptions, 1);
+        stepsBox.setLookAndFeel (&customLnF);
+        stepsBox.onChange = [this]()
+        {
+            const int id = stepsBox.getSelectedId();
+            int n = 16;
+            if (id == 1) n = 4;
+            else if (id == 2) n = 8;
+            else if (id == 3) n = 16;
+            else if (id == 4) n = 32;
+
+            processor.setTrackNumSteps (trackIndex, n);
+            processor.triggerGenerateTrack (trackIndex);
+            repaint();
+        };
+        addAndMakeVisible (stepsBox);
 
         outputBox.setLookAndFeel (&customLnF);
         outputBox.onChange = [this]()
@@ -114,6 +143,7 @@ public:
         tempoRatioAttach = std::make_unique<SliderAttachment>   (processor.apvts, prefix + "tempoRatio",  tempoRatioSlider);
         genreAttach      = std::make_unique<ComboBoxAttachment> (processor.apvts, prefix + "genre",       genreBox);
         roleAttach       = std::make_unique<ComboBoxAttachment> (processor.apvts, prefix + "role",        roleBox);
+        stepsAttach      = std::make_unique<ComboBoxAttachment> (processor.apvts, prefix + "numSteps",    stepsBox);
         muteAttach       = std::make_unique<ButtonAttachment>   (processor.apvts, prefix + "muted",       muteBtn);
     }
 
@@ -125,6 +155,7 @@ public:
         expandBtn.setLookAndFeel (nullptr);
         genreBox.setLookAndFeel (nullptr);
         roleBox.setLookAndFeel (nullptr);
+        stepsBox.setLookAndFeel (nullptr);
         outputBox.setLookAndFeel (nullptr);
         densitySlider.setLookAndFeel (nullptr);
         swingSlider.setLookAndFeel (nullptr);
@@ -226,6 +257,7 @@ public:
         g.setFont (font (8.5f, true, 0.06f));
         g.drawText ("GENRE STYLE", genreBox.getX(),  static_cast<int> (cardArea.getY() + 1.0f), genreBox.getWidth(),  11, juce::Justification::centredLeft);
         g.drawText ("ROLE / TYPE", roleBox.getX(),   static_cast<int> (cardArea.getY() + 1.0f), roleBox.getWidth(),   11, juce::Justification::centredLeft);
+        g.drawText ("STEPS",       stepsBox.getX(),  static_cast<int> (cardArea.getY() + 1.0f), stepsBox.getWidth(),  11, juce::Justification::centredLeft);
         g.drawText ("MIDI OUTPUT", outputBox.getX(), static_cast<int> (cardArea.getY() + 1.0f), outputBox.getWidth(), 11, juce::Justification::centredLeft);
 
         // 4. Horizontal 16-Step Pitch Matrix
@@ -239,27 +271,30 @@ public:
         // Row 1: Header controls
         const int topY = 14;
         const int btnH = 26;
-        int x = 170;
+        int x = 168;
 
-        muteBtn.setBounds (x, topY, 46, btnH);
-        x += 52;
+        muteBtn.setBounds (x, topY, 44, btnH);
+        x += 50;
 
-        genreBox.setBounds (x, topY, 125, btnH);
-        x += 131;
+        genreBox.setBounds (x, topY, 115, btnH);
+        x += 121;
 
-        roleBox.setBounds (x, topY, 120, btnH);
-        x += 126;
+        roleBox.setBounds (x, topY, 115, btnH);
+        x += 121;
 
-        outputBox.setBounds (x, topY, 125, btnH);
-        x += 131;
+        stepsBox.setBounds (x, topY, 52, btnH);
+        x += 58;
 
-        genBtn.setBounds (x, topY, 84, btnH);
-        x += 90;
+        outputBox.setBounds (x, topY, 115, btnH);
+        x += 121;
 
-        mutBtn.setBounds (x, topY, 68, btnH);
-        x += 74;
+        genBtn.setBounds (x, topY, 80, btnH);
+        x += 86;
 
-        expandBtn.setBounds (w - 106, topY, 90, btnH);
+        mutBtn.setBounds (x, topY, 64, btnH);
+        x += 70;
+
+        expandBtn.setBounds (w - 96, topY, 80, btnH);
 
         // Row 2: 6 Tactile Knobs (Aligned to 8px rhythm, height 68)
         const int knobY = 44;
@@ -358,12 +393,13 @@ private:
     juce::ComboBox   genreBox;
     juce::ComboBox   roleBox;
     juce::ComboBox   outputBox;
+    juce::ComboBox   stepsBox;
 
     juce::Slider densitySlider, swingSlider, baseOctSlider, arpOctSlider, chanSlider, tempoRatioSlider;
     juce::Label  densityLabel,  swingLabel,  baseOctLabel,  arpOctLabel,  chanLabel,  tempoRatioLabel;
 
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>   densityAttach, swingAttach, baseOctAttach, arpOctAttach, chanAttach, tempoRatioAttach;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> genreAttach, roleAttach;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> genreAttach, roleAttach, stepsAttach;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>   muteAttach;
 
     void setupKnob (juce::Slider& s, juce::Label& l, const juce::String& text)
@@ -371,6 +407,14 @@ private:
         s.setSliderStyle (juce::Slider::RotaryVerticalDrag);
         s.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 56, 14);
         s.setLookAndFeel (&customLnF);
+        s.onDragEnd = [this, &s]()
+        {
+            if (&s == &densitySlider || &s == &arpOctSlider)
+                processor.triggerGenerateTrack (trackIndex);
+            else
+                processor.updatePlaybackSnapshot();
+            repaint();
+        };
         addAndMakeVisible (s);
 
         l.setText (text, juce::dontSendNotification);
@@ -380,27 +424,35 @@ private:
         addAndMakeVisible (l);
     }
 
+    int getNumSteps() const noexcept
+    {
+        return processor.getTrackNumSteps (trackIndex);
+    }
+
     juce::Rectangle<float> getStepPadBounds (int stepIdx, juce::Rectangle<float> cardArea) const
     {
+        const int nSteps = juce::jlimit (4, 32, getNumSteps());
         const float matrixX = cardArea.getX() + 398.0f;
         const float matrixY = cardArea.getY() + 56.0f;
         const float availW  = cardArea.getRight() - 14.0f - matrixX;
         const float padH    = 58.0f;
 
-        const float padGap = 3.5f;
-        const float beatExtraGap = 5.0f;
-        const float totalGaps = (15.0f * padGap) + (3.0f * beatExtraGap);
-        const float padW = juce::jmax (22.0f, (availW - totalGaps) / 16.0f);
+        const float padGap = (nSteps > 16) ? 2.0f : 3.5f;
+        const float beatExtraGap = (nSteps > 16) ? 3.0f : 5.0f;
+        const int numBeatGroups = juce::jmax (0, (nSteps / 4) - 1);
+        const float totalGaps = (static_cast<float> (nSteps - 1) * padGap) + (static_cast<float> (numBeatGroups) * beatExtraGap);
+        const float padW = juce::jmax (16.0f, (availW - totalGaps) / static_cast<float> (nSteps));
 
-        int beatGroups = stepIdx / 4;
-        float x = matrixX + static_cast<float> (stepIdx) * (padW + padGap) + static_cast<float> (beatGroups) * beatExtraGap;
+        const int beatGroups = stepIdx / 4;
+        const float x = matrixX + static_cast<float> (stepIdx) * (padW + padGap) + static_cast<float> (beatGroups) * beatExtraGap;
         return { x, matrixY, padW, padH };
     }
 
     int getStepAtPoint (juce::Point<int> pt) const
     {
         const auto cardArea = getLocalBounds().toFloat().reduced (2.0f);
-        for (int i = 0; i < 16; ++i)
+        const int nSteps = juce::jlimit (4, 32, getNumSteps());
+        for (int i = 0; i < nSteps; ++i)
         {
             if (getStepPadBounds (i, cardArea).contains (pt.toFloat()))
                 return i;
@@ -477,8 +529,9 @@ private:
         const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (processor.apvts.getRawParameterValue ("scale")->load()));
         const int rootKey = static_cast<int> (processor.apvts.getRawParameterValue ("rootNote")->load());
         const int rootMidi = (track.baseOctave + 1) * 12 + rootKey;
+        const int nSteps = juce::jlimit (4, 32, getNumSteps());
 
-        for (int i = 0; i < 16; ++i)
+        for (int i = 0; i < nSteps; ++i)
         {
             auto pad = getStepPadBounds (i, cardArea);
             const auto& step = track.pattern.steps[static_cast<size_t>(i)];
@@ -514,10 +567,13 @@ private:
 
                 // Note Name Badge
                 const int noteNum = processor.computeStepMidiNote (i, step, rootMidi, scale);
-                const juce::String noteName = PulseForge::getMidiNoteName (noteNum);
+                juce::String noteName = PulseForge::getMidiNoteName (noteNum);
+                if (track.role == PulseForge::InstrumentRole::HarmonyChords)
+                    noteName += "7";
 
                 g.setColour (TEXT_DARK);
-                g.setFont (font (11.5f, true, 0.04f));
+                const float noteFontSize = (nSteps > 16) ? 8.5f : 11.5f;
+                g.setFont (font (noteFontSize, true, 0.02f));
                 g.drawText (noteName, innerPill, juce::Justification::centred, false);
 
                 // Accent dot
@@ -576,7 +632,7 @@ private:
             g.setFont (font (8.0f, true, 0.05f));
             g.drawText ("STEP VELOCITY", static_cast<int> (matrixX), static_cast<int> (modY - 10.0f), 120, 10, juce::Justification::centredLeft);
 
-            for (int i = 0; i < 16; ++i)
+            for (int i = 0; i < nSteps; ++i)
             {
                 auto pad = getStepPadBounds (i, cardArea);
                 auto modPad = juce::Rectangle<float> (pad.getX(), modY, pad.getWidth(), 22.0f);

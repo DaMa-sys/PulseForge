@@ -88,6 +88,23 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
 
         const juce::String prefix = "t" + juce::String (t) + "_";
 
+        if (auto* p = apvts.getRawParameterValue (prefix + "numSteps"))
+        {
+            const int sIdx = static_cast<int> (p->load());
+            int n = 16;
+            if (sIdx == 0) n = 4;
+            else if (sIdx == 1) n = 8;
+            else if (sIdx == 2) n = 16;
+            else if (sIdx == 3) n = 32;
+            dst.numSteps = n;
+            tracks[static_cast<size_t>(t)].pattern.numSteps = n;
+            tracks[static_cast<size_t>(t)].numSteps = n;
+        }
+        else
+        {
+            dst.numSteps = src.pattern.numSteps;
+        }
+
         if (auto* p = apvts.getRawParameterValue (prefix + "midiChannel"))
             dst.midiChannel = static_cast<int> (p->load());
         else
@@ -154,6 +171,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
         "Classic Arpeggio (Juno/Jup)",
         "Lead & Hook (Prophet/MS20)",
         "Poly Chord Stabs (House/Dub)",
+        "Harmony Chords (Progression)",
         "Modular Ratchet Seq"
     };
 
@@ -191,10 +209,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
         "globalGate", "Global Gate %", juce::NormalisableRange<float> (20.0f, 150.0f, 1.0f), 100.0f));
 
     params.push_back (std::make_unique<juce::AudioParameterBool> ("autoPlay", "Free Run (Audition)", false));
-    params.push_back (std::make_unique<juce::AudioParameterBool> ("previewSynth", "Internal Analog Preview", true));
+    params.push_back (std::make_unique<juce::AudioParameterBool> ("previewSynth", "Internal Analog Preview", false));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("ccNumber", "MIDI CC #", 1, 119, 74));
 
     // 2. Per-Track Dedicated Parameters (3 Tracks: SEQ 1, SEQ 2, SEQ 3)
+    const juce::StringArray stepChoices { "4", "8", "16", "32" };
     for (int t = 0; t < PulseForge::kNumTracks; ++t)
     {
         const juce::String p = "t" + juce::String (t) + "_";
@@ -211,6 +230,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
 
         params.push_back (std::make_unique<juce::AudioParameterChoice> (
             p + "role", tName + "Role", roles, defaultRole));
+
+        params.push_back (std::make_unique<juce::AudioParameterChoice> (
+            p + "numSteps", tName + "Steps", stepChoices, 2)); // default 16 (index 2)
 
         params.push_back (std::make_unique<juce::AudioParameterFloat> (
             p + "density", tName + "Density", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), defaultDensity));
@@ -375,6 +397,21 @@ void PulseForgeAudioProcessor::toggleTrackMuted (int idx)
 {
     idx = juce::jlimit (0, PulseForge::kNumTracks - 1, idx);
     setTrackMuted (idx, !isTrackMuted (idx));
+}
+
+int PulseForgeAudioProcessor::getTrackNumSteps (int trackIdx) const noexcept
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    return tracks[static_cast<size_t>(trackIdx)].pattern.numSteps;
+}
+
+void PulseForgeAudioProcessor::setTrackNumSteps (int trackIdx, int numSteps)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    tracks[static_cast<size_t>(trackIdx)].pattern.numSteps = juce::jlimit (4, PulseForge::kMaxSteps, numSteps);
+    tracks[static_cast<size_t>(trackIdx)].numSteps = tracks[static_cast<size_t>(trackIdx)].pattern.numSteps;
+    updatePlaybackSnapshot();
 }
 
 void PulseForgeAudioProcessor::triggerGenerateTrio()
@@ -805,9 +842,9 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
         const int baseNote = computeStepMidiNote (stepIdx, step, rootMidi, scale);
         notesToTrigger.push_back (baseNote);
 
-        if (role == PulseForge::InstrumentRole::PolyChordStab || step.chordType > 0)
+        if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords || step.chordType > 0)
         {
-            const int cType = (role == PulseForge::InstrumentRole::PolyChordStab && step.chordType == 0) ? 3 : step.chordType;
+            const int cType = ((role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords) && step.chordType == 0) ? 3 : step.chordType;
             if (cType == 1)
             {
                 notesToTrigger.push_back (juce::jlimit (12, 115, baseNote + 7));
@@ -1183,7 +1220,7 @@ juce::File PulseForgeAudioProcessor::exportActivePatternToTempMidiFile()
         const int baseNote = computeStepMidiNote (i, step, rootMidi, scale);
 
         std::vector<int> stepNotes { baseNote };
-        if (role == PulseForge::InstrumentRole::PolyChordStab || step.chordType > 0)
+        if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords || step.chordType > 0)
         {
             stepNotes.push_back (juce::jlimit (12, 115, baseNote + 3));
             stepNotes.push_back (juce::jlimit (12, 115, baseNote + 7));
@@ -1443,6 +1480,7 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
             trk.baseOctave  = trackXml->getIntAttribute ("baseOctave", trk.baseOctave);
             trk.rateIdx     = trackXml->getIntAttribute ("rate", trk.rateIdx);
             trk.numSteps    = trackXml->getIntAttribute ("numSteps", 16);
+            trk.pattern.numSteps = trk.numSteps;
             trk.density     = static_cast<float> (trackXml->getDoubleAttribute ("density", trk.density));
             trk.syncopation = static_cast<float> (trackXml->getDoubleAttribute ("sync", trk.syncopation));
             trk.spice       = static_cast<float> (trackXml->getDoubleAttribute ("spice", trk.spice));

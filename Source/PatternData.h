@@ -7,7 +7,7 @@
 namespace PulseForge
 {
 
-static constexpr int kMaxSteps = 16;
+static constexpr int kMaxSteps = 32;
 static constexpr int kNumPatternSlots = 4;
 static constexpr int kNumTracks = 3;
 
@@ -37,6 +37,7 @@ enum class InstrumentRole : int
     ClassicArp,           // Juno-60 / Jupiter multi-octave arpeggio
     LeadHook,             // Prophet / Odyssey expressive synth lead
     PolyChordStab,        // House / Dub Techno multi-note chord stabs
+    HarmonyChords,        // Musical chord progressions (held diatonic chords, beautiful voice leading)
     ModularRatchet,       // Berlin / Buchla percussive ratchet sequence
     Count
 };
@@ -125,12 +126,13 @@ struct PatternBank
     {
         for (int i = 0; i < kMaxSteps; ++i)
         {
-            steps[static_cast<size_t>(i)].active = (i == 0 || i == 3 || i == 6 || i == 8 || i == 11 || i == 14);
-            steps[static_cast<size_t>(i)].semitoneOffset = (i == 6) ? 3 : ((i == 14) ? -2 : 0);
-            steps[static_cast<size_t>(i)].octaveShift = (i == 11) ? 1 : 0;
+            const int mod16 = i % 16;
+            steps[static_cast<size_t>(i)].active = (mod16 == 0 || mod16 == 3 || mod16 == 6 || mod16 == 8 || mod16 == 11 || mod16 == 14);
+            steps[static_cast<size_t>(i)].semitoneOffset = (mod16 == 6) ? 3 : ((mod16 == 14) ? -2 : 0);
+            steps[static_cast<size_t>(i)].octaveShift = (mod16 == 11) ? 1 : 0;
             steps[static_cast<size_t>(i)].velocity = (i % 4 == 0) ? 115 : 92;
-            steps[static_cast<size_t>(i)].gate = (i == 0 || i == 3 || i == 8 || i == 11) ? 1.8f : 0.85f;
-            steps[static_cast<size_t>(i)].accent = (i == 0 || i == 6 || i == 14);
+            steps[static_cast<size_t>(i)].gate = (mod16 == 0 || mod16 == 3 || mod16 == 8 || mod16 == 11) ? 1.8f : 0.85f;
+            steps[static_cast<size_t>(i)].accent = (mod16 == 0 || mod16 == 6 || mod16 == 14);
             steps[static_cast<size_t>(i)].slide = false;
             steps[static_cast<size_t>(i)].ratchet = 1;
             steps[static_cast<size_t>(i)].probability = 100;
