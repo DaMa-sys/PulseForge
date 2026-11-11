@@ -145,6 +145,7 @@ struct TrackData
     PatternBank pattern;
     int midiChannel = 1;
     bool muted = false;
+    GenreStyle genre = GenreStyle::ClassicHouse;
     InstrumentRole role = InstrumentRole::MonoBass;
     EngineMode mode = EngineMode::Sequencer;
     ArpDirection arpDir = ArpDirection::Up;
@@ -155,7 +156,10 @@ struct TrackData
     float syncopation = 55.0f;
     float spice = 45.0f;
     float pitchRange = 55.0f;
+    float swing = 20.0f;
+    int tempoRatioIdx = 5; // 1/1x (Sync)
     int numSteps = 16;
+    bool isExpanded = false;
     juce::String name = "SEQ 1";
 };
 

@@ -75,6 +75,10 @@ public:
     void toggleTrackMuted (int idx);
 
     void triggerGeneratePattern (bool applyRecommendedScaleAndSwing = true);
+    void triggerGenerateTrack (int trackIdx);
+    void triggerMutateTrack (int trackIdx);
+    void triggerClearTrack (int trackIdx);
+    void triggerRotateTrack (int trackIdx, int delta);
     void triggerGenerateTrio();
     bool triggerLoadFromUserSamplesLibrary();
     bool triggerLoadSpecificMidiFile (const juce::File& file);
@@ -128,6 +132,8 @@ public:
         int arpOctaves = 2;
         int baseOctave = 1;
         int rateIdx = 3;
+        float swing = 20.0f;
+        int tempoRatioIdx = 5;
         float globalGate = 1.0f;
     };
 

@@ -72,7 +72,6 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
 {
     const int nextIdx = 1 - activeSnapshotIndex.load (std::memory_order_relaxed);
     auto& snap = audioSnapshots[static_cast<size_t>(nextIdx)];
-    const int activeIdx = activeTrackIndex.load();
     const float globalGate = apvts.getRawParameterValue ("globalGate")->load() * 0.01f;
 
     for (int t = 0; t < PulseForge::kNumTracks; ++t)
@@ -82,35 +81,47 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
 
         dst.steps       = src.pattern.steps;
         dst.numSteps    = src.pattern.numSteps;
-        dst.midiChannel = src.midiChannel;
-        dst.muted       = src.muted;
-        dst.role        = src.role;
         dst.mode        = src.mode;
         dst.arpDir      = src.arpDir;
-        dst.arpOctaves  = src.arpOctaves;
-        dst.baseOctave  = src.baseOctave;
         dst.rateIdx     = src.rateIdx;
         dst.globalGate  = globalGate;
 
-        if (t == activeIdx)
-        {
-            if (auto* p = apvts.getRawParameterValue ("midiChannel"))
-                dst.midiChannel = static_cast<int> (p->load());
-            if (auto* p = apvts.getRawParameterValue ("role"))
-                dst.role = static_cast<PulseForge::InstrumentRole> (static_cast<int> (p->load()));
-            if (auto* p = apvts.getRawParameterValue ("mode"))
-                dst.mode = static_cast<PulseForge::EngineMode> (static_cast<int> (p->load()));
-            if (auto* p = apvts.getRawParameterValue ("arpDir"))
-                dst.arpDir = static_cast<PulseForge::ArpDirection> (static_cast<int> (p->load()));
-            if (auto* p = apvts.getRawParameterValue ("arpOctaves"))
-                dst.arpOctaves = static_cast<int> (p->load());
-            if (auto* p = apvts.getRawParameterValue ("baseOctave"))
-                dst.baseOctave = static_cast<int> (p->load());
-            if (auto* p = apvts.getRawParameterValue ("rate"))
-                dst.rateIdx = static_cast<int> (p->load());
-            if (auto* p = apvts.getRawParameterValue ("numSteps"))
-                dst.numSteps = static_cast<int> (p->load());
-        }
+        const juce::String prefix = "t" + juce::String (t) + "_";
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "midiChannel"))
+            dst.midiChannel = static_cast<int> (p->load());
+        else
+            dst.midiChannel = src.midiChannel;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "muted"))
+            dst.muted = (p->load() > 0.5f);
+        else
+            dst.muted = src.muted;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "role"))
+            dst.role = static_cast<PulseForge::InstrumentRole> (static_cast<int> (p->load()));
+        else
+            dst.role = src.role;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "baseOctave"))
+            dst.baseOctave = static_cast<int> (p->load());
+        else
+            dst.baseOctave = src.baseOctave;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "arpOctaves"))
+            dst.arpOctaves = static_cast<int> (p->load());
+        else
+            dst.arpOctaves = src.arpOctaves;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "swing"))
+            dst.swing = p->load();
+        else
+            dst.swing = src.swing;
+
+        if (auto* p = apvts.getRawParameterValue (prefix + "tempoRatio"))
+            dst.tempoRatioIdx = static_cast<int> (p->load());
+        else
+            dst.tempoRatioIdx = src.tempoRatioIdx;
     }
 
     activeSnapshotIndex.store (nextIdx, std::memory_order_release);
@@ -126,34 +137,33 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        "mode", "Engine Mode",
-        juce::StringArray { "Sequencer", "Arpeggiator" }, 0));
+    const juce::StringArray genres {
+        "Classic House (90s/Deep)",
+        "Acid House & Techno (303)",
+        "Italo Disco & Synthwave",
+        "Berlin School (70s Modular)",
+        "Melodic Techno & Prog",
+        "Detroit Electro & Bass House",
+        "Funk & Old-School Boogie",
+        "Organic / Euclidean IDM"
+    };
 
-    params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        "genre", "Genre Style",
-        juce::StringArray {
-            "Classic House (90s/Deep)",
-            "Acid House & Techno (303)",
-            "Italo Disco & Synthwave",
-            "Berlin School (70s Modular)",
-            "Melodic Techno & Prog",
-            "Detroit Electro & Bass House",
-            "Funk & Old-School Boogie",
-            "Organic / Euclidean IDM"
-        }, 0));
+    const juce::StringArray roles {
+        "Mono Bass (SH-101 / Moog)",
+        "Acid Line (TB-303 Glide)",
+        "Classic Arpeggio (Juno/Jup)",
+        "Lead & Hook (Prophet/MS20)",
+        "Poly Chord Stabs (House/Dub)",
+        "Modular Ratchet Seq"
+    };
 
-    params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        "role", "Instrument Type",
-        juce::StringArray {
-            "Mono Bass (SH-101 / Moog)",
-            "Acid Line (TB-303 Glide)",
-            "Classic Arpeggio (Juno/Jup)",
-            "Lead & Hook (Prophet/MS20)",
-            "Poly Chord Stabs (House/Dub)",
-            "Modular Ratchet Seq"
-        }, 0));
+    const juce::StringArray tempoRatios {
+        "1/4x", "1/3x", "1/2x", "2/3x", "3/4x",
+        "1/1x",
+        "4/3x", "3/2x", "2/1x", "3/1x", "4/1x"
+    };
 
+    // 1. Global Master Parameters
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         "scale", "Musical Scale",
         juce::StringArray {
@@ -173,52 +183,72 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
         "rootNote", "Root Key",
         juce::StringArray { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" }, 0));
 
-    params.push_back (std::make_unique<juce::AudioParameterInt> ("baseOctave", "Base Octave", 0, 5, 1));
-
     params.push_back (std::make_unique<juce::AudioParameterChoice> (
         "rate", "Step Grid",
         juce::StringArray { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32" }, 3));
 
-    params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        "arpDir", "Arp Direction",
-        juce::StringArray { "Up", "Down", "Up-Down", "Converge", "Pinky Pedal", "Random Walk", "Chord Stabs" }, 0));
-
-    params.push_back (std::make_unique<juce::AudioParameterInt> ("arpOctaves", "Arp Octaves", 1, 4, 2));
-
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        "density", "Density", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 65.0f));
-
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        "syncopation", "Syncopation", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 55.0f));
-
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        "spice", "Spice / Acid", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 45.0f));
-
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        "pitchRange", "Pitch Range", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 55.0f));
-
-    params.push_back (std::make_unique<juce::AudioParameterFloat> (
-        "swing", "Swing", juce::NormalisableRange<float> (0.0f, 75.0f, 1.0f), 20.0f));
-
     params.push_back (std::make_unique<juce::AudioParameterFloat> (
         "globalGate", "Global Gate %", juce::NormalisableRange<float> (20.0f, 150.0f, 1.0f), 100.0f));
 
-    params.push_back (std::make_unique<juce::AudioParameterInt> ("numSteps", "Pattern Steps", 1, 16, 16));
-    params.push_back (std::make_unique<juce::AudioParameterInt> ("midiChannel", "MIDI Channel", 1, 16, 1));
-    params.push_back (std::make_unique<juce::AudioParameterInt> ("ccNumber", "MIDI CC #", 1, 119, 74));
-
-    // Tempo Ratio: Fractions & Multiples of the Ableton Project BPM!
-    params.push_back (std::make_unique<juce::AudioParameterChoice> (
-        "tempoRatio", "Tempo BPM Ratio",
-        juce::StringArray {
-            "1/4x", "1/3x", "1/2x", "2/3x", "3/4x",
-            "1/1x",
-            "4/3x", "3/2x", "2/1x", "3/1x", "4/1x"
-        }, 5)); // Default 5 = "1/1x" (Exact Project BPM)
-
-    // In DAW (VST3), defaults to false so PulseForge starts/stops strictly with Ableton's Play/Stop!
     params.push_back (std::make_unique<juce::AudioParameterBool> ("autoPlay", "Free Run (Audition)", false));
     params.push_back (std::make_unique<juce::AudioParameterBool> ("previewSynth", "Internal Analog Preview", true));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("ccNumber", "MIDI CC #", 1, 119, 74));
+
+    // 2. Per-Track Dedicated Parameters (3 Tracks: SEQ 1, SEQ 2, SEQ 3)
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        const juce::String p = "t" + juce::String (t) + "_";
+        const juce::String tName = "SEQ " + juce::String (t + 1) + " ";
+
+        const int defaultRole = (t == 0) ? 0 : ((t == 1) ? 2 : 4);
+        const float defaultDensity = (t == 0) ? 65.0f : ((t == 1) ? 75.0f : 45.0f);
+        const int defaultBaseOct = (t == 0) ? 1 : 2;
+        const int defaultArpOct  = (t == 0) ? 1 : ((t == 1) ? 3 : 2);
+        const int defaultMidiCh  = t + 1;
+
+        params.push_back (std::make_unique<juce::AudioParameterChoice> (
+            p + "genre", tName + "Genre", genres, 0));
+
+        params.push_back (std::make_unique<juce::AudioParameterChoice> (
+            p + "role", tName + "Role", roles, defaultRole));
+
+        params.push_back (std::make_unique<juce::AudioParameterFloat> (
+            p + "density", tName + "Density", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), defaultDensity));
+
+        params.push_back (std::make_unique<juce::AudioParameterFloat> (
+            p + "swing", tName + "Swing", juce::NormalisableRange<float> (0.0f, 75.0f, 1.0f), 20.0f));
+
+        params.push_back (std::make_unique<juce::AudioParameterInt> (
+            p + "baseOctave", tName + "Base Oct", 0, 5, defaultBaseOct));
+
+        params.push_back (std::make_unique<juce::AudioParameterInt> (
+            p + "arpOctaves", tName + "Arp Octaves", 1, 4, defaultArpOct));
+
+        params.push_back (std::make_unique<juce::AudioParameterInt> (
+            p + "midiChannel", tName + "MIDI Channel", 1, 16, defaultMidiCh));
+
+        params.push_back (std::make_unique<juce::AudioParameterChoice> (
+            p + "tempoRatio", tName + "BPM Ratio", tempoRatios, 5));
+
+        params.push_back (std::make_unique<juce::AudioParameterBool> (
+            p + "muted", tName + "Mute", false));
+    }
+
+    // 3. Fallback Legacy Parameters
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("mode", "Engine Mode", juce::StringArray { "Sequencer", "Arpeggiator" }, 0));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("genre", "Legacy Genre", genres, 0));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("role", "Legacy Role", roles, 0));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("arpDir", "Arp Direction", juce::StringArray { "Up", "Down", "Up-Down", "Converge", "Pinky Pedal", "Random Walk", "Chord Stabs" }, 0));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("baseOctave", "Legacy Base Octave", 0, 5, 1));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("arpOctaves", "Legacy Arp Octaves", 1, 4, 2));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("density", "Legacy Density", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 65.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("syncopation", "Syncopation", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 55.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("spice", "Spice / Acid", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 45.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("pitchRange", "Pitch Range", juce::NormalisableRange<float> (0.0f, 100.0f, 1.0f), 55.0f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("swing", "Legacy Swing", juce::NormalisableRange<float> (0.0f, 75.0f, 1.0f), 20.0f));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("numSteps", "Pattern Steps", 1, 16, 16));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("midiChannel", "Legacy MIDI Channel", 1, 16, 1));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("tempoRatio", "Legacy BPM Ratio", tempoRatios, 5));
 
     return { params.begin(), params.end() };
 }
@@ -402,6 +432,75 @@ void PulseForgeAudioProcessor::triggerGenerateTrio()
     if (auto* p = apvts.getParameter ("baseOctave"))
         p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (cur.baseOctave)));
 
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+
+    const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
+    const juce::String prefix = "t" + juce::String (trackIdx) + "_";
+
+    PulseForge::GenreStyle genre = tracks[static_cast<size_t>(trackIdx)].genre;
+    if (auto* p = apvts.getRawParameterValue (prefix + "genre"))
+        genre = static_cast<PulseForge::GenreStyle> (static_cast<int> (p->load()));
+
+    PulseForge::InstrumentRole role = tracks[static_cast<size_t>(trackIdx)].role;
+    if (auto* p = apvts.getRawParameterValue (prefix + "role"))
+        role = static_cast<PulseForge::InstrumentRole> (static_cast<int> (p->load()));
+
+    float density = tracks[static_cast<size_t>(trackIdx)].density * 0.01f;
+    if (auto* p = apvts.getRawParameterValue (prefix + "density"))
+        density = p->load() * 0.01f;
+
+    PulseForge::StyleGenerator::GenerationParams gp;
+    gp.genre       = genre;
+    gp.role        = role;
+    gp.scale       = scale;
+    gp.density     = density;
+    gp.syncopation = 0.50f;
+    gp.spice       = 0.45f;
+    gp.pitchRange  = 0.55f;
+    gp.numSteps    = tracks[static_cast<size_t>(trackIdx)].numSteps;
+
+    PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, gp);
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerMutateTrack (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
+    PulseForge::StyleGenerator::mutatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, scale, 0.45f);
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerClearTrack (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    auto& pat = tracks[static_cast<size_t>(trackIdx)].pattern;
+    for (auto& s : pat.steps)
+    {
+        s.active = false;
+        s.semitoneOffset = 0;
+        s.octaveShift = 0;
+        s.accent = false;
+        s.ratchet = 1;
+        s.gate = 0.75f;
+    }
+    pat.steps[0].active = true;
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerRotateTrack (int trackIdx, int delta)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    PulseForge::StyleGenerator::rotatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, delta);
     updatePlaybackSnapshot();
 }
 
@@ -943,7 +1042,6 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
 
     wasPlayingLastBlock = true;
 
-    const double swingAmount = static_cast<double> (apvts.getRawParameterValue ("swing")->load()) * 0.01 * 0.42;
     const auto& playbackSnap = audioSnapshots[static_cast<size_t>(activeSnapshotIndex.load (std::memory_order_acquire))];
     const int activeTrack = activeTrackIndex.load();
 
@@ -998,8 +1096,10 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             default: baseStepPpq = 0.25;      break;
         }
 
-        const double stepLengthPpq = baseStepPpq / tempoMult;
+        const double trackTempoMult = PulseForge::getTempoRatioMultiplier (trackSnap.tempoRatioIdx);
+        const double stepLengthPpq = baseStepPpq / trackTempoMult;
         const double stepDurationSamples = stepLengthPpq / ppqPerSample;
+        const double trackSwing = static_cast<double> (trackSnap.swing) * 0.01 * 0.42;
 
         for (int s = 0; s < numSamples; ++s)
         {
@@ -1010,7 +1110,7 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                 const int pairIndex = static_cast<int> (std::floor (rawStepFloat / 2.0));
                 const double posInPair = rawStepFloat - static_cast<double> (pairIndex * 2);
 
-                const int unmodStepIndex = (posInPair < (1.0 + swingAmount))
+                const int unmodStepIndex = (posInPair < (1.0 + trackSwing))
                                          ? (pairIndex * 2)
                                          : (pairIndex * 2 + 1);
 
@@ -1227,6 +1327,7 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         trackXml->setAttribute ("name", trk.name);
         trackXml->setAttribute ("midiChannel", trk.midiChannel);
         trackXml->setAttribute ("muted", trk.muted);
+        trackXml->setAttribute ("genre", static_cast<int> (trk.genre));
         trackXml->setAttribute ("role", static_cast<int> (trk.role));
         trackXml->setAttribute ("mode", static_cast<int> (trk.mode));
         trackXml->setAttribute ("arpDir", static_cast<int> (trk.arpDir));
@@ -1238,6 +1339,9 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         trackXml->setAttribute ("sync", static_cast<double> (trk.syncopation));
         trackXml->setAttribute ("spice", static_cast<double> (trk.spice));
         trackXml->setAttribute ("range", static_cast<double> (trk.pitchRange));
+        trackXml->setAttribute ("swing", static_cast<double> (trk.swing));
+        trackXml->setAttribute ("ratio", trk.tempoRatioIdx);
+        trackXml->setAttribute ("expanded", trk.isExpanded);
 
         for (int i = 0; i < PulseForge::kMaxSteps; ++i)
         {
@@ -1287,6 +1391,7 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
             trk.name        = trackXml->getStringAttribute ("name", trk.name);
             trk.midiChannel = trackXml->getIntAttribute ("midiChannel", t + 1);
             trk.muted       = trackXml->getBoolAttribute ("muted", false);
+            trk.genre       = static_cast<PulseForge::GenreStyle> (trackXml->getIntAttribute ("genre", static_cast<int> (trk.genre)));
             trk.role        = static_cast<PulseForge::InstrumentRole> (trackXml->getIntAttribute ("role", static_cast<int> (trk.role)));
             trk.mode        = static_cast<PulseForge::EngineMode> (trackXml->getIntAttribute ("mode", static_cast<int> (trk.mode)));
             trk.arpDir      = static_cast<PulseForge::ArpDirection> (trackXml->getIntAttribute ("arpDir", static_cast<int> (trk.arpDir)));
@@ -1298,6 +1403,9 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
             trk.syncopation = static_cast<float> (trackXml->getDoubleAttribute ("sync", trk.syncopation));
             trk.spice       = static_cast<float> (trackXml->getDoubleAttribute ("spice", trk.spice));
             trk.pitchRange  = static_cast<float> (trackXml->getDoubleAttribute ("range", trk.pitchRange));
+            trk.swing       = static_cast<float> (trackXml->getDoubleAttribute ("swing", trk.swing));
+            trk.tempoRatioIdx = trackXml->getIntAttribute ("ratio", trk.tempoRatioIdx);
+            trk.isExpanded  = trackXml->getBoolAttribute ("expanded", false);
 
             for (auto* stepXml : trackXml->getChildWithTagNameIterator ("Step"))
             {
