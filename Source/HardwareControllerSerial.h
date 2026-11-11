@@ -115,6 +115,7 @@ private:
         dcbSerialParams.StopBits = ONESTOPBIT;
         dcbSerialParams.Parity   = NOPARITY;
         dcbSerialParams.fDtrControl = DTR_CONTROL_ENABLE;
+        dcbSerialParams.fRtsControl = RTS_CONTROL_ENABLE;
 
         if (!SetCommState (hComm, &dcbSerialParams))
         {
@@ -124,11 +125,11 @@ private:
         }
 
         COMMTIMEOUTS timeouts = { 0 };
-        timeouts.ReadIntervalTimeout = 20;
-        timeouts.ReadTotalTimeoutConstant = 50;
-        timeouts.ReadTotalTimeoutMultiplier = 10;
+        timeouts.ReadIntervalTimeout = 10;
+        timeouts.ReadTotalTimeoutConstant = 30;
+        timeouts.ReadTotalTimeoutMultiplier = 2;
         timeouts.WriteTotalTimeoutConstant = 50;
-        timeouts.WriteTotalTimeoutMultiplier = 10;
+        timeouts.WriteTotalTimeoutMultiplier = 5;
         SetCommTimeouts (hComm, &timeouts);
 
         return true;
@@ -147,17 +148,67 @@ private:
 
     juce::StringArray enumerateSerialPorts()
     {
-        juce::StringArray ports;
-        char targetPath[5000];
+        juce::StringArray usbPorts;
+        juce::StringArray otherPorts;
 
-        for (int i = 1; i <= 32; ++i)
+        // 1. First inspect Windows Registry for active hardware COM ports
+        HKEY hKey;
+        if (RegOpenKeyExA (HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
         {
-            juce::String name = "COM" + juce::String (i);
-            DWORD result = QueryDosDeviceA (name.toRawUTF8(), targetPath, sizeof (targetPath));
-            if (result != 0)
-                ports.add (name);
+            char valName[256];
+            BYTE valData[256];
+            DWORD valIndex = 0;
+
+            while (true)
+            {
+                DWORD nameLen = sizeof (valName);
+                DWORD dataLen = sizeof (valData);
+                DWORD type = 0;
+
+                LONG res = RegEnumValueA (hKey, valIndex++, valName, &nameLen, NULL, &type, valData, &dataLen);
+                if (res != ERROR_SUCCESS)
+                    break;
+
+                juce::String keyName (valName);
+                juce::String portName (reinterpret_cast<char*> (valData));
+
+                // Ignore Bluetooth serial ports to avoid 15-30s Windows blocking timeouts
+                if (keyName.containsIgnoreCase ("BthModem") || keyName.containsIgnoreCase ("Bluetooth"))
+                    continue;
+
+                if (keyName.containsIgnoreCase ("USBSER") || keyName.containsIgnoreCase ("VCP") ||
+                    keyName.containsIgnoreCase ("USB")    || keyName.containsIgnoreCase ("FTDI"))
+                {
+                    usbPorts.addIfNotAlreadyThere (portName);
+                }
+                else
+                {
+                    otherPorts.addIfNotAlreadyThere (portName);
+                }
+            }
+            RegCloseKey (hKey);
         }
-        return ports;
+
+        // Combine: USB ports first (e.g. Arduino Mega COM8), then standard hardware COM ports
+        juce::StringArray result;
+        for (const auto& p : usbPorts)
+            result.add (p);
+        for (const auto& p : otherPorts)
+            result.add (p);
+
+        // Fallback: QueryDosDevice if registry had no entries
+        if (result.isEmpty())
+        {
+            char targetPath[1024];
+            for (int i = 1; i <= 32; ++i)
+            {
+                juce::String name = "COM" + juce::String (i);
+                if (QueryDosDeviceA (name.toRawUTF8(), targetPath, sizeof (targetPath)) != 0)
+                    result.add (name);
+            }
+        }
+
+        return result;
     }
 
     void runWorker()
@@ -177,18 +228,51 @@ private:
 
                     if (openPort (port))
                     {
-                        // Wait briefly for Arduino bootloader DTR reset if applicable
-                        std::this_thread::sleep_for (std::chrono::milliseconds (300));
+                        // Wait for Arduino bootloader to complete if reset by DTR
+                        std::this_thread::sleep_for (std::chrono::milliseconds (1600));
+
+                        // Clean serial buffer
+                        PurgeComm (hComm, PURGE_RXCLEAR | PURGE_TXCLEAR);
 
                         // Send Handshake Ping
                         writeSerialString ("PF_PING?\n");
 
-                        // Read response
-                        char respBuf[64] = { 0 };
-                        DWORD bytesRead = 0;
-                        ReadFile (hComm, respBuf, sizeof (respBuf) - 1, &bytesRead, NULL);
+                        // Read response over up to 1.8s looking for PF_PONG
+                        juce::String accum;
+                        bool foundPong = false;
+                        auto startTime = std::chrono::steady_clock::now();
+                        int pingRetryCounter = 0;
 
-                        if (bytesRead > 0 && strstr (respBuf, "PF_PONG:PulseForge_Controller") != nullptr)
+                        while (std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::steady_clock::now() - startTime).count() < 1800)
+                        {
+                            char chunk[128] = { 0 };
+                            DWORD bytesRead = 0;
+                            if (ReadFile (hComm, chunk, sizeof (chunk) - 1, &bytesRead, NULL) && bytesRead > 0)
+                            {
+                                chunk[bytesRead] = '\0';
+                                accum += juce::String (chunk);
+
+                                if (accum.contains ("PF_PONG:PulseForge_Controller"))
+                                {
+                                    foundPong = true;
+                                    break;
+                                }
+
+                                if (accum.length() > 512)
+                                    accum = accum.substring (accum.length() - 256);
+                            }
+
+                            std::this_thread::sleep_for (std::chrono::milliseconds (30));
+
+                            // Periodically re-ping every ~450ms in case first ping was dropped during setup
+                            if (++pingRetryCounter >= 15)
+                            {
+                                pingRetryCounter = 0;
+                                writeSerialString ("PF_PING?\n");
+                            }
+                        }
+
+                        if (foundPong)
                         {
                             connected.store (true);
                             currentPort = port;
@@ -204,7 +288,7 @@ private:
                 }
 
                 if (!connected.load())
-                    std::this_thread::sleep_for (std::chrono::milliseconds (1500));
+                    std::this_thread::sleep_for (std::chrono::milliseconds (1000));
             }
             else
             {
