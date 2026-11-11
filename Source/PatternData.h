@@ -231,6 +231,183 @@ inline int scaleDegreeToSemitone (int degree, ScaleType scale)
     return oct * 12 + intervals[static_cast<size_t>(idx)];
 }
 
+inline int semitoneToScaleDegree (int semitone, ScaleType scale)
+{
+    const auto& intervals = getScaleIntervals (scale);
+    const int n = static_cast<int> (intervals.size());
+    if (n == 0) return 0;
+
+    int oct = (semitone >= 0) ? (semitone / 12) : ((semitone - 11) / 12);
+    int rem = ((semitone % 12) + 12) % 12;
+
+    int bestDeg = 0;
+    int minDiff = 99;
+    for (int i = 0; i < n; ++i)
+    {
+        int diff = std::abs (rem - intervals[static_cast<size_t>(i)]);
+        if (diff < minDiff)
+        {
+            minDiff = diff;
+            bestDeg = i;
+        }
+    }
+    return oct * n + bestDeg;
+}
+
+inline std::vector<int> buildChordVoicingNotes (int baseNote, const StepData& step,
+                                               int rootMidi, ScaleType scale,
+                                               InstrumentRole role, int liveTranspose = 0)
+{
+    std::vector<int> notes;
+    notes.push_back (baseNote);
+
+    if (role != InstrumentRole::PolyChordStab && role != InstrumentRole::HarmonyChords && step.chordType == 0)
+        return notes;
+
+    const int deg = semitoneToScaleDegree (step.semitoneOffset, scale);
+    const int octBase = rootMidi + (step.octaveShift * 12) + liveTranspose;
+
+    const int r = scaleDegreeToSemitone (deg, scale);
+    const int rootPitch    = octBase + r;
+    const int fourthPitch  = octBase + scaleDegreeToSemitone (deg + 3, scale);
+    const int fifthPitch   = octBase + scaleDegreeToSemitone (deg + 4, scale);
+    const int seventhPitch = octBase + scaleDegreeToSemitone (deg + 6, scale);
+    const int thirdPitch   = octBase + scaleDegreeToSemitone (deg + 2, scale);
+    const int ninthPitch   = octBase + scaleDegreeToSemitone (deg + 8, scale);
+    const int eleventhPitch= octBase + scaleDegreeToSemitone (deg + 10, scale);
+    const int thirteenthPitch = octBase + scaleDegreeToSemitone (deg + 12, scale);
+
+    const int cType = step.chordType;
+
+    if (cType == 1)
+    {
+        // Power 5th Open: Root + Fifth + Octave
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, rootPitch + 12));
+    }
+    else if (cType == 2)
+    {
+        // Sus2 / Add9 Modern: Root + 5th + 9th + 3rd (octave up)
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, ninthPitch));
+        notes.push_back (juce::jlimit (12, 115, thirdPitch + 12));
+    }
+    else if (cType == 3)
+    {
+        // Drop-2 7th: Root in bass + 5th + 7th (mid) + 3rd (octave up)
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, seventhPitch));
+        notes.push_back (juce::jlimit (12, 115, thirdPitch + 12));
+    }
+    else if (cType == 5)
+    {
+        // Ambient 11th Modal Voicing (PML / Melodic Techno / Atmospheric):
+        // Root + 5th + 7th + 9th + 11th shimmer
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, seventhPitch));
+        notes.push_back (juce::jlimit (12, 115, ninthPitch));
+        notes.push_back (juce::jlimit (12, 115, eleventhPitch));
+    }
+    else if (cType == 6)
+    {
+        // Soulful 6/9 / 13th Voicing (Steely Dan / Neo-Soul / French House):
+        // Root + 5th + 9th + 3rd (octave up) + 13th (octave up)
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, ninthPitch));
+        notes.push_back (juce::jlimit (12, 115, thirdPitch + 12));
+        notes.push_back (juce::jlimit (12, 115, thirteenthPitch));
+    }
+    else if (cType == 7)
+    {
+        // Quartal Modern Minimal (Techno / Berlin / IDM):
+        // Stack of 4ths: Root + 4th + 7th + 10th(3rd+oct)
+        notes.push_back (juce::jlimit (12, 115, fourthPitch));
+        notes.push_back (juce::jlimit (12, 115, seventhPitch));
+        notes.push_back (juce::jlimit (12, 115, thirdPitch + 12));
+    }
+    else if (cType == 8)
+    {
+        // 9sus4 Gospel Tension: Root + 4th + 5th + 7th + 9th
+        notes.push_back (juce::jlimit (12, 115, fourthPitch));
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, seventhPitch));
+        notes.push_back (juce::jlimit (12, 115, ninthPitch));
+    }
+    else
+    {
+        // Default (cType == 4 or 0 on HarmonyChords / PolyChordStab):
+        // Lush Neo-Soul / Deep House Open 9th Voicing:
+        // Root + 5th + 9th + 3rd (octave up) + 7th (octave up)
+        notes.push_back (juce::jlimit (12, 115, fifthPitch));
+        notes.push_back (juce::jlimit (12, 115, ninthPitch));
+        notes.push_back (juce::jlimit (12, 115, thirdPitch + 12));
+        notes.push_back (juce::jlimit (12, 115, seventhPitch + 12));
+    }
+
+    std::sort (notes.begin(), notes.end());
+    notes.erase (std::unique (notes.begin(), notes.end()), notes.end());
+    return notes;
+}
+
+inline juce::String getChordBadgeName (int rootMidi, const StepData& step, ScaleType scale, InstrumentRole role)
+{
+    static const char* noteNames[] = { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" };
+    const int baseNote = rootMidi + quantizeSemitoneToScale (step.semitoneOffset, scale) + (step.octaveShift * 12);
+    const int rootIdx = ((baseNote % 12) + 12) % 12;
+    const juce::String rName = noteNames[rootIdx];
+
+    const int deg = semitoneToScaleDegree (step.semitoneOffset, scale);
+    const int r = scaleDegreeToSemitone (deg, scale);
+    const int thirdInterval   = scaleDegreeToSemitone (deg + 2, scale) - r;
+    const int fifthInterval   = scaleDegreeToSemitone (deg + 4, scale) - r;
+    const int seventhInterval = scaleDegreeToSemitone (deg + 6, scale) - r;
+
+    const bool isMinor = (thirdInterval == 3);
+    const bool isDim = (isMinor && fifthInterval == 6);
+
+    juce::String suffix = "m9";
+    const int cType = step.chordType;
+
+    if (cType == 1)
+    {
+        suffix = "5";
+    }
+    else if (cType == 2)
+    {
+        suffix = isMinor ? "m(add9)" : "add9";
+    }
+    else if (cType == 3)
+    {
+        if (isDim) suffix = "m7b5";
+        else suffix = isMinor ? "m7" : (seventhInterval == 11 ? "maj7" : "7");
+    }
+    else if (cType == 5)
+    {
+        suffix = isMinor ? "m11" : (seventhInterval == 11 ? "maj11" : "11");
+    }
+    else if (cType == 6)
+    {
+        suffix = isMinor ? "m6/9" : "6/9";
+    }
+    else if (cType == 7)
+    {
+        suffix = "sus4";
+    }
+    else if (cType == 8)
+    {
+        suffix = "9sus4";
+    }
+    else
+    {
+        // 4 or default
+        if (isDim) suffix = "m7b5";
+        else if (isMinor) suffix = "m9";
+        else suffix = (seventhInterval == 11) ? "maj9" : "9";
+    }
+
+    return rName + suffix;
+}
+
 inline juce::String getMidiNoteName (int midiNote)
 {
     static const char* names[] = { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" };

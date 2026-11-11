@@ -565,14 +565,20 @@ private:
                 g.setColour (juce::Colours::white.withAlpha (0.32f));
                 g.drawHorizontalLine (static_cast<int> (innerPill.getY() + 1.0f), innerPill.getX() + 2.0f, innerPill.getRight() - 2.0f);
 
-                // Note Name Badge
-                const int noteNum = processor.computeStepMidiNote (i, step, rootMidi, scale);
-                juce::String noteName = PulseForge::getMidiNoteName (noteNum);
-                if (track.role == PulseForge::InstrumentRole::HarmonyChords)
-                    noteName += "7";
+                // Note Name Badge (Displays rich chord name like Cm9, F9, Ebmaj9, Gm11 or note pitch)
+                juce::String noteName;
+                if (track.role == PulseForge::InstrumentRole::HarmonyChords || track.role == PulseForge::InstrumentRole::PolyChordStab || step.chordType > 0)
+                {
+                    noteName = PulseForge::getChordBadgeName (rootMidi, step, scale, track.role);
+                }
+                else
+                {
+                    const int noteNum = processor.computeStepMidiNote (i, step, rootMidi, scale);
+                    noteName = PulseForge::getMidiNoteName (noteNum);
+                }
 
                 g.setColour (TEXT_DARK);
-                const float noteFontSize = (nSteps > 16) ? 8.5f : 11.5f;
+                const float noteFontSize = (nSteps > 16) ? ((noteName.length() > 4) ? 7.0f : 8.5f) : ((noteName.length() > 4) ? 9.5f : 11.5f);
                 g.setFont (font (noteFontSize, true, 0.02f));
                 g.drawText (noteName, innerPill, juce::Justification::centred, false);
 

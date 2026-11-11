@@ -160,6 +160,32 @@ public:
             int degree;
             int octave;
             float gateSteps;
+            int voicing;
+        };
+
+        auto pickRichVoicing = [&](int degree) -> int
+        {
+            if (degree == 0)
+            {
+                // Tonic: Open 9th (4), Modal 11th (5), or Soulful 6/9 (6)
+                const int tonicVoicings[] = { 4, 4, 5, 6 };
+                return tonicVoicings[randInt (0, 3)];
+            }
+            if (degree == 3 || degree == 5)
+            {
+                // Subdominant / iv / VI: Modal 11th (5), Open 9th (4), or Soulful 6/9 (6)
+                const int subVoicings[] = { 5, 4, 6, 3 };
+                return subVoicings[randInt (0, 3)];
+            }
+            if (degree == 4 || degree == 6)
+            {
+                // Dominant / Cadence (v, VII): 9sus4 tension (8), Open 9th (4), or Drop-2 7th (3)
+                const int domVoicings[] = { 8, 4, 8, 3 };
+                return domVoicings[randInt (0, 3)];
+            }
+            // Passing / ii / III: Open 9th (4), Add9 (2), or Quartal (7)
+            const int passVoicings[] = { 4, 2, 5, 7 };
+            return passVoicings[randInt (0, 3)];
         };
 
         std::vector<ChordChange> changes;
@@ -168,12 +194,13 @@ public:
         {
             if (randFloat() < 0.65f)
             {
-                changes.push_back ({ 0, 0, 0, 3.8f });
+                changes.push_back ({ 0, 0, 0, 3.8f, pickRichVoicing (0) });
             }
             else
             {
-                changes.push_back ({ 0, 0, 0, 1.9f });
-                changes.push_back ({ 2, (p.scale == ScaleType::MajorNatural) ? 3 : 3, 0, 1.9f });
+                changes.push_back ({ 0, 0, 0, 1.9f, pickRichVoicing (0) });
+                const int deg2 = (p.scale == ScaleType::MajorNatural) ? 3 : 3;
+                changes.push_back ({ 2, deg2, 0, 1.9f, pickRichVoicing (deg2) });
             }
         }
         else if (n <= 8)
@@ -182,8 +209,8 @@ public:
             const int secondDegreeChoices[] = { 3, 5, 4, 6 };
             const int secondDegree = secondDegreeChoices[randInt (0, 3)];
 
-            changes.push_back ({ 0, 0, 0, static_cast<float> (changeStep) * 0.95f });
-            changes.push_back ({ changeStep, secondDegree, (secondDegree >= 4 ? -1 : 0), static_cast<float> (n - changeStep) * 0.95f });
+            changes.push_back ({ 0, 0, 0, static_cast<float> (changeStep) * 0.95f, pickRichVoicing (0) });
+            changes.push_back ({ changeStep, secondDegree, (secondDegree >= 4 ? -1 : 0), static_cast<float> (n - changeStep) * 0.95f, pickRichVoicing (secondDegree) });
         }
         else if (n <= 16)
         {
@@ -191,16 +218,16 @@ public:
             if (styleType == 0)
             {
                 const int deg2 = (p.scale == ScaleType::MajorNatural) ? 3 : (randFloat() < 0.5f ? 3 : 5);
-                changes.push_back ({ 0, 0, 0, 7.8f });
-                changes.push_back ({ 8, deg2, (deg2 >= 4 ? -1 : 0), 7.8f });
+                changes.push_back ({ 0, 0, 0, 7.8f, pickRichVoicing (0) });
+                changes.push_back ({ 8, deg2, (deg2 >= 4 ? -1 : 0), 7.8f, pickRichVoicing (deg2) });
             }
             else if (styleType == 1)
             {
                 const int deg2 = (p.scale == ScaleType::Phrygian) ? 1 : 3;
                 const int deg3 = 4;
-                changes.push_back ({ 0,  0,    0, 5.8f });
-                changes.push_back ({ 6,  deg2, (deg2 >= 4 ? -1 : 0), 3.8f });
-                changes.push_back ({ 10, deg3, -1, 5.8f });
+                changes.push_back ({ 0,  0,    0, 5.8f, pickRichVoicing (0) });
+                changes.push_back ({ 6,  deg2, (deg2 >= 4 ? -1 : 0), 3.8f, pickRichVoicing (deg2) });
+                changes.push_back ({ 10, deg3, -1, 5.8f, pickRichVoicing (deg3) });
             }
             else
             {
@@ -214,10 +241,10 @@ public:
                     d1 = 0; d2 = 4; d3 = 5; d4 = 3;
                 }
 
-                changes.push_back ({ 0,  d1, 0, 3.8f });
-                changes.push_back ({ 4,  d2, (d2 >= 4 ? -1 : 0), 3.8f });
-                changes.push_back ({ 8,  d3, 0, 3.8f });
-                changes.push_back ({ 12, d4, (d4 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 0,  d1, 0, 3.8f, pickRichVoicing (d1) });
+                changes.push_back ({ 4,  d2, (d2 >= 4 ? -1 : 0), 3.8f, pickRichVoicing (d2) });
+                changes.push_back ({ 8,  d3, 0, 3.8f, pickRichVoicing (d3) });
+                changes.push_back ({ 12, d4, (d4 >= 4 ? -1 : 0), 3.8f, pickRichVoicing (d4) });
             }
         }
         else // 32 steps: True 2-bar evolving progression with variations and cadences
@@ -227,7 +254,6 @@ public:
             if (styleType == 0)
             {
                 // Style 0: 4 Broad Sustained Chords (8 steps each = 2 bars)
-                // Pick authentic modal progressions
                 std::vector<std::vector<int>> progs;
                 if (p.scale == ScaleType::Dorian || p.scale == ScaleType::MinorNatural || p.scale == ScaleType::HarmonicMinor)
                 {
@@ -260,10 +286,10 @@ public:
                 }
 
                 const auto& pr = progs[static_cast<size_t>(randInt (0, static_cast<int>(progs.size()) - 1))];
-                changes.push_back ({ 0,  pr[0], 0, 7.8f });
-                changes.push_back ({ 8,  pr[1], (pr[1] >= 4 ? -1 : 0), 7.8f });
-                changes.push_back ({ 16, pr[2], (pr[2] >= 4 ? -1 : 0), 7.8f });
-                changes.push_back ({ 24, pr[3], (pr[3] >= 4 ? -1 : 0), 7.8f });
+                changes.push_back ({ 0,  pr[0], 0, 7.8f, pickRichVoicing (pr[0]) });
+                changes.push_back ({ 8,  pr[1], (pr[1] >= 4 ? -1 : 0), 7.8f, pickRichVoicing (pr[1]) });
+                changes.push_back ({ 16, pr[2], (pr[2] >= 4 ? -1 : 0), 7.8f, pickRichVoicing (pr[2]) });
+                changes.push_back ({ 24, pr[3], (pr[3] >= 4 ? -1 : 0), 7.8f, pickRichVoicing (pr[3]) });
             }
             else if (styleType == 1)
             {
@@ -273,17 +299,17 @@ public:
                 else if (p.scale == ScaleType::MajorNatural) { d1 = 0; d2 = 3; d3 = 4; d4 = 0; }
 
                 // Bar 1 (0..15): Off-beat rhythmic push
-                changes.push_back ({ 0,  d1, 0, 3.2f });
-                changes.push_back ({ 4,  d1, 0, 2.0f });
-                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 4.2f });
-                changes.push_back ({ 14, d3, (d3 >= 4 ? -1 : 0), 1.8f });
+                changes.push_back ({ 0,  d1, 0, 3.2f, pickRichVoicing (d1) });
+                changes.push_back ({ 4,  d1, 0, 2.0f, 6 }); // 6/9 groove stab
+                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 4.2f, pickRichVoicing (d2) });
+                changes.push_back ({ 14, d3, (d3 >= 4 ? -1 : 0), 1.8f, 8 }); // 9sus4 push
 
                 // Bar 2 (16..31): Dynamic cadence with turnaround passing chords
-                changes.push_back ({ 16, d1, 0, 3.2f });
-                changes.push_back ({ 20, d2, (d2 >= 4 ? -1 : 0), 3.2f });
-                changes.push_back ({ 24, d4, (d4 >= 4 ? -1 : 0), 3.0f });
-                changes.push_back ({ 28, d3, (d3 >= 4 ? -1 : 0), 1.8f });
-                changes.push_back ({ 30, (d1 == 0 ? 6 : 0), -1, 1.8f }); // Passing resolution back to bar 1
+                changes.push_back ({ 16, d1, 0, 3.2f, pickRichVoicing (d1) });
+                changes.push_back ({ 20, d2, (d2 >= 4 ? -1 : 0), 3.2f, 5 }); // 11th shimmer
+                changes.push_back ({ 24, d4, (d4 >= 4 ? -1 : 0), 3.0f, pickRichVoicing (d4) });
+                changes.push_back ({ 28, d3, (d3 >= 4 ? -1 : 0), 1.8f, 8 }); // 9sus4 tension
+                changes.push_back ({ 30, (d1 == 0 ? 6 : 0), -1, 1.8f, 2 });  // Passing add9 resolution
             }
             else if (styleType == 2)
             {
@@ -292,12 +318,12 @@ public:
                 int d3 = 3, d4 = 4, d5 = 5, d6 = 6;
                 if (p.scale == ScaleType::MajorNatural) { d1 = 0; d2 = 4; d3 = 5; d4 = 3; d5 = 1; d6 = 4; }
 
-                changes.push_back ({ 0,  d1, 0, 7.5f });
-                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 7.5f });
-                changes.push_back ({ 16, d3, (d3 >= 4 ? -1 : 0), 3.8f });
-                changes.push_back ({ 20, d4, (d4 >= 4 ? -1 : 0), 3.8f });
-                changes.push_back ({ 24, d5, (d5 >= 4 ? -1 : 0), 3.8f });
-                changes.push_back ({ 28, d6, (d6 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 0,  d1, 0, 7.5f, pickRichVoicing (d1) });
+                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 7.5f, pickRichVoicing (d2) });
+                changes.push_back ({ 16, d3, (d3 >= 4 ? -1 : 0), 3.8f, 5 }); // 11th
+                changes.push_back ({ 20, d4, (d4 >= 4 ? -1 : 0), 3.8f, 4 }); // 9th
+                changes.push_back ({ 24, d5, (d5 >= 4 ? -1 : 0), 3.8f, 6 }); // 6/9
+                changes.push_back ({ 28, d6, (d6 >= 4 ? -1 : 0), 3.8f, 8 }); // 9sus4
             }
             else
             {
@@ -307,7 +333,7 @@ public:
                 {
                     int deg = degs[c];
                     if (p.scale == ScaleType::Phrygian && deg == 2) deg = 1;
-                    changes.push_back ({ c * 4, deg, (deg >= 4 ? -1 : 0), 3.7f });
+                    changes.push_back ({ c * 4, deg, (deg >= 4 ? -1 : 0), 3.7f, pickRichVoicing (deg) });
                 }
             }
         }
@@ -327,7 +353,7 @@ public:
                 s.ratchet = 1;
                 s.probability = 100;
                 s.ccValue = s.accent ? 95 : 75;
-                s.chordType = (randFloat() < 0.75f) ? 3 : 2;
+                s.chordType = ch.voicing;
             }
         }
     }

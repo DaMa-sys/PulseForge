@@ -851,33 +851,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
     else
     {
         const int baseNote = computeStepMidiNote (stepIdx, step, rootMidi, scale);
-        notesToTrigger.push_back (baseNote);
-
-        if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords || step.chordType > 0)
-        {
-            const int cType = ((role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords) && step.chordType == 0) ? 3 : step.chordType;
-            if (cType == 1)
-            {
-                notesToTrigger.push_back (juce::jlimit (12, 115, baseNote + 7));
-            }
-            else if (cType >= 2)
-            {
-                const int third = rootMidi + PulseForge::quantizeSemitoneToScale (step.semitoneOffset + 3, scale) + step.octaveShift * 12 + liveTransposeSemitones;
-                const int fifth = rootMidi + PulseForge::quantizeSemitoneToScale (step.semitoneOffset + 7, scale) + step.octaveShift * 12 + liveTransposeSemitones;
-                notesToTrigger.push_back (juce::jlimit (12, 115, third));
-                notesToTrigger.push_back (juce::jlimit (12, 115, fifth));
-                if (cType >= 3)
-                {
-                    const int seventh = rootMidi + PulseForge::quantizeSemitoneToScale (step.semitoneOffset + 10, scale) + step.octaveShift * 12 + liveTransposeSemitones;
-                    notesToTrigger.push_back (juce::jlimit (12, 115, seventh));
-                }
-                if (cType >= 4)
-                {
-                    const int ninth = rootMidi + PulseForge::quantizeSemitoneToScale (step.semitoneOffset + 14, scale) + step.octaveShift * 12 + liveTransposeSemitones;
-                    notesToTrigger.push_back (juce::jlimit (12, 115, ninth));
-                }
-            }
-        }
+        notesToTrigger = PulseForge::buildChordVoicingNotes (baseNote, step, rootMidi, scale, role, liveTransposeSemitones);
     }
 
     const int vel = juce::jlimit (1, 127, step.accent ? juce::jmax (step.velocity, 120) : step.velocity);
@@ -1229,14 +1203,7 @@ juce::File PulseForgeAudioProcessor::exportActivePatternToTempMidiFile()
         const double startTick = i * stepTicks + swingOffsetTicks;
         const int vel = juce::jlimit (1, 127, step.accent ? juce::jmax (step.velocity, 120) : step.velocity);
         const int baseNote = computeStepMidiNote (i, step, rootMidi, scale);
-
-        std::vector<int> stepNotes { baseNote };
-        if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords || step.chordType > 0)
-        {
-            stepNotes.push_back (juce::jlimit (12, 115, baseNote + 3));
-            stepNotes.push_back (juce::jlimit (12, 115, baseNote + 7));
-            stepNotes.push_back (juce::jlimit (12, 115, baseNote + 10));
-        }
+        const std::vector<int> stepNotes = PulseForge::buildChordVoicingNotes (baseNote, step, rootMidi, scale, role, liveTransposeSemitones);
 
         const int ratchets = juce::jlimit (1, 4, step.ratchet);
         if (ratchets > 1 && !step.slide)
