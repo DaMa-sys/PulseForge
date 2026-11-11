@@ -60,18 +60,21 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     runAttach     = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "autoPlay",     runBtn);
     previewAttach = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "previewSynth", previewBtn);
 
-    // 4. The 3 Dedicated Horizontal Sequence Strips (RC-20 inspired)
-    // Strip 0: Warm Golden Amber for Solid Analog Bass
+    // 4. The 3 Dedicated Horizontal Sequence Strips (Custom 3-Tone Azure Blue Palette)
+    // Strip 0: Deep Marine Cobalt Azure for Grounded Bass Foundation
     strips[0] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 0, juce::Colour (0xFFFFAE33), "SEQ 1 : BASS", customLookAndFeel);
+        audioProcessor, 0, juce::Colour (0xFF38BDF8), "SEQ 1 : BASS", customLookAndFeel,
+        juce::Colour (0xFF14476B), juce::Colour (0xFF0D324D));
 
-    // Strip 1: Electric Cyan for Melodic Arpeggio & Lead Hook
+    // Strip 1: Vibrant Electric Cyan Turquoise for Melodic Arpeggio & Lead Hook
     strips[1] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 1, juce::Colour (0xFF00E5FF), "SEQ 2 : ARP", customLookAndFeel);
+        audioProcessor, 1, juce::Colour (0xFF00F0FF), "SEQ 2 : ARP", customLookAndFeel,
+        juce::Colour (0xFF0F5A6D), juce::Colour (0xFF0A3B48));
 
-    // Strip 2: Luminous Violet / Magenta for Polyphonic Chord Stabs
+    // Strip 2: Royal Indigo / Cerulean Azure for Polyphonic Chord Progressions
     strips[2] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 2, juce::Colour (0xFFC084FC), "SEQ 3 : CHORDS", customLookAndFeel);
+        audioProcessor, 2, juce::Colour (0xFF818CF8), "SEQ 3 : CHORDS", customLookAndFeel,
+        juce::Colour (0xFF224E82), juce::Colour (0xFF153457));
 
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
@@ -85,6 +88,11 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
         };
         addAndMakeVisible (*strips[static_cast<size_t>(i)]);
     }
+
+    audioProcessor.hardwareSerial.onConnectionStatusChanged = [this](bool, const juce::String&)
+    {
+        juce::MessageManager::callAsync ([this]() { repaint(); });
+    };
 
     setSize (1180, 502);
     startTimerHz (60);
@@ -145,11 +153,11 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
 
     // 2. Global Dropdown Labels
     g.setColour (TEXT_LABEL);
-    g.setFont (font (8.5f, true, 0.06f));
+    g.setFont (font (9.0f, true, 0.08f));
     g.drawText ("MUSICAL SCALE", scaleBox.getX(), 15, scaleBox.getWidth(), 12, juce::Justification::centredLeft);
     g.drawText ("ROOT",          rootBox.getX(),  15, rootBox.getWidth(),  12, juce::Justification::centredLeft);
 
-    // 3. Footer Telemetry & Status
+    // 3. Footer Telemetry & Status (Crisp Bold Typography)
     const int footerY = getHeight() - 24;
     const double bpm = audioProcessor.getCurrentHostBpm();
     const bool isPlaying = audioProcessor.isTransportRunning();
@@ -157,22 +165,22 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
     juce::String status = "DaMA PulseForge v1.0 | 3 Multi-Timbral Tracks (Ch 1: Bass | Ch 2: Arp | Ch 3: Chords) | Ableton Sync: "
                         + juce::String (bpm, 1) + " BPM (" + (isPlaying ? "RUNNING" : "STOPPED") + ")";
 
-    g.setColour (TEXT_MUTED);
-    g.setFont (font (10.0f, false, 0.04f));
+    g.setColour (TEXT_BRIGHT.withAlpha (0.90f));
+    g.setFont (font (10.0f, true, 0.04f));
     g.drawText (status, 24, footerY, getWidth() - 380, 18, juce::Justification::centredLeft, true);
 
     // Hardware Controller Telemetry Badge
     const bool hwConnected = audioProcessor.hardwareSerial.isConnected();
     const juce::String hwStatus = hwConnected ? ("HW: " + audioProcessor.hardwareSerial.getConnectedPortName()) : "HW: SCANNING";
-    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : juce::Colours::white.withAlpha (0.35f));
-    g.fillEllipse (getWidth() - 355, footerY + 5, 7.0f, 7.0f);
-    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : TEXT_MUTED);
-    g.setFont (font (9.5f, true, 0.04f));
+    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : juce::Colours::white.withAlpha (0.45f));
+    g.fillEllipse (static_cast<float> (getWidth() - 355), static_cast<float> (footerY + 5), 7.0f, 7.0f);
+    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : TEXT_BRIGHT.withAlpha (0.80f));
+    g.setFont (font (9.5f, true, 0.05f));
     g.drawText (hwStatus, getWidth() - 342, footerY, 115, 18, juce::Justification::centredLeft);
 
     const int lastNote = audioProcessor.getLastTriggeredNote();
-    g.setColour (TEXT_MUTED);
-    g.setFont (font (10.0f, false, 0.04f));
+    g.setColour (TEXT_BRIGHT.withAlpha (0.90f));
+    g.setFont (font (10.0f, true, 0.04f));
     g.drawText ("LIVE MIDI: " + PulseForge::getMidiNoteName (lastNote) + " (#" + juce::String (lastNote) + ")",
                 getWidth() - 220, footerY, 195, 18, juce::Justification::centredRight, false);
 }
@@ -227,5 +235,5 @@ void PulseForgeAudioProcessorEditor::timerCallback()
             s->updatePlayheadAndState();
     }
 
-    repaint (getWidth() - 240, getHeight() - 26, 220, 22);
+    repaint (getWidth() - 380, getHeight() - 26, 360, 24);
 }

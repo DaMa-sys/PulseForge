@@ -15,11 +15,11 @@ namespace LandrFxTheme
     const juce::Colour SHADOW_COLOR   { 0x4D0B3D5C }; // Soft ambient shadow (~30% opacity)
     const juce::Colour SHADOW_DEEP    { 0x590B3D5C }; // ~35% shadow for knobs
 
-    // 2. High-Contrast Text Colors
-    const juce::Colour TEXT_DARK      { 0xFF1B6F8A }; // Deep teal for primary buttons
-    const juce::Colour TEXT_BRIGHT    { 0xFFFFFFFF }; // 100% white for values & indicators
-    const juce::Colour TEXT_LABEL     { 0xB3FFFFFF }; // ~70% white for uppercase labels
-    const juce::Colour TEXT_MUTED     { 0x80FFFFFF }; // ~50% white for inactive hints/status
+    // 2. High-Contrast Text Colors (Bold & Ultra-Legible)
+    const juce::Colour TEXT_DARK      { 0xFF051C2C }; // Deep navy/black for razor-sharp text on bright pills
+    const juce::Colour TEXT_BRIGHT    { 0xFFFFFFFF }; // 100% pure crisp white for values & indicators
+    const juce::Colour TEXT_LABEL     { 0xEEFFFFFF }; // ~93% luminous white for high-contrast labels
+    const juce::Colour TEXT_MUTED     { 0xB3FFFFFF }; // ~70% soft white for secondary telemetry
 
     // 3. Active Cells & Highlights
     const juce::Colour CELL_ACTIVE_BG { 0xFFFFFFFF }; // Crisp white fill
