@@ -100,6 +100,7 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
 
 PulseForgeAudioProcessorEditor::~PulseForgeAudioProcessorEditor()
 {
+    audioProcessor.hardwareSerial.onConnectionStatusChanged = nullptr;
     stopTimer();
     setLookAndFeel (nullptr);
 }

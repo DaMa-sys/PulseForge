@@ -66,67 +66,79 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
     PulseForge::StyleGenerator::generatePattern (tracks[2].pattern, gp2, 303);
 
     // Setup Hardware Serial Controller Callbacks (Arduino Mega Desk Controller)
-    hardwareSerial.onGenerateTrigger = [this](int track) { triggerGenerateTrack (track); };
-    hardwareSerial.onMutateTrigger   = [this](int track) { triggerMutateTrack (track); };
+    hardwareSerial.onGenerateTrigger = [this](int track)
+    {
+        juce::MessageManager::callAsync ([this, track] { triggerGenerateTrack (track); });
+    };
+    hardwareSerial.onMutateTrigger   = [this](int track)
+    {
+        juce::MessageManager::callAsync ([this, track] { triggerMutateTrack (track); });
+    };
     hardwareSerial.onParameterChange = [this](int track, const juce::String& param, int val)
     {
-        const juce::String prefix = "t" + juce::String (track) + "_";
-        if (param == "DENS")
+        juce::MessageManager::callAsync ([this, track, param, val]
         {
-            if (auto* p = apvts.getParameter (prefix + "density"))
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-        }
-        else if (param == "SWING")
-        {
-            if (auto* p = apvts.getParameter (prefix + "swing"))
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-        }
-        else if (param == "BOCT")
-        {
-            if (auto* p = apvts.getParameter (prefix + "baseOctave"))
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-        }
-        else if (param == "AOCT")
-        {
-            if (auto* p = apvts.getParameter (prefix + "arpOctaves"))
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-        }
-        else if (param == "RATIO")
-        {
-            if (auto* p = apvts.getParameter (prefix + "tempoRatio"))
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-        }
+            const juce::String prefix = "t" + juce::String (track) + "_";
+            if (param == "DENS")
+            {
+                if (auto* p = apvts.getParameter (prefix + "density"))
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+            }
+            else if (param == "SWING")
+            {
+                if (auto* p = apvts.getParameter (prefix + "swing"))
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+            }
+            else if (param == "BOCT")
+            {
+                if (auto* p = apvts.getParameter (prefix + "baseOctave"))
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+            }
+            else if (param == "AOCT")
+            {
+                if (auto* p = apvts.getParameter (prefix + "arpOctaves"))
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+            }
+            else if (param == "RATIO")
+            {
+                if (auto* p = apvts.getParameter (prefix + "tempoRatio"))
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+            }
+        });
     };
     hardwareSerial.onEncoderStep = [this](int track, const juce::String& target, int dir)
     {
-        const juce::String prefix = "t" + juce::String (track) + "_";
-        if (target == "STEPS")
+        juce::MessageManager::callAsync ([this, track, target, dir]
         {
-            if (auto* p = apvts.getParameter (prefix + "numSteps"))
+            const juce::String prefix = "t" + juce::String (track) + "_";
+            if (target == "STEPS")
             {
-                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
-                int next = juce::jlimit (0, 3, cur + dir);
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                if (auto* p = apvts.getParameter (prefix + "numSteps"))
+                {
+                    int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                    int next = juce::jlimit (0, 3, cur + dir);
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                }
             }
-        }
-        else if (target == "GENRE")
-        {
-            if (auto* p = apvts.getParameter (prefix + "genre"))
+            else if (target == "GENRE")
             {
-                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
-                int next = juce::jlimit (0, 7, cur + dir);
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                if (auto* p = apvts.getParameter (prefix + "genre"))
+                {
+                    int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                    int next = juce::jlimit (0, 7, cur + dir);
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                }
             }
-        }
-        else if (target == "ROLE")
-        {
-            if (auto* p = apvts.getParameter (prefix + "role"))
+            else if (target == "ROLE")
             {
-                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
-                int next = juce::jlimit (0, 6, cur + dir);
-                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                if (auto* p = apvts.getParameter (prefix + "role"))
+                {
+                    int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                    int next = juce::jlimit (0, 6, cur + dir);
+                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                }
             }
-        }
+        });
     };
     hardwareSerial.startAutoConnect();
 

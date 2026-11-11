@@ -17,7 +17,7 @@ public:
 
     ~HardwareControllerSerial()
     {
-        closePort();
+        stopAutoConnect();
     }
 
     // Callbacks from Hardware
@@ -47,28 +47,80 @@ public:
         closePort();
     }
 
-    // Send formatted commands to hardware
-    void sendStepFlash (int trackIdx, int stepIdx, bool isAccent)
+    // Real-time lock-free queue for outgoing commands from audio thread to serial thread
+    void sendStepFlash (int trackIdx, int stepIdx, bool isAccent) noexcept
     {
-        if (!connected.load() || hComm == INVALID_HANDLE_VALUE)
+        if (!connected.load (std::memory_order_relaxed))
             return;
 
-        juce::String msg = "STEP:T" + juce::String (trackIdx) + ":" + juce::String (stepIdx);
-        if (isAccent) msg += ":ACC";
-        msg += "\n";
-        writeSerialString (msg);
+        char buf[32];
+        if (isAccent)
+            snprintf (buf, sizeof (buf), "STEP:T%d:%d:ACC\n", trackIdx, stepIdx);
+        else
+            snprintf (buf, sizeof (buf), "STEP:T%d:%d\n", trackIdx, stepIdx);
+
+        enqueueTx (buf);
     }
 
     void sendOledLine (int trackIdx, int lineIdx, const juce::String& text)
     {
-        if (!connected.load() || hComm == INVALID_HANDLE_VALUE)
+        if (!connected.load (std::memory_order_relaxed))
             return;
 
-        juce::String msg = "OLED:T" + juce::String (trackIdx) + ":L" + juce::String (lineIdx) + ":" + text + "\n";
-        writeSerialString (msg);
+        char buf[64];
+        snprintf (buf, sizeof (buf), "OLED:T%d:L%d:%s\n", trackIdx, lineIdx, text.toRawUTF8());
+        enqueueTx (buf);
     }
 
 private:
+    struct OutgoingItem {
+        char data[48];
+        int len = 0;
+    };
+
+    static constexpr int kTxQueueSize = 128;
+    OutgoingItem txQueue[kTxQueueSize];
+    std::atomic<int> txWriteIndex { 0 };
+    std::atomic<int> txReadIndex { 0 };
+
+    void enqueueTx (const char* str) noexcept
+    {
+        const int w = txWriteIndex.load (std::memory_order_relaxed);
+        const int nextW = (w + 1) % kTxQueueSize;
+        if (nextW == txReadIndex.load (std::memory_order_acquire))
+            return; // Ring buffer full, drop rather than blocking audio DSP thread!
+
+        auto& item = txQueue[w];
+        int l = 0;
+        while (str[l] != '\0' && l < 47)
+        {
+            item.data[l] = str[l];
+            ++l;
+        }
+        item.data[l] = '\0';
+        item.len = l;
+
+        txWriteIndex.store (nextW, std::memory_order_release);
+    }
+
+    void flushOutgoingTx()
+    {
+        while (connected.load (std::memory_order_relaxed) && hComm != INVALID_HANDLE_VALUE)
+        {
+            const int r = txReadIndex.load (std::memory_order_relaxed);
+            if (r == txWriteIndex.load (std::memory_order_acquire))
+                break; // Empty
+
+            const auto& item = txQueue[r];
+            if (item.len > 0)
+            {
+                DWORD bytesWritten = 0;
+                WriteFile (hComm, item.data, static_cast<DWORD> (item.len), &bytesWritten, NULL);
+            }
+
+            txReadIndex.store ((r + 1) % kTxQueueSize, std::memory_order_release);
+        }
+    }
     std::atomic<bool> workerRunning { false };
     std::atomic<bool> connected { false };
     std::thread workerThread;
@@ -125,11 +177,11 @@ private:
         }
 
         COMMTIMEOUTS timeouts = { 0 };
-        timeouts.ReadIntervalTimeout = 10;
-        timeouts.ReadTotalTimeoutConstant = 30;
-        timeouts.ReadTotalTimeoutMultiplier = 2;
-        timeouts.WriteTotalTimeoutConstant = 50;
-        timeouts.WriteTotalTimeoutMultiplier = 5;
+        timeouts.ReadIntervalTimeout = MAXDWORD;
+        timeouts.ReadTotalTimeoutConstant = 0;
+        timeouts.ReadTotalTimeoutMultiplier = 0;
+        timeouts.WriteTotalTimeoutConstant = 20;
+        timeouts.WriteTotalTimeoutMultiplier = 1;
         SetCommTimeouts (hComm, &timeouts);
 
         return true;
@@ -292,24 +344,31 @@ private:
             }
             else
             {
-                // 2. Connected: Process incoming hardware telemetry
-                char byteIn = 0;
+                // 2. Connected: Flush any queued outgoing triggers to hardware first
+                flushOutgoingTx();
+
+                // Process incoming hardware telemetry in chunks
+                char chunk[64];
                 DWORD bytesRead = 0;
 
-                if (ReadFile (hComm, &byteIn, 1, &bytesRead, NULL) && bytesRead == 1)
+                if (ReadFile (hComm, chunk, sizeof (chunk), &bytesRead, NULL) && bytesRead > 0)
                 {
-                    if (byteIn == '\n' || byteIn == '\r')
+                    for (DWORD i = 0; i < bytesRead; ++i)
                     {
-                        if (rxPos > 0)
+                        char byteIn = chunk[i];
+                        if (byteIn == '\n' || byteIn == '\r')
                         {
-                            rxBuf[rxPos] = '\0';
-                            parseIncomingMessage (juce::String (rxBuf));
-                            rxPos = 0;
+                            if (rxPos > 0)
+                            {
+                                rxBuf[rxPos] = '\0';
+                                parseIncomingMessage (juce::String (rxBuf));
+                                rxPos = 0;
+                            }
                         }
-                    }
-                    else if (rxPos < (int)sizeof (rxBuf) - 1)
-                    {
-                        rxBuf[rxPos++] = byteIn;
+                        else if (rxPos < (int)sizeof (rxBuf) - 1)
+                        {
+                            rxBuf[rxPos++] = byteIn;
+                        }
                     }
                 }
                 else

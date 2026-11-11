@@ -1,0 +1,38 @@
+========================================================================
+                      DaMA PulseForge - v1.0.0
+       Polyrhythmic Generative Sequencer & Hardware Desk Controller
+========================================================================
+
+ISTRUZIONI DI INSTALLAZIONE RAPIDA (Windows 10 / 11):
+
+1. Chiudi Ableton Live o la tua DAW se aperta.
+2. Fai click destro su "install_vst3.bat" e seleziona:
+   --> "Esegui come amministratore"
+3. Lo script:
+   - Copiera automaticamente 'PulseForge.vst3' nella cartella:
+     C:\Program Files\Common Files\VST3\DaMA\
+   - Resettera la cache di scansione VST3 di Ableton Live (PluginScanDb.txt)
+     in modo che Ableton rilevi immediatamente la nuova versione senza bug
+     o versioni obsolete memorizzate.
+4. Riapri Ableton Live: troverai "PulseForge" sotto la cartella VST3 -> DaMA!
+
+------------------------------------------------------------------------
+INSTALLAZIONE MANUALE (Alternativa):
+Se preferisci copiare manualmente il file:
+Copia l'intera cartella 'PulseForge.vst3' dentro:
+C:\Program Files\Common Files\VST3\DaMA\
+
+------------------------------------------------------------------------
+HARDWARE DESK CONTROLLER (Arduino Mega):
+Se utilizzi il controller fisico hardware Arduino:
+1. Collega la scheda Arduino Mega tramite cavo USB.
+2. Il plugin rileva automaticamente la porta COM (es. COM8) e si connette
+   in sottofondo con handshake bidirezionale.
+3. Il badge in alto a destra diventera verde "HW: CONNECTED".
+4. Audio-thread safe: la comunicazione seriale adotta code lock-free e
+   thread asincroni, garantendo zero interruzioni, zero jitter e zero
+   glitch audio sul motore DSP a 44.1/48/96 kHz.
+
+DaMA Audio Labs - All Rights Reserved.
+Sito Web: https://dama-sys.github.io/PulseForge/
+Repo GitHub: https://github.com/DaMa-sys/PulseForge
