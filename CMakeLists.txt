@@ -5,7 +5,18 @@ project(PulseForge VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory("C:/JUCE/JUCE" "${CMAKE_BINARY_DIR}/JUCE" EXCLUDE_FROM_ALL)
+# Discover JUCE: checks C:/JUCE/JUCE, environment variable JUCE_PATH, local subfolder, or CMake package
+if (NOT TARGET juce::juce_audio_utils)
+    if (EXISTS "C:/JUCE/JUCE/CMakeLists.txt")
+        add_subdirectory("C:/JUCE/JUCE" "${CMAKE_BINARY_DIR}/JUCE" EXCLUDE_FROM_ALL)
+    elseif (DEFINED ENV{JUCE_PATH} AND EXISTS "$ENV{JUCE_PATH}/CMakeLists.txt")
+        add_subdirectory("$ENV{JUCE_PATH}" "${CMAKE_BINARY_DIR}/JUCE" EXCLUDE_FROM_ALL)
+    elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
+        add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/JUCE" "${CMAKE_BINARY_DIR}/JUCE" EXCLUDE_FROM_ALL)
+    else()
+        find_package(JUCE CONFIG REQUIRED)
+    endif()
+endif()
 
 juce_add_plugin(PulseForge
     COMPANY_NAME "DaMA"
