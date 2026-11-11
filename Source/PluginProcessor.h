@@ -4,6 +4,7 @@
 #include "PatternData.h"
 #include "StyleGenerator.h"
 #include "PreviewSynth.h"
+#include "HardwareControllerSerial.h"
 #include <atomic>
 
 class PulseForgeAudioProcessor : public juce::AudioProcessor
@@ -156,6 +157,8 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+
+    HardwareControllerSerial hardwareSerial;
 
     mutable juce::CriticalSection patternLock;
 

@@ -65,6 +65,71 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
     gp2.numSteps = 16;
     PulseForge::StyleGenerator::generatePattern (tracks[2].pattern, gp2, 303);
 
+    // Setup Hardware Serial Controller Callbacks (Arduino Mega Desk Controller)
+    hardwareSerial.onGenerateTrigger = [this](int track) { triggerGenerateTrack (track); };
+    hardwareSerial.onMutateTrigger   = [this](int track) { triggerMutateTrack (track); };
+    hardwareSerial.onParameterChange = [this](int track, const juce::String& param, int val)
+    {
+        const juce::String prefix = "t" + juce::String (track) + "_";
+        if (param == "DENS")
+        {
+            if (auto* p = apvts.getParameter (prefix + "density"))
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+        }
+        else if (param == "SWING")
+        {
+            if (auto* p = apvts.getParameter (prefix + "swing"))
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+        }
+        else if (param == "BOCT")
+        {
+            if (auto* p = apvts.getParameter (prefix + "baseOctave"))
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+        }
+        else if (param == "AOCT")
+        {
+            if (auto* p = apvts.getParameter (prefix + "arpOctaves"))
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+        }
+        else if (param == "RATIO")
+        {
+            if (auto* p = apvts.getParameter (prefix + "tempoRatio"))
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+        }
+    };
+    hardwareSerial.onEncoderStep = [this](int track, const juce::String& target, int dir)
+    {
+        const juce::String prefix = "t" + juce::String (track) + "_";
+        if (target == "STEPS")
+        {
+            if (auto* p = apvts.getParameter (prefix + "numSteps"))
+            {
+                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                int next = juce::jlimit (0, 3, cur + dir);
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+            }
+        }
+        else if (target == "GENRE")
+        {
+            if (auto* p = apvts.getParameter (prefix + "genre"))
+            {
+                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                int next = juce::jlimit (0, 7, cur + dir);
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+            }
+        }
+        else if (target == "ROLE")
+        {
+            if (auto* p = apvts.getParameter (prefix + "role"))
+            {
+                int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
+                int next = juce::jlimit (0, 6, cur + dir);
+                p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+            }
+        }
+    };
+    hardwareSerial.startAutoConnect();
+
     updatePlaybackSnapshot();
 }
 
@@ -146,6 +211,7 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
 
 PulseForgeAudioProcessor::~PulseForgeAudioProcessor()
 {
+    hardwareSerial.stopAutoConnect();
     const juce::ScopedLock sl (midiOutLock);
     activeHardwareOuts.clear();
 }
@@ -737,6 +803,8 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
     const auto& step = trackSnap.steps[static_cast<size_t>(stepIdx % PulseForge::kMaxSteps)];
     if (!step.active)
         return;
+
+    hardwareSerial.sendStepFlash (trackIdx, stepIdx, step.accent);
 
     const int midiChan         = trackSnap.midiChannel;
     const int ccNumber         = static_cast<int> (apvts.getRawParameterValue ("ccNumber")->load());

@@ -159,9 +159,20 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (TEXT_MUTED);
     g.setFont (font (10.0f, false, 0.04f));
-    g.drawText (status, 24, footerY, getWidth() - 250, 18, juce::Justification::centredLeft, true);
+    g.drawText (status, 24, footerY, getWidth() - 380, 18, juce::Justification::centredLeft, true);
+
+    // Hardware Controller Telemetry Badge
+    const bool hwConnected = audioProcessor.hardwareSerial.isConnected();
+    const juce::String hwStatus = hwConnected ? ("HW: " + audioProcessor.hardwareSerial.getConnectedPortName()) : "HW: SCANNING";
+    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : juce::Colours::white.withAlpha (0.35f));
+    g.fillEllipse (getWidth() - 355, footerY + 5, 7.0f, 7.0f);
+    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : TEXT_MUTED);
+    g.setFont (font (9.5f, true, 0.04f));
+    g.drawText (hwStatus, getWidth() - 342, footerY, 115, 18, juce::Justification::centredLeft);
 
     const int lastNote = audioProcessor.getLastTriggeredNote();
+    g.setColour (TEXT_MUTED);
+    g.setFont (font (10.0f, false, 0.04f));
     g.drawText ("LIVE MIDI: " + PulseForge::getMidiNoteName (lastNote) + " (#" + juce::String (lastNote) + ")",
                 getWidth() - 220, footerY, 195, 18, juce::Justification::centredRight, false);
 }
