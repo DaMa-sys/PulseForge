@@ -2,7 +2,8 @@
 #include "PluginEditor.h"
 
 PulseForgeAudioProcessor::PulseForgeAudioProcessor()
-    : AudioProcessor (BusesProperties()),
+    : AudioProcessor (BusesProperties()
+                      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
     activeNotes.reserve (32);
@@ -159,8 +160,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
 const juce::String PulseForgeAudioProcessor::getName() const { return JucePlugin_Name; }
 bool PulseForgeAudioProcessor::acceptsMidi() const { return true; }
 bool PulseForgeAudioProcessor::producesMidi() const { return true; }
-bool PulseForgeAudioProcessor::isMidiEffect() const { return true; }
-double PulseForgeAudioProcessor::getTailLengthSeconds() const { return 0.0; }
+bool PulseForgeAudioProcessor::isMidiEffect() const { return false; }
+double PulseForgeAudioProcessor::getTailLengthSeconds() const { return 0.1; }
 int PulseForgeAudioProcessor::getNumPrograms() { return 1; }
 int PulseForgeAudioProcessor::getCurrentProgram() { return 0; }
 void PulseForgeAudioProcessor::setCurrentProgram (int) {}
@@ -194,8 +195,8 @@ void PulseForgeAudioProcessor::releaseResources()
 
 bool PulseForgeAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    return layouts.getMainInputChannelSet() == juce::AudioChannelSet::disabled()
-        && layouts.getMainOutputChannelSet() == juce::AudioChannelSet::disabled();
+    const auto out = layouts.getMainOutputChannelSet();
+    return out == juce::AudioChannelSet::stereo() || out == juce::AudioChannelSet::mono();
 }
 
 void PulseForgeAudioProcessor::setActiveSlotIndex (int idx)
