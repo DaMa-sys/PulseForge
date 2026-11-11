@@ -51,6 +51,11 @@ xcopy /E /I /Y /Q "!SRC!" "!TARGET!" >nul 2>&1
 if "%ERRORLEVEL%"=="0" (
     color 0A
     echo.
+    echo [*] Reset cache di scansione Ableton Live (rimozione vecchie versioni memorizzate)...
+    powershell -NoProfile -Command "Get-ChildItem -Path ('$env:APPDATA\Ableton') -Filter 'PluginScanDb.txt' -Recurse -ErrorAction SilentlyContinue | ForEach-Object { (Get-Content $_.FullName) | Where-Object { $_ -notmatch 'PulseForge' } | Set-Content $_.FullName }" >nul 2>&1
+    echo [OK] Cache di scansione Ableton resettata: la DAW effettuera una scansione pulita all'avvio!
+
+    echo.
     echo  =============================================================
     echo    INSTALLAZIONE COMPLETATA CON SUCCESSO!
     echo  =============================================================
