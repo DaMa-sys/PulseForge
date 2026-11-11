@@ -21,8 +21,6 @@ public:
 
 private:
     void timerCallback() override;
-    void updateHwMidiButtonText();
-    void showHardwareMidiMenu();
     void renderCachedShadows (int width, int height);
 
     PulseForgeAudioProcessor& audioProcessor;
@@ -39,7 +37,6 @@ private:
     juce::TextButton runBtn        { "FREE RUN" };
     juce::TextButton previewBtn    { "PREVIEW SYNTH" };
     juce::TextButton dragMidiBtn   { "DRAG MIDI" };
-    juce::TextButton hwMidiMenuBtn { "DAW ONLY" };
 
     // Attachments
     using ComboAttachment  = juce::AudioProcessorValueTreeState::ComboBoxAttachment;

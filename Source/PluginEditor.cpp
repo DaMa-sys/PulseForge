@@ -59,10 +59,6 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     };
     addAndMakeVisible (dragMidiBtn);
 
-    hwMidiMenuBtn.setLookAndFeel (&customLookAndFeel);
-    hwMidiMenuBtn.onClick = [this]() { showHardwareMidiMenu(); };
-    addAndMakeVisible (hwMidiMenuBtn);
-
     // 3. Attachments for Global Parameters
     scaleAttach   = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "scale",        scaleBox);
     rootAttach    = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "rootNote",     rootBox);
@@ -85,11 +81,18 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
 
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
-        strips[static_cast<size_t>(i)]->onExpandToggled = [this]() { resized(); };
+        strips[static_cast<size_t>(i)]->onExpandToggled = [this]()
+        {
+            int h = 76;
+            for (auto& s : strips)
+                h += (s != nullptr ? s->getStripHeight() : 126) + 8;
+            h += 24; // footer
+            setSize (getWidth(), h);
+        };
         addAndMakeVisible (*strips[static_cast<size_t>(i)]);
     }
 
-    setSize (1180, 740);
+    setSize (1180, 502);
     startTimerHz (60);
 }
 
@@ -178,7 +181,7 @@ void PulseForgeAudioProcessorEditor::resized()
     renderCachedShadows (w, h);
 
     // 1. Global Header Layout
-    const int headY = 28;
+    const int headY = 26;
     const int headH = 28;
 
     int x = 205;
@@ -191,7 +194,7 @@ void PulseForgeAudioProcessorEditor::resized()
     rateBox.setBounds (x, headY, 78, headH);
     x += 86;
 
-    trioGenBtn.setBounds (x, headY - 2, 134, headH + 4);
+    trioGenBtn.setBounds (x, headY, 134, headH);
     x += 142;
 
     runBtn.setBounds (x, headY, 78, headH);
@@ -200,23 +203,19 @@ void PulseForgeAudioProcessorEditor::resized()
     previewBtn.setBounds (x, headY, 114, headH);
     x += 120;
 
-    dragMidiBtn.setBounds (x, headY, 94, headH);
-    x += 100;
-
-    hwMidiMenuBtn.setBounds (x, headY, juce::jmax (110, w - x - 24), headH);
+    dragMidiBtn.setBounds (x, headY, 100, headH);
 
     // 2. 3 Sequence Strips (Lanes)
-    int curY = 82;
+    int curY = 76;
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
-        const int stripH = strips[static_cast<size_t>(i)]->getIsExpanded() ? 250 : 196;
-        strips[static_cast<size_t>(i)]->setBounds (16, curY, w - 32, stripH);
-        curY += stripH + 8;
+        if (strips[static_cast<size_t>(i)] != nullptr)
+        {
+            const int stripH = strips[static_cast<size_t>(i)]->getStripHeight();
+            strips[static_cast<size_t>(i)]->setBounds (16, curY, w - 32, stripH);
+            curY += stripH + 8;
+        }
     }
-
-    const int totalNeededH = curY + 28;
-    if (totalNeededH > h)
-        setSize (w, totalNeededH);
 }
 
 void PulseForgeAudioProcessorEditor::timerCallback()
@@ -227,55 +226,5 @@ void PulseForgeAudioProcessorEditor::timerCallback()
             s->updatePlayheadAndState();
     }
 
-    updateHwMidiButtonText();
     repaint (getWidth() - 240, getHeight() - 26, 220, 22);
-}
-
-void PulseForgeAudioProcessorEditor::updateHwMidiButtonText()
-{
-    const juce::String text = audioProcessor.getHardwareMidiSummaryText();
-    if (hwMidiMenuBtn.getButtonText() != text)
-        hwMidiMenuBtn.setButtonText (text);
-}
-
-void PulseForgeAudioProcessorEditor::showHardwareMidiMenu()
-{
-    juce::PopupMenu menu;
-    auto available = audioProcessor.getAvailableHardwareMidiOuts();
-
-    menu.addItem (1000, "All Connected USB Synths", true, audioProcessor.getNumEnabledHardwareMidiOuts() == available.size() && !available.isEmpty());
-    menu.addItem (1001, "DAW Only (Disable HW Outs)", true, audioProcessor.getNumEnabledHardwareMidiOuts() == 0);
-    menu.addSeparator();
-
-    if (available.isEmpty())
-    {
-        menu.addItem (0, "(No USB MIDI Outputs detected)", false, false);
-    }
-    else
-    {
-        for (int i = 0; i < available.size(); ++i)
-        {
-            const auto& dev = available[i];
-            const bool enabled = audioProcessor.isHardwareMidiOutEnabled (dev);
-            menu.addItem (i + 1, dev, true, enabled);
-        }
-    }
-
-    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&hwMidiMenuBtn),
-        [this, available] (int result)
-        {
-            if (result == 0) return;
-            if (result == 1000) audioProcessor.setAllHardwareMidiOuts (true);
-            else if (result == 1001) audioProcessor.setAllHardwareMidiOuts (false);
-            else if (result >= 1 && result <= available.size())
-            {
-                audioProcessor.toggleHardwareMidiOut (available[result - 1]);
-            }
-            updateHwMidiButtonText();
-            for (auto& s : strips)
-            {
-                if (s != nullptr)
-                    s->updateOutputDeviceList();
-            }
-        });
 }
