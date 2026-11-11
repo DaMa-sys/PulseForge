@@ -271,10 +271,10 @@ public:
 
     //--------------------------------------------------------------------------
     // LANDR FX Soft-UI Pill Button (Stesso design organico del pomello DENSITY)
-    // - Alone incassato alla base a forma di pillola (nessun riquadro o bordo squadrato)
-    // - Ombra esterna morbida multi-step sfumata all'interno dei limiti
-    // - Corpo pillola con gradiente zenitale coerente
-    // - Bordo interno sottilissimo 1px per definire la faccia tattile superiore
+    // - Nessun riquadro o bordo squadrato esterno
+    // - Ombra esterna morbida multi-step sfumata (come nel pomello)
+    // - Corpo pillola con gradiente zenitale identico al pomello
+    // - Bordo interno sottilissimo 1px (come il cerchio interno del pomello)
     // - Highlight zenitale sul bordo superiore
     //--------------------------------------------------------------------------
     void drawButtonBackground (juce::Graphics& g, juce::Button& button, const juce::Colour&,
@@ -282,8 +282,10 @@ public:
     {
         using namespace LandrFxTheme;
         const auto totalBounds = button.getLocalBounds().toFloat();
-        // Margine per contenere ombra e alone senza tagli da rettangolo
-        auto pill = totalBounds.reduced (3.0f, 2.5f);
+        auto pill = totalBounds.reduced (2.0f, 2.0f);
+        if (isDown)
+            pill = pill.translated (0.0f, 0.8f);
+
         const float rad = pill.getHeight() * 0.5f;
         const bool isPrimary = static_cast<bool> (button.getProperties().getWithDefault ("primary", false));
 
@@ -292,92 +294,64 @@ public:
             normY = static_cast<float> (button.getY()) / static_cast<float> (juce::jmax (1, parent->getHeight()));
         const juce::Colour localBg = BG_TOP.interpolatedWith (BG_BOTTOM, juce::jlimit (0.0f, 1.0f, normY));
 
-        // 1. ALONE INCASSATO ALLA BASE (come l'anello incassato alla base del knob)
-        g.setColour (localBg.darker (0.07f));
-        g.fillRoundedRectangle (totalBounds.reduced (1.0f, 1.0f), totalBounds.getHeight() * 0.5f);
-
-        // Bordo inferiore chiaro dell'incavo (la luce zenitale colpisce il fondo)
-        juce::Path botWellRim;
-        botWellRim.addRoundedRectangle (totalBounds.getX() + rad * 0.5f, totalBounds.getBottom() - 1.2f,
-                                        totalBounds.getWidth() - rad, 1.0f, 0.5f);
-        g.setColour (juce::Colours::white.withAlpha (0.07f));
-        g.fillPath (botWellRim);
-
-        // 2. STATO ATTIVO o PRIMARY (GENERATE): In rilievo 3D come il pomello
-        if (button.getToggleState() || isPrimary)
+        // 1. OMBRA ESTERNA MORBIDA (in 0x0B, 0x3D, 0x5C con blur graduale in basso)
+        const float shadowMaxAlpha = isPrimary ? 0.32f : 0.22f;
+        for (int step = 4; step >= 1; --step)
         {
-            // Ombra esterna morbida sfocata progressiva (non tocca mai i bordi del rettangolo!)
-            for (int step = 4; step >= 1; --step)
-            {
-                const float t = static_cast<float> (step) / 4.0f;
-                const float alpha = 0.28f * (1.0f - t * t) / 1.8f;
-                g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (alpha));
-                g.fillRoundedRectangle (pill.translated (0.0f, 1.8f * t).expanded (t * 0.8f, t * 0.6f), rad + t * 0.6f);
-            }
-
-            // Corpo della pillola:
-            if (isPrimary)
-            {
-                // Pulsante GENERATE: sfumatura ice speculare pulita
-                juce::ColourGradient primGrad (juce::Colour (0xFFFFFFFF), pill.getX(), pill.getY(),
-                                               juce::Colour (0xFFCEF4F9), pill.getRight(), pill.getBottom(), false);
-                g.setGradientFill (primGrad);
-                g.fillRoundedRectangle (pill, rad);
-            }
-            else
-            {
-                // Pulsante attivo normale: sfondo +8% luminosita
-                const juce::Colour topCol = localBg.brighter (0.08f);
-                const juce::Colour botCol = localBg.darker (0.05f);
-                juce::ColourGradient raisedGrad (topCol, pill.getX(), pill.getY(),
-                                                 botCol, pill.getRight(), pill.getBottom(), false);
-                g.setGradientFill (raisedGrad);
-                g.fillRoundedRectangle (pill, rad);
-            }
-
-            if (isDown)
-            {
-                g.setColour (juce::Colours::black.withAlpha (0.08f));
-                g.fillRoundedRectangle (pill, rad);
-            }
-
-            // Cerchio/bordo interno sottilissimo (1px, come il cerchio interno del pomello)
-            auto innerPill = pill.reduced (1.0f);
-            g.setColour (juce::Colours::white.withAlpha (isPrimary ? 0.35f : 0.16f));
-            g.drawRoundedRectangle (innerPill, innerPill.getHeight() * 0.5f, 1.0f);
-
-            // Highlight zenitale morbido sul bordo superiore
-            juce::Path topHighlight;
-            topHighlight.addRoundedRectangle (pill.getX() + rad * 0.4f, pill.getY() + 0.6f, pill.getWidth() - rad * 0.8f, 1.0f, 0.5f);
-            g.setColour (juce::Colours::white.withAlpha (isPrimary ? 0.60f : 0.22f));
-            g.fillPath (topHighlight);
-            return;
+            const float t = static_cast<float> (step) / 4.0f;
+            const float alpha = shadowMaxAlpha * (1.0f - t * t) / 1.7f;
+            g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (alpha));
+            g.fillRoundedRectangle (pill.translated (0.0f, 1.5f * t).expanded (t * 0.6f, t * 0.4f), rad + t * 0.4f);
         }
 
-        // 3. STATO INATTIVO (FROM SAMPLES, MUTATE, SHIFT, INVERT, CLEAR):
-        //    Pillola morbida adagiata nell'incavo (stesso materiale dello sfondo)
-        const juce::Colour topCol = isHighlighted ? localBg.brighter (0.05f) : localBg.brighter (0.02f);
-        const juce::Colour botCol = isHighlighted ? localBg.darker (0.02f)   : localBg.darker (0.04f);
-        juce::ColourGradient inactGrad (topCol, pill.getX(), pill.getY(),
-                                        botCol, pill.getRight(), pill.getBottom(), false);
-        g.setGradientFill (inactGrad);
-        g.fillRoundedRectangle (pill, rad);
-
-        if (isDown)
+        // 2. CORPO DELLA PILLOLA
+        if (isPrimary)
         {
-            g.setColour (juce::Colours::black.withAlpha (0.06f));
+            // Pulsante primario (GENERATE): sfumatura ice speculare pulita
+            juce::ColourGradient primGrad (juce::Colour (0xFFFFFFFF), pill.getX(), pill.getY(),
+                                           juce::Colour (0xFFCEF4F9), pill.getRight(), pill.getBottom(), false);
+            g.setGradientFill (primGrad);
+            g.fillRoundedRectangle (pill, rad);
+        }
+        else if (button.getToggleState())
+        {
+            // Pulsante attivo / selezionato (es. TRIO HARMONIZE o tab attivi): gradiente satin cyan illuminato
+            const juce::Colour topCol = juce::Colour (0xFF6DE8F7);
+            const juce::Colour botCol = juce::Colour (0xFF38B2D0);
+            juce::ColourGradient activeGrad (topCol, pill.getX(), pill.getY(),
+                                             botCol, pill.getRight(), pill.getBottom(), false);
+            g.setGradientFill (activeGrad);
+            g.fillRoundedRectangle (pill, rad);
+        }
+        else
+        {
+            // Pulsante normale / inattivo: materiale identico al pomello DENSITY
+            const juce::Colour topCol = isHighlighted ? localBg.brighter (0.08f) : localBg.brighter (0.05f);
+            const juce::Colour botCol = isHighlighted ? localBg.darker (0.02f)   : localBg.darker (0.05f);
+            juce::ColourGradient bodyGrad (topCol, pill.getX(), pill.getY(),
+                                           botCol, pill.getRight(), pill.getBottom(), false);
+            g.setGradientFill (bodyGrad);
             g.fillRoundedRectangle (pill, rad);
         }
 
-        // Bordo interno sottilissimo 1px (come nel pomello)
+        if (isDown)
+        {
+            g.setColour (juce::Colours::black.withAlpha (0.07f));
+            g.fillRoundedRectangle (pill, rad);
+        }
+
+        // 3. BORDO INTERNO SOTTILISSIMO (1px, come il cerchio interno del pomello DENSITY)
         auto innerPill = pill.reduced (1.0f);
-        g.setColour (juce::Colours::white.withAlpha (isHighlighted ? 0.16f : 0.09f));
+        const float borderAlpha = isPrimary ? 0.35f : (button.getToggleState() ? 0.28f : (isHighlighted ? 0.18f : 0.12f));
+        g.setColour (juce::Colours::white.withAlpha (borderAlpha));
         g.drawRoundedRectangle (innerPill, innerPill.getHeight() * 0.5f, 1.0f);
 
-        // Sottile luce sul bordo superiore
+        // 4. HIGHLIGHT ZENITALE SOTTILE (luce radente dall'alto sul bordo superiore)
         juce::Path topHighlight;
-        topHighlight.addRoundedRectangle (pill.getX() + rad * 0.4f, pill.getY() + 0.6f, pill.getWidth() - rad * 0.8f, 1.0f, 0.5f);
-        g.setColour (juce::Colours::white.withAlpha (isHighlighted ? 0.20f : 0.11f));
+        topHighlight.addRoundedRectangle (pill.getX() + rad * 0.4f, pill.getY() + 0.6f,
+                                          pill.getWidth() - rad * 0.8f, 1.0f, 0.5f);
+        const float hiAlpha = isPrimary ? 0.65f : (button.getToggleState() ? 0.40f : (isHighlighted ? 0.22f : 0.15f));
+        g.setColour (juce::Colours::white.withAlpha (hiAlpha));
         g.fillPath (topHighlight);
     }
 

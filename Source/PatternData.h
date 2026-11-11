@@ -9,6 +9,7 @@ namespace PulseForge
 
 static constexpr int kMaxSteps = 16;
 static constexpr int kNumPatternSlots = 4;
+static constexpr int kNumTracks = 3;
 
 enum class EngineMode : int
 {
@@ -137,6 +138,25 @@ struct PatternBank
             steps[static_cast<size_t>(i)].chordType = 0;
         }
     }
+};
+
+struct TrackData
+{
+    PatternBank pattern;
+    int midiChannel = 1;
+    bool muted = false;
+    InstrumentRole role = InstrumentRole::MonoBass;
+    EngineMode mode = EngineMode::Sequencer;
+    ArpDirection arpDir = ArpDirection::Up;
+    int arpOctaves = 2;
+    int baseOctave = 1;
+    int rateIdx = 3; // 1/16
+    float density = 65.0f;
+    float syncopation = 55.0f;
+    float spice = 45.0f;
+    float pitchRange = 55.0f;
+    int numSteps = 16;
+    juce::String name = "SEQ 1";
 };
 
 inline const std::vector<int>& getScaleIntervals (ScaleType scale)

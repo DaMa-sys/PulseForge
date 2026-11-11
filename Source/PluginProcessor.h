@@ -37,23 +37,45 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==========================================================================
-    // Pattern Management & Generator Actions
     //==========================================================================
+    // Track & Multi-Sequence Management (Up to 3 Sequences)
+    //==========================================================================
+    int getActiveTrackIndex() const noexcept { return activeTrackIndex.load(); }
+    void setActiveTrackIndex (int idx);
+
+    PulseForge::TrackData& getTrack (int idx)
+    {
+        return tracks[static_cast<size_t>(juce::jlimit (0, PulseForge::kNumTracks - 1, idx))];
+    }
+    const PulseForge::TrackData& getTrack (int idx) const
+    {
+        return tracks[static_cast<size_t>(juce::jlimit (0, PulseForge::kNumTracks - 1, idx))];
+    }
+
+    PulseForge::TrackData& getActiveTrack()
+    {
+        return getTrack (activeTrackIndex.load());
+    }
+    const PulseForge::TrackData& getActiveTrack() const
+    {
+        return getTrack (activeTrackIndex.load());
+    }
+
     PulseForge::PatternBank& getActivePattern()
     {
-        return patternSlots[static_cast<size_t>(activeSlotIndex.load())];
+        return getActiveTrack().pattern;
     }
-
     const PulseForge::PatternBank& getActivePattern() const
     {
-        return patternSlots[static_cast<size_t>(activeSlotIndex.load())];
+        return getActiveTrack().pattern;
     }
 
-    int getActiveSlotIndex() const noexcept { return activeSlotIndex.load(); }
-    void setActiveSlotIndex (int idx);
-    void copyPatternSlot (int srcIdx, int dstIdx);
+    bool isTrackMuted (int idx) const noexcept;
+    void setTrackMuted (int idx, bool muted);
+    void toggleTrackMuted (int idx);
 
     void triggerGeneratePattern (bool applyRecommendedScaleAndSwing = true);
+    void triggerGenerateTrio();
     bool triggerLoadFromUserSamplesLibrary();
     bool triggerLoadSpecificMidiFile (const juce::File& file);
     void triggerMutatePattern();
@@ -80,6 +102,11 @@ public:
     // UI Telemetry
     //==========================================================================
     int getCurrentPlayStep() const noexcept { return currentPlayStep.load(); }
+    int getTrackPlayStep (int trackIdx) const noexcept
+    {
+        trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+        return trackPlaySteps[static_cast<size_t>(trackIdx)].load();
+    }
     int getLastTriggeredNote() const noexcept { return lastTriggeredNote.load(); }
     bool isTransportRunning() const noexcept { return transportRunning.load(); }
     double getCurrentHostBpm() const noexcept { return currentHostBpm.load(); }
@@ -89,10 +116,24 @@ public:
     int computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
                              int rootMidi, PulseForge::ScaleType scale) const;
 
-    struct PlaybackSnapshot
+    struct TrackPlaybackSnapshot
     {
         std::array<PulseForge::StepData, PulseForge::kMaxSteps> steps {};
         int numSteps = 16;
+        int midiChannel = 1;
+        bool muted = false;
+        PulseForge::EngineMode mode = PulseForge::EngineMode::Sequencer;
+        PulseForge::InstrumentRole role = PulseForge::InstrumentRole::MonoBass;
+        PulseForge::ArpDirection arpDir = PulseForge::ArpDirection::Up;
+        int arpOctaves = 2;
+        int baseOctave = 1;
+        int rateIdx = 3;
+        float globalGate = 1.0f;
+    };
+
+    struct PlaybackSnapshot
+    {
+        std::array<TrackPlaybackSnapshot, PulseForge::kNumTracks> tracks {};
     };
 
     void updatePlaybackSnapshot() noexcept;
@@ -113,6 +154,7 @@ private:
         int channel = 1;
         double remainingSamples = 0.0;
         bool waitingForLegatoOverlap = false;
+        int trackIndex = 0;
     };
 
     struct PendingSubTrigger
@@ -122,15 +164,17 @@ private:
         int midiNote = 60;
         int velocity = 100;
         int channel = 1;
+        int trackIndex = 0;
     };
 
     void sendMidiOut (const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset);
     void stopAllActiveNotes (juce::MidiBuffer& midiOut, int sampleOffset);
-    void triggerStepEvents (int stepIdx, double stepDurationSamples, int sampleOffset,
-                            juce::MidiBuffer& midiOut, const PlaybackSnapshot& snap);
+    void triggerStepEventsForTrack (int trackIdx, int stepIdx, double stepDurationSamples,
+                                    int sampleOffset, juce::MidiBuffer& midiOut,
+                                    const PlaybackSnapshot& snap);
 
-    std::array<PulseForge::PatternBank, PulseForge::kNumPatternSlots> patternSlots;
-    std::atomic<int> activeSlotIndex { 0 };
+    std::array<PulseForge::TrackData, PulseForge::kNumTracks> tracks;
+    std::atomic<int> activeTrackIndex { 0 };
 
     PlaybackSnapshot audioSnapshots[2];
     std::atomic<int> activeSnapshotIndex { 0 };
@@ -140,9 +184,9 @@ private:
     double internalPpqPosition = 0.0;
     double lastExpectedNextBlockPpq = -1.0;
     bool wasPlayingLastBlock = false;
-    int lastTriggeredStepIndex = -999999;
-    int arpWalkIndex = 0;
-    int arpDirectionSign = 1;
+    int lastTriggeredStepIndex[PulseForge::kNumTracks] = { -999999, -999999, -999999 };
+    int arpWalkIndex[PulseForge::kNumTracks] = { 0, 0, 0 };
+    int arpDirectionSign[PulseForge::kNumTracks] = { 1, 1, 1 };
 
     std::vector<ActiveNoteEvent> activeNotes;
     std::vector<PendingSubTrigger> pendingSubTriggers;
@@ -150,6 +194,7 @@ private:
     int liveTransposeSemitones = 0;
 
     std::atomic<int> currentPlayStep { 0 };
+    std::array<std::atomic<int>, PulseForge::kNumTracks> trackPlaySteps { 0, 0, 0 };
     std::atomic<int> lastTriggeredNote { 36 };
     std::atomic<bool> transportRunning { false };
     std::atomic<double> currentHostBpm { 124.0 };

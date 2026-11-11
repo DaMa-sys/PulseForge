@@ -53,22 +53,50 @@ void StepMatrixComponent::paint (juce::Graphics& g)
     const float colW  = gridW / static_cast<float> (PulseForge::kMaxSteps);
 
     const float hStepNum = 24.0f;
-    const float hPitch   = 116.0f;
-    const float hGate    = 32.0f;
-    const float hOctave  = 26.0f;
-    const float hAccent  = 26.0f;
-    const float hSlide   = 26.0f;
-    const float hRatchet = 26.0f;
-    const float hBottom  = bounds.getHeight() - (hStepNum + hPitch + hGate + hOctave + hAccent + hSlide + hRatchet) - 16.0f;
+    float hPitch   = 116.0f;
+    float hGate    = 32.0f;
+    float hOctave  = 26.0f;
+    float hAccent  = 26.0f;
+    float hSlide   = 26.0f;
+    float hRatchet = 26.0f;
+    float hBottom  = 64.0f;
 
     const float yStepNum = 8.0f;
     const float yPitch   = yStepNum + hStepNum;
-    const float yGate    = yPitch + hPitch;
-    const float yOctave  = yGate + hGate;
-    const float yAccent  = yOctave + hOctave;
-    const float ySlide   = yAccent + hAccent;
-    const float yRatchet = ySlide + hSlide;
-    const float yBottom  = yRatchet + hRatchet;
+    float yGate    = yPitch + hPitch;
+    float yOctave  = 0.0f;
+    float yAccent  = 0.0f;
+    float ySlide   = 0.0f;
+    float yRatchet = 0.0f;
+    float yBottom  = 0.0f;
+
+    if (showModifiers)
+    {
+        hPitch   = 112.0f;
+        hGate    = 30.0f;
+        hOctave  = 25.0f;
+        hAccent  = 25.0f;
+        hSlide   = 25.0f;
+        hRatchet = 25.0f;
+        hBottom  = bounds.getHeight() - (hStepNum + hPitch + hGate + hOctave + hAccent + hSlide + hRatchet) - 16.0f;
+
+        yOctave  = yGate + hGate;
+        yAccent  = yOctave + hOctave;
+        ySlide   = yAccent + hAccent;
+        yRatchet = ySlide + hSlide;
+        yBottom  = yRatchet + hRatchet;
+    }
+    else
+    {
+        // Minimal Collapsed View: modifiers hidden, spacious note pitch & bottom lane
+        const float remainingH = bounds.getHeight() - (hStepNum + 16.0f);
+        hPitch  = remainingH * 0.58f;
+        hGate   = 34.0f;
+        hBottom = remainingH - hPitch - hGate;
+
+        yGate   = yPitch + hPitch;
+        yBottom = yGate + hGate;
+    }
 
     // Local background color interpolation helper
     auto getLocalBg = [this] (float localY) -> juce::Colour
@@ -123,10 +151,13 @@ void StepMatrixComponent::paint (juce::Graphics& g)
     drawRowLabel (yStepNum, hStepNum, "STEP");
     drawRowLabel (yPitch,   hPitch,   "NOTE / PITCH");
     drawRowLabel (yGate,    hGate,    "GATE");
-    drawRowLabel (yOctave,  hOctave,  "OCTAVE");
-    drawRowLabel (yAccent,  hAccent,  "ACCENT");
-    drawRowLabel (ySlide,   hSlide,   "SLIDE");
-    drawRowLabel (yRatchet, hRatchet, "RATCHET");
+    if (showModifiers)
+    {
+        drawRowLabel (yOctave,  hOctave,  "OCTAVE");
+        drawRowLabel (yAccent,  hAccent,  "ACCENT");
+        drawRowLabel (ySlide,   hSlide,   "SLIDE");
+        drawRowLabel (yRatchet, hRatchet, "RATCHET");
+    }
 
     juce::String botLabel = "VELOCITY";
     if (bottomMode == BottomLaneMode::GateLength)       botLabel = "GATE STEPS";
@@ -263,75 +294,78 @@ void StepMatrixComponent::paint (juce::Graphics& g)
         g.setFont (font (10.0f, true));
         g.drawText (step.active ? "ON" : "·", rGate, juce::Justification::centred, false);
 
-        // 4. Octave Shift Pill (Active if octaveShift != 0)
-        juce::Rectangle<float> rOct (x + 2.0f, yOctave + 2.0f, colW - 4.0f, hOctave - 4.0f);
-        const bool hasOct = (step.octaveShift != 0);
-        if (hasOct)
+        if (showModifiers)
         {
-            drawRaisedCell (rOct, 6.0f, bgOct);
-            g.setColour (activeTextCol);
-        }
-        else
-        {
-            drawRecessedCell (rOct, 6.0f, bgOct);
-            g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
-        }
-        g.setFont (font (9.5f, true));
-        juce::String octText = (step.octaveShift > 0) ? ("+" + juce::String (step.octaveShift))
-                             : (step.octaveShift < 0) ? juce::String (step.octaveShift) : "0";
-        g.drawText (octText, rOct, juce::Justification::centred, false);
+            // 4. Octave Shift Pill (Active if octaveShift != 0)
+            juce::Rectangle<float> rOct (x + 2.0f, yOctave + 2.0f, colW - 4.0f, hOctave - 4.0f);
+            const bool hasOct = (step.octaveShift != 0);
+            if (hasOct)
+            {
+                drawRaisedCell (rOct, 6.0f, bgOct);
+                g.setColour (activeTextCol);
+            }
+            else
+            {
+                drawRecessedCell (rOct, 6.0f, bgOct);
+                g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
+            }
+            g.setFont (font (9.5f, true));
+            juce::String octText = (step.octaveShift > 0) ? ("+" + juce::String (step.octaveShift))
+                                 : (step.octaveShift < 0) ? juce::String (step.octaveShift) : "0";
+            g.drawText (octText, rOct, juce::Justification::centred, false);
 
-        // 5. Accent Pill (Active if step.accent)
-        juce::Rectangle<float> rAcc (x + 2.0f, yAccent + 2.0f, colW - 4.0f, hAccent - 4.0f);
-        if (step.accent)
-        {
-            drawRaisedCell (rAcc, 6.0f, bgAcc);
-            g.setColour (activeTextCol);
-        }
-        else
-        {
-            drawRecessedCell (rAcc, 6.0f, bgAcc);
-            g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
-        }
-        g.setFont (font (9.5f, true));
-        g.drawText (step.accent ? "ACC" : "·", rAcc, juce::Justification::centred, false);
+            // 5. Accent Pill (Active if step.accent)
+            juce::Rectangle<float> rAcc (x + 2.0f, yAccent + 2.0f, colW - 4.0f, hAccent - 4.0f);
+            if (step.accent)
+            {
+                drawRaisedCell (rAcc, 6.0f, bgAcc);
+                g.setColour (activeTextCol);
+            }
+            else
+            {
+                drawRecessedCell (rAcc, 6.0f, bgAcc);
+                g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
+            }
+            g.setFont (font (9.5f, true));
+            g.drawText (step.accent ? "ACC" : "·", rAcc, juce::Justification::centred, false);
 
-        // 6. Slide Pill (Active if step.slide)
-        juce::Rectangle<float> rSld (x + 2.0f, ySlide + 2.0f, colW - 4.0f, hSlide - 4.0f);
-        if (step.slide)
-        {
-            drawRaisedCell (rSld, 6.0f, bgSld);
-            g.setColour (activeTextCol);
-        }
-        else
-        {
-            drawRecessedCell (rSld, 6.0f, bgSld);
-            g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
-        }
-        g.setFont (font (9.0f, true));
-        g.drawText (step.slide ? "SLIDE" : "·", rSld, juce::Justification::centred, false);
+            // 6. Slide Pill (Active if step.slide)
+            juce::Rectangle<float> rSld (x + 2.0f, ySlide + 2.0f, colW - 4.0f, hSlide - 4.0f);
+            if (step.slide)
+            {
+                drawRaisedCell (rSld, 6.0f, bgSld);
+                g.setColour (activeTextCol);
+            }
+            else
+            {
+                drawRecessedCell (rSld, 6.0f, bgSld);
+                g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
+            }
+            g.setFont (font (9.0f, true));
+            g.drawText (step.slide ? "SLIDE" : "·", rSld, juce::Justification::centred, false);
 
-        if (step.slide && i < PulseForge::kMaxSteps - 1)
-        {
-            g.setColour (activeTextCol.withAlpha (0.45f * alphaMult));
-            g.fillRect (rSld.getRight() - 2.0f, rSld.getCentreY() - 1.5f, 8.0f, 3.0f);
-        }
+            if (step.slide && i < PulseForge::kMaxSteps - 1)
+            {
+                g.setColour (activeTextCol.withAlpha (0.45f * alphaMult));
+                g.fillRect (rSld.getRight() - 2.0f, rSld.getCentreY() - 1.5f, 8.0f, 3.0f);
+            }
 
-        // 7. Ratchet Pill (Active if step.ratchet > 1)
-        juce::Rectangle<float> rRat (x + 2.0f, yRatchet + 2.0f, colW - 4.0f, hRatchet - 4.0f);
-        const bool hasRatchet = (step.ratchet > 1);
-        if (hasRatchet)
-        {
-            drawRaisedCell (rRat, 6.0f, bgRat);
-            g.setColour (activeTextCol);
+            // 7. Ratchet Pill (Active if step.ratchet > 1)
+            juce::Rectangle<float> rRat (x + 2.0f, yRatchet + 2.0f, colW - 4.0f, hRatchet - 4.0f);
+            const bool hasRatchet = (step.ratchet > 1);
+            if (hasRatchet)
+            {
+                drawRaisedCell (rRat, 6.0f, bgRat);
+                g.setColour (activeTextCol);
+            }
+            else
+            {
+                drawRecessedCell (rRat, 6.0f, bgRat);
+                g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
+            }
+            g.setFont (font (9.5f, true));
+            g.drawText (juce::String (step.ratchet) + "x", rRat, juce::Justification::centred, false);
         }
-        else
-        {
-            drawRecessedCell (rRat, 6.0f, bgRat);
-            g.setColour (juce::Colours::white.withAlpha (0.22f * alphaMult));
-        }
-        g.setFont (font (9.5f, true));
-        g.drawText (juce::String (step.ratchet) + "x", rRat, juce::Justification::centred, false);
 
         // 8. Bottom Multi-Parameter Recessed Bar (Velocity / Gate / CC / Probability)
         juce::Rectangle<float> rBot (x + 2.0f, yBottom + 2.0f, colW - 4.0f, hBottom - 4.0f);
@@ -394,33 +428,70 @@ void StepMatrixComponent::handleStepInteraction (juce::Point<int> pos, bool isFi
     const int stepIdx = juce::jlimit (0, PulseForge::kMaxSteps - 1, static_cast<int> ((pos.x - leftHeaderW) / colW));
 
     const float hStepNum = 24.0f;
-    const float hPitch   = 116.0f;
-    const float hGate    = 32.0f;
-    const float hOctave  = 26.0f;
-    const float hAccent  = 26.0f;
-    const float hSlide   = 26.0f;
-    const float hRatchet = 26.0f;
-    const float hBottom  = bounds.getHeight() - (hStepNum + hPitch + hGate + hOctave + hAccent + hSlide + hRatchet) - 16.0f;
+    float hPitch   = 116.0f;
+    float hGate    = 32.0f;
+    float hOctave  = 26.0f;
+    float hAccent  = 26.0f;
+    float hSlide   = 26.0f;
+    float hRatchet = 26.0f;
+    float hBottom  = 64.0f;
 
     const float yStepNum = 8.0f;
     const float yPitch   = yStepNum + hStepNum;
-    const float yGate    = yPitch + hPitch;
-    const float yOctave  = yGate + hGate;
-    const float yAccent  = yOctave + hOctave;
-    const float ySlide   = yAccent + hAccent;
-    const float yRatchet = ySlide + hSlide;
-    const float yBottom  = yRatchet + hRatchet;
+    float yGate    = yPitch + hPitch;
+    float yOctave  = 0.0f;
+    float yAccent  = 0.0f;
+    float ySlide   = 0.0f;
+    float yRatchet = 0.0f;
+    float yBottom  = 0.0f;
+
+    if (showModifiers)
+    {
+        hPitch   = 112.0f;
+        hGate    = 30.0f;
+        hOctave  = 25.0f;
+        hAccent  = 25.0f;
+        hSlide   = 25.0f;
+        hRatchet = 25.0f;
+        hBottom  = bounds.getHeight() - (hStepNum + hPitch + hGate + hOctave + hAccent + hSlide + hRatchet) - 16.0f;
+
+        yOctave  = yGate + hGate;
+        yAccent  = yOctave + hOctave;
+        ySlide   = yAccent + hAccent;
+        yRatchet = ySlide + hSlide;
+        yBottom  = yRatchet + hRatchet;
+    }
+    else
+    {
+        const float remainingH = bounds.getHeight() - (hStepNum + 16.0f);
+        hPitch  = remainingH * 0.58f;
+        hGate   = 34.0f;
+        hBottom = remainingH - hPitch - hGate;
+
+        yGate   = yPitch + hPitch;
+        yBottom = yGate + hGate;
+    }
 
     if (isFirstClick)
     {
-        if (pos.y < yPitch)        activeDragRow = 0;
-        else if (pos.y < yGate)    activeDragRow = 1;
-        else if (pos.y < yOctave)  activeDragRow = 2;
-        else if (pos.y < yAccent)  activeDragRow = 3;
-        else if (pos.y < ySlide)   activeDragRow = 4;
-        else if (pos.y < yRatchet) activeDragRow = 5;
-        else if (pos.y < yBottom)  activeDragRow = 6;
-        else                       activeDragRow = 7;
+        if (!showModifiers)
+        {
+            if (pos.y < yPitch)        activeDragRow = 0;
+            else if (pos.y < yGate)    activeDragRow = 1;
+            else if (pos.y < yBottom)  activeDragRow = 2;
+            else                       activeDragRow = 7;
+        }
+        else
+        {
+            if (pos.y < yPitch)        activeDragRow = 0;
+            else if (pos.y < yGate)    activeDragRow = 1;
+            else if (pos.y < yOctave)  activeDragRow = 2;
+            else if (pos.y < yAccent)  activeDragRow = 3;
+            else if (pos.y < ySlide)   activeDragRow = 4;
+            else if (pos.y < yRatchet) activeDragRow = 5;
+            else if (pos.y < yBottom)  activeDragRow = 6;
+            else                       activeDragRow = 7;
+        }
         lastToggledStep = -1;
     }
 
@@ -596,18 +667,23 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     };
     addAndMakeVisible (dragMidiBtn);
 
-    // 4. Pattern Slot Buttons A / B / C / D
-    for (int i = 0; i < 4; ++i)
+    // 4. Multi-Timbral Sequence Selectors & Mutes (SEQ 1, 2, 3)
+    for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
-        auto& b = slotBtns[static_cast<size_t>(i)];
+        auto& b = trackBtns[static_cast<size_t>(i)];
         b.onClick = [this, i]()
         {
-            if (juce::ModifierKeys::currentModifiers.isShiftDown())
-                audioProcessor.copyPatternSlot (audioProcessor.getActiveSlotIndex(), i);
-            audioProcessor.setActiveSlotIndex (i);
+            audioProcessor.setActiveTrackIndex (i);
             stepMatrix.repaint();
         };
         addAndMakeVisible (b);
+
+        auto& mb = trackMuteBtns[static_cast<size_t>(i)];
+        mb.onClick = [this, i]()
+        {
+            audioProcessor.toggleTrackMuted (i);
+        };
+        addAndMakeVisible (mb);
     }
 
     // 5. Dropdown ComboBoxes
@@ -648,7 +724,7 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     hwMidiMenuBtn.onClick = [this]() { showHardwareMidiMenu(); };
     updateHwMidiButtonText();
 
-    // 6. Action Buttons: GENERATE with crisp readable text (#1B6F8A on white/cyan)!
+    // 6. Action Buttons: GENERATE & TRIO HARMONIZE with crisp readable styling
     generateBtn.getProperties().set ("primary", true);
     generateBtn.setColour (juce::TextButton::textColourOnId,  LandrFxTheme::TEXT_DARK);
     generateBtn.setColour (juce::TextButton::textColourOffId, LandrFxTheme::TEXT_DARK);
@@ -658,6 +734,26 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
         stepMatrix.repaint();
     };
     addAndMakeVisible (generateBtn);
+
+    trioGenBtn.getProperties().set ("primary", true);
+    trioGenBtn.setColour (juce::TextButton::textColourOnId,  LandrFxTheme::TEXT_DARK);
+    trioGenBtn.setColour (juce::TextButton::textColourOffId, LandrFxTheme::TEXT_DARK);
+    trioGenBtn.onClick = [this]()
+    {
+        audioProcessor.triggerGenerateTrio();
+        stepMatrix.repaint();
+    };
+    addAndMakeVisible (trioGenBtn);
+
+    modifiersToggleBtn.onClick = [this]()
+    {
+        stepMatrix.toggleShowModifiers();
+        modifiersToggleBtn.setButtonText (stepMatrix.isShowingModifiers()
+                                          ? (juce::String::fromUTF8 ("\xe2\x96\xb4") + " HIDE MODIFIERS")
+                                          : (juce::String::fromUTF8 ("\xe2\x96\xbe") + " SHOW MODIFIERS"));
+        stepMatrix.repaint();
+    };
+    addAndMakeVisible (modifiersToggleBtn);
 
     sampleMidiBtn.onClick = [this]()
     {
@@ -791,7 +887,7 @@ void PulseForgeAudioProcessorEditor::setupKnob (juce::Slider& s, juce::Label& l,
 void PulseForgeAudioProcessorEditor::updateHwMidiButtonText()
 {
     const juce::String summary = audioProcessor.getHardwareMidiSummaryText();
-    hwMidiMenuBtn.setButtonText (summary + "  \u25BC");
+    hwMidiMenuBtn.setButtonText (summary + "  " + juce::String::fromUTF8 ("\xe2\x96\xbc"));
 }
 
 void PulseForgeAudioProcessorEditor::showHardwareMidiMenu()
@@ -905,9 +1001,15 @@ void PulseForgeAudioProcessorEditor::timerCallback()
     seqModeBtn.setToggleState (mode == 0, juce::dontSendNotification);
     arpModeBtn.setToggleState (mode == 1, juce::dontSendNotification);
 
-    const int activeSlot = audioProcessor.getActiveSlotIndex();
-    for (int i = 0; i < 4; ++i)
-        slotBtns[static_cast<size_t>(i)].setToggleState (i == activeSlot, juce::dontSendNotification);
+    const int activeTrack = audioProcessor.getActiveTrackIndex();
+    for (int i = 0; i < PulseForge::kNumTracks; ++i)
+    {
+        trackBtns[static_cast<size_t>(i)].setToggleState (i == activeTrack, juce::dontSendNotification);
+
+        const bool isMuted = audioProcessor.isTrackMuted (i);
+        trackMuteBtns[static_cast<size_t>(i)].setToggleState (isMuted, juce::dontSendNotification);
+        trackMuteBtns[static_cast<size_t>(i)].setButtonText (isMuted ? "M" : "·");
+    }
 
     stepMatrix.repaint();
     repaint (0, 244, getWidth(), 38);
@@ -986,15 +1088,20 @@ void PulseForgeAudioProcessorEditor::resized()
     renderCachedShadows (w, h);
 
     // 1. Top Header Bar (8px grid alignment)
-    seqModeBtn.setBounds (208, 22, 104, 32);
-    arpModeBtn.setBounds (320, 22, 104, 32);
+    seqModeBtn.setBounds (170, 22, 92, 32);
+    arpModeBtn.setBounds (266, 22, 92, 32);
 
-    for (int i = 0; i < 4; ++i)
-        slotBtns[static_cast<size_t>(i)].setBounds (440 + i * 36, 22, 30, 32);
+    int trackX = 368;
+    for (int i = 0; i < PulseForge::kNumTracks; ++i)
+    {
+        trackBtns[static_cast<size_t>(i)].setBounds (trackX, 22, 102, 32);
+        trackMuteBtns[static_cast<size_t>(i)].setBounds (trackX + 104, 22, 28, 32);
+        trackX += 136;
+    }
 
-    runBtn.setBounds      (592, 22, 88, 32);
-    previewBtn.setBounds  (688, 22, 136, 32);
-    dragMidiBtn.setBounds (w - 156, 22, 132, 32);
+    runBtn.setBounds      (trackX + 6, 22, 80, 32);
+    previewBtn.setBounds  (trackX + 90, 22, 114, 32);
+    dragMidiBtn.setBounds (w - 132, 22, 116, 32);
 
     // 2. Dropdown Row
     int x = 24;
@@ -1008,14 +1115,15 @@ void PulseForgeAudioProcessorEditor::resized()
     hwMidiMenuBtn.setBounds (x, 94, juce::jmax (120, w - x - 24), 32);
 
     // 3. Action Buttons & Knobs
-    generateBtn.setBounds   (24,  154, 102, 36);
-    sampleMidiBtn.setBounds (132, 154, 114, 36);
-    mutateBtn.setBounds     (252, 154, 76,  36);
+    generateBtn.setBounds   (24,  154, 88, 36);
+    trioGenBtn.setBounds    (116, 154, 126, 36);
+    sampleMidiBtn.setBounds (246, 154, 112, 36);
 
-    shiftLeftBtn.setBounds  (24,  196, 70, 32);
-    shiftRightBtn.setBounds (100, 196, 70, 32);
-    invertBtn.setBounds     (176, 196, 72, 32);
-    clearBtn.setBounds      (254, 196, 74, 32);
+    shiftLeftBtn.setBounds  (24,  196, 54, 32);
+    shiftRightBtn.setBounds (82, 196, 54, 32);
+    invertBtn.setBounds     (140, 196, 58, 32);
+    clearBtn.setBounds      (202, 196, 58, 32);
+    mutateBtn.setBounds     (264, 196, 94, 32);
 
     // 12 Knobs
     juce::Slider* knobs[] = {
@@ -1029,7 +1137,7 @@ void PulseForgeAudioProcessorEditor::resized()
         &arpOctLabel, &chanLabel, &ccNumLabel, &tempoRatioLabel
     };
 
-    const int knobsStartX = 344;
+    const int knobsStartX = 368;
     const int availKnobW = w - knobsStartX - 24;
     const int knobW = availKnobW / 12;
 
@@ -1040,7 +1148,9 @@ void PulseForgeAudioProcessorEditor::resized()
         knobs[i]->setBounds  (kx, 162, knobW, 72);
     }
 
-    // 4. Modulation Lane Selector Tabs
+    // 4. Sub-Header: Modifiers Toggle & Modulation Lane Tabs
+    modifiersToggleBtn.setBounds (390, 251, 195, 26);
+
     const int tabW = 84;
     const int tabStartX = w - (tabW * 4) - 24;
     tabVelBtn.setBounds  (tabStartX + 0 * tabW, 251, tabW - 4, 26);

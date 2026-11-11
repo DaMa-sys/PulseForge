@@ -29,11 +29,16 @@ public:
     void setBottomLaneMode (BottomLaneMode m) { bottomMode = m; repaint(); }
     BottomLaneMode getBottomLaneMode() const noexcept { return bottomMode; }
 
+    void setShowModifiers (bool show) { showModifiers = show; resized(); repaint(); }
+    bool isShowingModifiers() const noexcept { return showModifiers; }
+    void toggleShowModifiers() { setShowModifiers (!showModifiers); }
+
 private:
     void handleStepInteraction (juce::Point<int> pos, bool isFirstClick, bool isRightClick);
 
     PulseForgeAudioProcessor& processor;
     BottomLaneMode bottomMode = BottomLaneMode::Velocity;
+    bool showModifiers = false;
     int activeDragRow = -1;
     int lastToggledStep = -1;
     bool dragGateTargetState = true;
@@ -78,12 +83,16 @@ private:
     juce::TextButton previewBtn { "PREVIEW SYNTH" };
     juce::TextButton dragMidiBtn { "DRAG MIDI" };
 
-    // Pattern Slots A / B / C / D
-    std::array<juce::TextButton, 4> slotBtns {
-        juce::TextButton { "A" },
-        juce::TextButton { "B" },
-        juce::TextButton { "C" },
-        juce::TextButton { "D" }
+    // 3 Multi-Timbral Sequence Selectors & Mutes
+    std::array<juce::TextButton, 3> trackBtns {
+        juce::TextButton { "1: BASS (CH 1)" },
+        juce::TextButton { "2: ARP (CH 2)" },
+        juce::TextButton { "3: CHORD (CH 3)" }
+    };
+    std::array<juce::TextButton, 3> trackMuteBtns {
+        juce::TextButton { "M" },
+        juce::TextButton { "M" },
+        juce::TextButton { "M" }
     };
 
     // Dropdown Selectors
@@ -92,12 +101,16 @@ private:
 
     // Action Buttons
     juce::TextButton generateBtn   { "GENERATE" };
+    juce::TextButton trioGenBtn    { "TRIO HARMONIZE" };
     juce::TextButton sampleMidiBtn { "FROM SAMPLES" };
     juce::TextButton mutateBtn     { "MUTATE" };
     juce::TextButton shiftLeftBtn  { "< SHIFT" };
     juce::TextButton shiftRightBtn { "SHIFT >" };
     juce::TextButton invertBtn     { "INVERT" };
     juce::TextButton clearBtn      { "CLEAR" };
+
+    // Collapsible Modifier Section Toggle
+    juce::TextButton modifiersToggleBtn { juce::String::fromUTF8 ("\xe2\x96\xbe SHOW MODIFIERS") };
 
     // Bottom Lane Mode Tabs
     juce::TextButton tabVelBtn  { "VELOCITY" };
