@@ -37,6 +37,17 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
         gp.numSteps = 16;
         PulseForge::StyleGenerator::generatePattern (patternSlots[static_cast<size_t>(slot)], gp, 2026u + static_cast<uint32_t>(slot * 313));
     }
+
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
+{
+    const int nextIdx = 1 - activeSnapshotIndex.load (std::memory_order_relaxed);
+    const auto& currentPat = getActivePattern();
+    audioSnapshots[static_cast<size_t>(nextIdx)].steps = currentPat.steps;
+    audioSnapshots[static_cast<size_t>(nextIdx)].numSteps = currentPat.numSteps;
+    activeSnapshotIndex.store (nextIdx, std::memory_order_release);
 }
 
 PulseForgeAudioProcessor::~PulseForgeAudioProcessor()
@@ -167,6 +178,7 @@ void PulseForgeAudioProcessor::prepareToPlay (double sampleRate, int)
     activeNotes.clear();
     pendingSubTriggers.clear();
     previewSynth.prepare (currentSampleRate);
+    updatePlaybackSnapshot();
 
     // If running as Standalone .exe, enable Free Run automatically so it plays immediately
     if (wrapperType == wrapperType_Standalone)
@@ -191,6 +203,7 @@ void PulseForgeAudioProcessor::setActiveSlotIndex (int idx)
 {
     const juce::ScopedLock sl (patternLock);
     activeSlotIndex.store (juce::jlimit (0, PulseForge::kNumPatternSlots - 1, idx));
+    updatePlaybackSnapshot();
     apvts.getParameter ("numSteps")->setValueNotifyingHost (
         apvts.getParameterRange ("numSteps").convertTo0to1 (static_cast<float> (getActivePattern().numSteps)));
 }
@@ -201,7 +214,10 @@ void PulseForgeAudioProcessor::copyPatternSlot (int srcIdx, int dstIdx)
     srcIdx = juce::jlimit (0, PulseForge::kNumPatternSlots - 1, srcIdx);
     dstIdx = juce::jlimit (0, PulseForge::kNumPatternSlots - 1, dstIdx);
     if (srcIdx != dstIdx)
+    {
         patternSlots[static_cast<size_t>(dstIdx)] = patternSlots[static_cast<size_t>(srcIdx)];
+        updatePlaybackSnapshot();
+    }
 }
 
 void PulseForgeAudioProcessor::triggerGeneratePattern (bool applyRecommendedScaleAndSwing)
@@ -240,6 +256,7 @@ void PulseForgeAudioProcessor::triggerGeneratePattern (bool applyRecommendedScal
 
     PulseForge::StyleGenerator::generatePattern (getActivePattern(), gp);
     lastLoadedMidiName.clear();
+    updatePlaybackSnapshot();
 }
 
 bool PulseForgeAudioProcessor::triggerLoadFromUserSamplesLibrary()
@@ -252,6 +269,7 @@ bool PulseForgeAudioProcessor::triggerLoadFromUserSamplesLibrary()
     if (loadedName.isNotEmpty())
     {
         lastLoadedMidiName = loadedName;
+        updatePlaybackSnapshot();
         return true;
     }
     return false;
@@ -264,6 +282,7 @@ bool PulseForgeAudioProcessor::triggerLoadSpecificMidiFile (const juce::File& fi
     if (PulseForge::StyleGenerator::loadPatternFromMidiFile (file, getActivePattern(), scale))
     {
         lastLoadedMidiName = file.getFileNameWithoutExtension();
+        updatePlaybackSnapshot();
         return true;
     }
     return false;
@@ -281,6 +300,7 @@ void PulseForgeAudioProcessor::triggerMutatePattern()
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
     const float spice = apvts.getRawParameterValue ("spice")->load() * 0.01f;
     PulseForge::StyleGenerator::mutatePattern (getActivePattern(), scale, spice);
+    updatePlaybackSnapshot();
 }
 
 void PulseForgeAudioProcessor::triggerRotatePattern (int delta)
@@ -288,6 +308,7 @@ void PulseForgeAudioProcessor::triggerRotatePattern (int delta)
     const juce::ScopedLock sl (patternLock);
     getActivePattern().numSteps = static_cast<int> (apvts.getRawParameterValue ("numSteps")->load());
     PulseForge::StyleGenerator::rotatePattern (getActivePattern(), delta);
+    updatePlaybackSnapshot();
 }
 
 void PulseForgeAudioProcessor::triggerInvertPattern()
@@ -295,6 +316,7 @@ void PulseForgeAudioProcessor::triggerInvertPattern()
     const juce::ScopedLock sl (patternLock);
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
     PulseForge::StyleGenerator::invertPattern (getActivePattern(), scale);
+    updatePlaybackSnapshot();
 }
 
 void PulseForgeAudioProcessor::triggerRequantizeToScale()
@@ -302,6 +324,7 @@ void PulseForgeAudioProcessor::triggerRequantizeToScale()
     const juce::ScopedLock sl (patternLock);
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
     PulseForge::StyleGenerator::requantizeToScale (getActivePattern(), scale);
+    updatePlaybackSnapshot();
 }
 
 void PulseForgeAudioProcessor::triggerClearPattern()
@@ -320,6 +343,7 @@ void PulseForgeAudioProcessor::triggerClearPattern()
     }
     pat.steps[0].active = true;
     lastLoadedMidiName.clear();
+    updatePlaybackSnapshot();
 }
 
 int PulseForgeAudioProcessor::computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
@@ -356,10 +380,10 @@ void PulseForgeAudioProcessor::stopAllActiveNotes (juce::MidiBuffer& midiOut, in
 }
 
 void PulseForgeAudioProcessor::triggerStepEvents (int stepIdx, double stepDurationSamples,
-                                                  int sampleOffset, juce::MidiBuffer& midiOut)
+                                                  int sampleOffset, juce::MidiBuffer& midiOut,
+                                                  const PlaybackSnapshot& snap)
 {
-    const auto& pat = getActivePattern();
-    const auto& step = pat.steps[static_cast<size_t>(stepIdx % PulseForge::kMaxSteps)];
+    const auto& step = snap.steps[static_cast<size_t>(stepIdx % PulseForge::kMaxSteps)];
 
     // IMPORTANT FOR MUSICAL SUSTAIN:
     // If this step is a rest (!step.active), do NOT kill notes that are still sustaining
@@ -393,10 +417,12 @@ void PulseForgeAudioProcessor::triggerStepEvents (int stepIdx, double stepDurati
 
     const int rootMidi = (baseOctave + 1) * 12 + rootKey; // baseOctave 1 -> C1 (36)
     std::vector<int> notesToTrigger;
+    notesToTrigger.reserve (8);
 
     if (mode == PulseForge::EngineMode::Arpeggiator)
     {
         std::vector<int> basePool;
+        basePool.reserve (8);
         if (!heldInputNotes.empty())
         {
             basePool = heldInputNotes;
@@ -412,6 +438,7 @@ void PulseForgeAudioProcessor::triggerStepEvents (int stepIdx, double stepDurati
         }
 
         std::vector<int> expandedPool;
+        expandedPool.reserve (16);
         for (int oct = 0; oct < arpOctaves; ++oct)
         {
             for (int n : basePool)
@@ -509,6 +536,7 @@ void PulseForgeAudioProcessor::triggerStepEvents (int stepIdx, double stepDurati
 
     // Separate previous legato-slide notes from normal notes
     std::vector<ActiveNoteEvent> previousLegatoNotes;
+    previousLegatoNotes.reserve (8);
     for (int i = static_cast<int> (activeNotes.size()) - 1; i >= 0; --i)
     {
         if (activeNotes[static_cast<size_t>(i)].waitingForLegatoOverlap)
@@ -600,6 +628,13 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
     const int numSamples = buffer.getNumSamples();
     if (numSamples <= 0)
         return;
+
+    const double hostSr = getSampleRate();
+    if (hostSr > 1000.0 && std::abs (hostSr - currentSampleRate) > 1.0)
+    {
+        currentSampleRate = hostSr;
+        previewSynth.prepare (currentSampleRate);
+    }
 
     previewSynth.setEnabled (apvts.getRawParameterValue ("previewSynth")->load() > 0.5f);
 
@@ -727,8 +762,7 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                                        static_cast<int> (apvts.getRawParameterValue ("numSteps")->load()));
     const double swingAmount = static_cast<double> (apvts.getRawParameterValue ("swing")->load()) * 0.01 * 0.42;
 
-    const juce::ScopedLock sl (patternLock);
-    getActivePattern().numSteps = numSteps;
+    const auto& playbackSnap = audioSnapshots[static_cast<size_t>(activeSnapshotIndex.load (std::memory_order_acquire))];
 
     // 3. Sample-by-sample timing loop locked to Host PPQ
     for (int s = 0; s < numSamples; ++s)
@@ -776,9 +810,10 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             if (unmodStepIndex != lastTriggeredStepIndex)
             {
                 lastTriggeredStepIndex = unmodStepIndex;
-                const int wrappedStep = ((unmodStepIndex % numSteps) + numSteps) % numSteps;
+                const int effectiveStepCount = juce::jmax (1, numSteps);
+                const int wrappedStep = ((unmodStepIndex % effectiveStepCount) + effectiveStepCount) % effectiveStepCount;
                 currentPlayStep.store (wrappedStep);
-                triggerStepEvents (wrappedStep, stepDurationSamples, s, midiMessages);
+                triggerStepEvents (wrappedStep, stepDurationSamples, s, midiMessages, playbackSnap);
             }
         }
     }
@@ -989,6 +1024,8 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
                 }
             }
         }
+
+        updatePlaybackSnapshot();
     }
 }
 

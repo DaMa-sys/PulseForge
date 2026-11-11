@@ -84,6 +84,18 @@ public:
     int computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
                              int rootMidi, PulseForge::ScaleType scale) const;
 
+    struct PlaybackSnapshot
+    {
+        std::array<PulseForge::StepData, PulseForge::kMaxSteps> steps {};
+        int numSteps = 16;
+    };
+
+    void updatePlaybackSnapshot() noexcept;
+    const PlaybackSnapshot& getPlaybackSnapshot() const noexcept
+    {
+        return audioSnapshots[static_cast<size_t>(activeSnapshotIndex.load (std::memory_order_acquire))];
+    }
+
     juce::AudioProcessorValueTreeState apvts;
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
@@ -109,10 +121,14 @@ private:
 
     void sendMidiOut (const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset);
     void stopAllActiveNotes (juce::MidiBuffer& midiOut, int sampleOffset);
-    void triggerStepEvents (int stepIdx, double stepDurationSamples, int sampleOffset, juce::MidiBuffer& midiOut);
+    void triggerStepEvents (int stepIdx, double stepDurationSamples, int sampleOffset,
+                            juce::MidiBuffer& midiOut, const PlaybackSnapshot& snap);
 
     std::array<PulseForge::PatternBank, PulseForge::kNumPatternSlots> patternSlots;
     std::atomic<int> activeSlotIndex { 0 };
+
+    PlaybackSnapshot audioSnapshots[2];
+    std::atomic<int> activeSnapshotIndex { 0 };
 
     // Playback & Host Sync timing state
     double currentSampleRate = 44100.0;

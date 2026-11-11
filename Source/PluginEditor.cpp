@@ -85,15 +85,11 @@ void StepMatrixComponent::paint (juce::Graphics& g)
         g.setColour (cellBg);
         g.fillRoundedRectangle (r, corner);
 
-        juce::Path perimeter;
-        perimeter.addRoundedRectangle (r.getX() + 0.5f, r.getY() + 0.5f, r.getWidth() - 1.0f, r.getHeight() - 1.0f, corner);
         g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (0.22f));
-        g.strokePath (perimeter, juce::PathStrokeType (1.2f));
+        g.drawRoundedRectangle (r.reduced (0.5f), corner, 1.2f);
 
-        juce::Path botRim;
-        botRim.addRoundedRectangle (r.getX() + corner * 0.5f, r.getBottom() - 1.0f, r.getWidth() - corner, 1.0f, 0.5f);
         g.setColour (juce::Colours::white.withAlpha (0.08f));
-        g.fillPath (botRim);
+        g.drawHorizontalLine (static_cast<int> (r.getBottom() - 1.0f), r.getX() + corner * 0.5f, r.getRight() - corner * 0.5f);
     };
 
     // Soft-UI Cella in Rilievo (Stato acceso: sfondo +8%, ombra morbida come nel knob, highlight)
@@ -108,14 +104,11 @@ void StepMatrixComponent::paint (juce::Graphics& g)
         g.setGradientFill (raisedGrad);
         g.fillRoundedRectangle (r, corner);
 
-        auto innerR = r.reduced (0.8f);
         g.setColour (juce::Colours::white.withAlpha (0.16f));
-        g.drawRoundedRectangle (innerR, juce::jmax (1.0f, corner - 0.8f), 1.0f);
+        g.drawRoundedRectangle (r.reduced (0.8f), juce::jmax (1.0f, corner - 0.8f), 1.0f);
 
-        juce::Path topHairline;
-        topHairline.addRoundedRectangle (r.getX() + corner * 0.4f, r.getY() + 0.5f, r.getWidth() - corner * 0.8f, 1.0f, 0.5f);
         g.setColour (juce::Colours::white.withAlpha (0.24f));
-        g.fillPath (topHairline);
+        g.drawHorizontalLine (static_cast<int> (r.getY() + 0.5f), r.getX() + corner * 0.4f, r.getRight() - corner * 0.4f);
     };
 
     // Left Row Labels: Solo testo in bianco 55%, senza riquadro in rilievo (Gerarchia pulita)
@@ -141,7 +134,6 @@ void StepMatrixComponent::paint (juce::Graphics& g)
     else if (bottomMode == BottomLaneMode::Probability) botLabel = "PROBABILITY";
     drawRowLabel (yBottom, hBottom, botLabel);
 
-    const juce::ScopedLock sl (processor.patternLock);
     const auto& pat = processor.getActivePattern();
     const int numSteps   = juce::jlimit (1, PulseForge::kMaxSteps, static_cast<int> (processor.apvts.getRawParameterValue ("numSteps")->load()));
     const int playStep   = processor.getCurrentPlayStep();
@@ -171,15 +163,10 @@ void StepMatrixComponent::paint (juce::Graphics& g)
         // Step Corrente Playhead: Soft white halo (non un riquadro netto), colonna leggermente in rilievo
         if (isPlayhead)
         {
-            for (int halo = 3; halo >= 1; --halo)
-            {
-                const float expand = static_cast<float> (halo) * 2.5f;
-                const float alpha = 0.04f * static_cast<float> (4 - halo);
-                g.setColour (juce::Colours::white.withAlpha (alpha));
-                g.fillRoundedRectangle (x - expand, yStepNum - expand,
-                                        colW + expand * 2.0f, bounds.getHeight() - 16.0f + expand * 2.0f, 8.0f);
-            }
             g.setColour (juce::Colours::white.withAlpha (0.08f));
+            g.fillRoundedRectangle (x - 2.0f, yStepNum - 2.0f,
+                                    colW + 4.0f, bounds.getHeight() - 16.0f + 4.0f, 8.0f);
+            g.setColour (juce::Colours::white.withAlpha (0.12f));
             g.fillRoundedRectangle (x + 1.0f, yStepNum, colW - 2.0f, bounds.getHeight() - 16.0f, 6.0f);
         }
         else if (isBeatStart)
@@ -532,6 +519,7 @@ void StepMatrixComponent::handleStepInteraction (juce::Point<int> pos, bool isFi
             break;
     }
 
+    processor.updatePlaybackSnapshot();
     repaint();
 }
 
