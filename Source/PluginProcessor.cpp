@@ -411,6 +411,18 @@ void PulseForgeAudioProcessor::setTrackNumSteps (int trackIdx, int numSteps)
     const juce::ScopedLock sl (patternLock);
     tracks[static_cast<size_t>(trackIdx)].pattern.numSteps = juce::jlimit (4, PulseForge::kMaxSteps, numSteps);
     tracks[static_cast<size_t>(trackIdx)].numSteps = tracks[static_cast<size_t>(trackIdx)].pattern.numSteps;
+
+    const juce::String prefix = "t" + juce::String (trackIdx) + "_";
+    if (auto* p = apvts.getParameter (prefix + "numSteps"))
+    {
+        int choiceIdx = 2; // 16
+        if (numSteps <= 4) choiceIdx = 0;
+        else if (numSteps <= 8) choiceIdx = 1;
+        else if (numSteps <= 16) choiceIdx = 2;
+        else choiceIdx = 3;
+        p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (choiceIdx)));
+    }
+
     updatePlaybackSnapshot();
 }
 
@@ -423,51 +435,38 @@ void PulseForgeAudioProcessor::triggerGenerateTrio()
     // Track 0: Bass
     PulseForge::StyleGenerator::GenerationParams gp0;
     gp0.genre = genre;
-    gp0.role  = PulseForge::InstrumentRole::MonoBass;
+    gp0.role  = tracks[0].role;
     gp0.scale = scale;
     gp0.density = 0.60f;
     gp0.syncopation = 0.55f;
     gp0.spice = 0.40f;
     gp0.pitchRange = 0.40f;
-    gp0.numSteps = 16;
+    gp0.numSteps = tracks[0].numSteps;
     PulseForge::StyleGenerator::generatePattern (tracks[0].pattern, gp0);
-    tracks[0].role = PulseForge::InstrumentRole::MonoBass;
-    tracks[0].baseOctave = 1;
 
     // Track 1: Arp / Lead
     PulseForge::StyleGenerator::GenerationParams gp1;
     gp1.genre = genre;
-    gp1.role  = PulseForge::InstrumentRole::ClassicArp;
+    gp1.role  = tracks[1].role;
     gp1.scale = scale;
     gp1.density = 0.75f;
     gp1.syncopation = 0.40f;
     gp1.spice = 0.50f;
     gp1.pitchRange = 0.65f;
-    gp1.numSteps = 16;
+    gp1.numSteps = tracks[1].numSteps;
     PulseForge::StyleGenerator::generatePattern (tracks[1].pattern, gp1);
-    tracks[1].role = PulseForge::InstrumentRole::ClassicArp;
-    tracks[1].baseOctave = 2;
 
-    // Track 2: PolyChordStab
+    // Track 2: Harmony / PolyChordStab
     PulseForge::StyleGenerator::GenerationParams gp2;
     gp2.genre = genre;
-    gp2.role  = PulseForge::InstrumentRole::PolyChordStab;
+    gp2.role  = tracks[2].role;
     gp2.scale = scale;
     gp2.density = 0.45f;
     gp2.syncopation = 0.60f;
     gp2.spice = 0.35f;
     gp2.pitchRange = 0.40f;
-    gp2.numSteps = 16;
+    gp2.numSteps = tracks[2].numSteps;
     PulseForge::StyleGenerator::generatePattern (tracks[2].pattern, gp2);
-    tracks[2].role = PulseForge::InstrumentRole::PolyChordStab;
-    tracks[2].baseOctave = 2;
-
-    const int activeIdx = activeTrackIndex.load();
-    const auto& cur = tracks[static_cast<size_t>(activeIdx)];
-    if (auto* p = apvts.getParameter ("role"))
-        p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (cur.role)));
-    if (auto* p = apvts.getParameter ("baseOctave"))
-        p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (cur.baseOctave)));
 
     updatePlaybackSnapshot();
 }
@@ -492,6 +491,18 @@ void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
     if (auto* p = apvts.getRawParameterValue (prefix + "density"))
         density = p->load() * 0.01f;
 
+    int numSteps = tracks[static_cast<size_t>(trackIdx)].numSteps;
+    if (auto* p = apvts.getRawParameterValue (prefix + "numSteps"))
+    {
+        const int sIdx = static_cast<int> (p->load());
+        if (sIdx == 0) numSteps = 4;
+        else if (sIdx == 1) numSteps = 8;
+        else if (sIdx == 2) numSteps = 16;
+        else if (sIdx == 3) numSteps = 32;
+    }
+    tracks[static_cast<size_t>(trackIdx)].numSteps = numSteps;
+    tracks[static_cast<size_t>(trackIdx)].pattern.numSteps = numSteps;
+
     PulseForge::StyleGenerator::GenerationParams gp;
     gp.genre       = genre;
     gp.role        = role;
@@ -500,7 +511,7 @@ void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
     gp.syncopation = 0.50f;
     gp.spice       = 0.45f;
     gp.pitchRange  = 0.55f;
-    gp.numSteps    = tracks[static_cast<size_t>(trackIdx)].numSteps;
+    gp.numSteps    = numSteps;
 
     PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, gp);
     updatePlaybackSnapshot();

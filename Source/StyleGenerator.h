@@ -220,17 +220,96 @@ public:
                 changes.push_back ({ 12, d4, (d4 >= 4 ? -1 : 0), 3.8f });
             }
         }
-        else // 32 steps
+        else // 32 steps: True 2-bar evolving progression with variations and cadences
         {
-            int d1 = 0, d2 = 5, d3 = 2, d4 = 6;
-            if (p.scale == ScaleType::MajorNatural)
+            const int styleType = randInt (0, 3);
+
+            if (styleType == 0)
             {
-                d1 = 0; d2 = 4; d3 = 5; d4 = 3;
+                // Style 0: 4 Broad Sustained Chords (8 steps each = 2 bars)
+                // Pick authentic modal progressions
+                std::vector<std::vector<int>> progs;
+                if (p.scale == ScaleType::Dorian || p.scale == ScaleType::MinorNatural || p.scale == ScaleType::HarmonicMinor)
+                {
+                    progs = {
+                        { 0, 5, 2, 6 },  // i - VI - III - VII (Epic / Cinematic)
+                        { 0, 3, 4, 6 },  // i - iv - v - VII (Classic Deep House)
+                        { 0, 1, 0, 6 },  // i - ii - i - VII (Dorian modal drive)
+                        { 0, 5, 3, 4 },  // i - VI - iv - v (Soulful House)
+                        { 0, 4, 5, 6 },  // i - v - VI - VII (Melodic Progressive)
+                        { 0, 2, 3, 4 }   // i - III - iv - v (Ascending minor)
+                    };
+                }
+                else if (p.scale == ScaleType::Phrygian || p.scale == ScaleType::PhrygianDominant)
+                {
+                    progs = {
+                        { 0, 1, 0, 6 },  // i - bII - i - bVII (Dark Tension)
+                        { 0, 1, 2, 1 },  // i - bII - bIII - bII (Hypnotic Acid)
+                        { 0, 6, 1, 0 },  // i - bVII - bII - i (Turnaround)
+                        { 0, 1, 6, 4 }   // i - bII - bVII - v (Deep Phrygian)
+                    };
+                }
+                else // Major / Mixolydian / Lydian
+                {
+                    progs = {
+                        { 0, 4, 5, 3 },  // I - V - vi - IV (Anthem)
+                        { 0, 3, 4, 0 },  // I - IV - V - I (Classic Boogie)
+                        { 0, 5, 3, 4 },  // I - vi - IV - V (50s / Neo-Soul)
+                        { 0, 1, 4, 3 }   // I - ii - V - IV (Jazz Pop)
+                    };
+                }
+
+                const auto& pr = progs[static_cast<size_t>(randInt (0, static_cast<int>(progs.size()) - 1))];
+                changes.push_back ({ 0,  pr[0], 0, 7.8f });
+                changes.push_back ({ 8,  pr[1], (pr[1] >= 4 ? -1 : 0), 7.8f });
+                changes.push_back ({ 16, pr[2], (pr[2] >= 4 ? -1 : 0), 7.8f });
+                changes.push_back ({ 24, pr[3], (pr[3] >= 4 ? -1 : 0), 7.8f });
             }
-            changes.push_back ({ 0,  d1, 0, 7.8f });
-            changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 7.8f });
-            changes.push_back ({ 16, d3, 0, 7.8f });
-            changes.push_back ({ 24, d4, (d4 >= 4 ? -1 : 0), 7.8f });
+            else if (styleType == 1)
+            {
+                // Style 1: Syncopated House Rhythm across 32 steps (Bar 1 Groove -> Bar 2 Variation & Passing Chords)
+                int d1 = 0, d2 = 3, d3 = 4, d4 = 6;
+                if (p.scale == ScaleType::Phrygian) { d1 = 0; d2 = 1; d3 = 6; d4 = 1; }
+                else if (p.scale == ScaleType::MajorNatural) { d1 = 0; d2 = 3; d3 = 4; d4 = 0; }
+
+                // Bar 1 (0..15): Off-beat rhythmic push
+                changes.push_back ({ 0,  d1, 0, 3.2f });
+                changes.push_back ({ 4,  d1, 0, 2.0f });
+                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 4.2f });
+                changes.push_back ({ 14, d3, (d3 >= 4 ? -1 : 0), 1.8f });
+
+                // Bar 2 (16..31): Dynamic cadence with turnaround passing chords
+                changes.push_back ({ 16, d1, 0, 3.2f });
+                changes.push_back ({ 20, d2, (d2 >= 4 ? -1 : 0), 3.2f });
+                changes.push_back ({ 24, d4, (d4 >= 4 ? -1 : 0), 3.0f });
+                changes.push_back ({ 28, d3, (d3 >= 4 ? -1 : 0), 1.8f });
+                changes.push_back ({ 30, (d1 == 0 ? 6 : 0), -1, 1.8f }); // Passing resolution back to bar 1
+            }
+            else if (styleType == 2)
+            {
+                // Style 2: Bar 1 Broad Foundation (steps 0, 8) + Bar 2 Fast Evolution (steps 16, 20, 24, 28)
+                int d1 = 0, d2 = (p.scale == ScaleType::Phrygian ? 1 : 5);
+                int d3 = 3, d4 = 4, d5 = 5, d6 = 6;
+                if (p.scale == ScaleType::MajorNatural) { d1 = 0; d2 = 4; d3 = 5; d4 = 3; d5 = 1; d6 = 4; }
+
+                changes.push_back ({ 0,  d1, 0, 7.5f });
+                changes.push_back ({ 8,  d2, (d2 >= 4 ? -1 : 0), 7.5f });
+                changes.push_back ({ 16, d3, (d3 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 20, d4, (d4 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 24, d5, (d5 >= 4 ? -1 : 0), 3.8f });
+                changes.push_back ({ 28, d6, (d6 >= 4 ? -1 : 0), 3.8f });
+            }
+            else
+            {
+                // Style 3: 8 Moving Diatonic Chords (every 4 steps across 2 bars)
+                const int degs[] = { 0, 2, 3, 5, 4, 3, 1, 6 };
+                for (int c = 0; c < 8; ++c)
+                {
+                    int deg = degs[c];
+                    if (p.scale == ScaleType::Phrygian && deg == 2) deg = 1;
+                    changes.push_back ({ c * 4, deg, (deg >= 4 ? -1 : 0), 3.7f });
+                }
+            }
         }
 
         for (const auto& ch : changes)
@@ -493,6 +572,58 @@ public:
             }
         }
 
+        // 32-Step Phrase Evolution (A - B form): Bar 2 (16..31) variations and cadence turnaround
+        if (bank.numSteps > 16)
+        {
+            // 1. Subtle rhythmic or pitch evolution in Bar 2 body (steps 18..25)
+            if (randFloat() < 0.65f)
+            {
+                for (int sIdx : { 19, 21, 23, 25 })
+                {
+                    if (sIdx < bank.numSteps && bank.steps[static_cast<size_t>(sIdx)].active)
+                    {
+                        if (randFloat() < 0.50f)
+                            bank.steps[static_cast<size_t>(sIdx)].octaveShift = 1;
+                    }
+                }
+            }
+
+            // 2. Bar 2 Turnaround & Cadence (steps 26..31): Fills, octave hooks, and pickup notes
+            const int turnaroundChoices[] = { 5, 7, -2, -5, 10, 3 };
+            const int tPick = turnaroundChoices[randInt (0, 5)];
+            const int tSemi = quantizeSemitoneToScale (tPick, p.scale);
+
+            // Pickup on step 26 or 28
+            const int pickupStep = (randFloat() < 0.5f) ? 26 : 28;
+            if (pickupStep < bank.numSteps)
+            {
+                auto& st = bank.steps[static_cast<size_t>(pickupStep)];
+                st.active = true;
+                st.semitoneOffset = tSemi;
+                st.accent = true;
+                st.velocity = randInt (118, 127);
+                st.ccValue = 120;
+            }
+
+            // Final drum/synth roll on step 30 / 31
+            if (30 < bank.numSteps && randFloat() < (0.35f + 0.40f * p.spice))
+            {
+                auto& st30 = bank.steps[30];
+                st30.active = true;
+                st30.ratchet = 2;
+                st30.velocity = 110;
+            }
+            if (31 < bank.numSteps && randFloat() < (0.25f + 0.50f * p.spice))
+            {
+                auto& st31 = bank.steps[31];
+                st31.active = true;
+                st31.ratchet = (p.spice > 0.6f) ? 2 : 1;
+                st31.slide = true;
+                st31.velocity = 122;
+                st31.semitoneOffset = quantizeSemitoneToScale (-2, p.scale); // leading tone back to Root 0
+            }
+        }
+
         // Calculate intelligent musical gate lengths based on inter-onset gaps!
         const bool isArpOrPluck = (p.role == InstrumentRole::ClassicArp || p.mode == EngineMode::Arpeggiator);
         applyMusicalGates (bank, tmpl.sustainRatio, isArpOrPluck, p.spice);
@@ -702,19 +833,29 @@ public:
         auto randFloat = [&]() { return std::uniform_real_distribution<float> (0.0f, 1.0f) (rng); };
         auto randInt   = [&](int lo, int hi) { return std::uniform_int_distribution<int> (lo, hi) (rng); };
 
-        // Mutate primarily the turnaround (steps 12..15) and 1-2 mid-bar steps to preserve the musical hook!
-        static const int mutableSteps[] = { 3, 6, 7, 11, 13, 14, 15 };
-        for (int stepIdx : mutableSteps)
+        const int n = juce::jlimit (4, kMaxSteps, bank.numSteps);
+
+        // Turnaround targets in bar 1 and bar 2
+        static const int mutableSteps16[] = { 3, 6, 7, 11, 13, 14, 15 };
+        static const int mutableSteps32[] = { 3, 6, 7, 11, 13, 14, 15, 19, 22, 23, 27, 28, 29, 30, 31 };
+
+        const int* targets = (n > 16) ? mutableSteps32 : mutableSteps16;
+        const int numTargets = (n > 16) ? 15 : 7;
+
+        for (int i = 0; i < numTargets; ++i)
         {
+            const int stepIdx = targets[i];
+            if (stepIdx >= n) continue;
+
             auto& s = bank.steps[static_cast<size_t>(stepIdx)];
-            if (randFloat() < 0.35f)
+            if (randFloat() < 0.38f)
             {
-                const int musicalIntervals[] = { 0, 0, 3, 5, 7, -2, -5 };
-                int pick = musicalIntervals[randInt (0, 6)];
+                const int musicalIntervals[] = { 0, 0, 3, 5, 7, -2, -5, 10 };
+                int pick = musicalIntervals[randInt (0, 7)];
                 s.semitoneOffset = quantizeSemitoneToScale (pick, scale);
             }
-            if (randFloat() < 0.22f * (0.4f + spice))
-                s.octaveShift = (randFloat() < 0.7f) ? 1 : 0;
+            if (randFloat() < 0.25f * (0.4f + spice))
+                s.octaveShift = (randFloat() < 0.65f) ? 1 : 0;
             if (randFloat() < 0.20f)
                 s.slide = !s.slide && s.active;
         }
