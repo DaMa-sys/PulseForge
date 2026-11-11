@@ -134,9 +134,9 @@ public:
             cache.width = width;
             cache.height = height;
             cache.cx = static_cast<float> (width) * 0.5f;
-            cache.cy = static_cast<float> (height) * 0.46f;
-            cache.radius = static_cast<float> (juce::jmin (width, height)) * 0.32f;
-            cache.arcRadius = cache.radius * 1.22f;
+            cache.cy = static_cast<float> (height) * 0.44f;
+            cache.radius = static_cast<float> (juce::jmin (width, height)) * 0.38f;
+            cache.arcRadius = cache.radius * 1.18f;
 
             // Determina il colore di sfondo locale interpolato in base alla posizione Y dello slider
             float normY = 0.28f;
@@ -357,7 +357,45 @@ public:
 
     juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override
     {
-        return LandrFxTheme::font (juce::jmin (11.5f, static_cast<float> (buttonHeight) * 0.38f), true, 0.09f);
+        return LandrFxTheme::font (juce::jmin (11.5f, static_cast<float> (buttonHeight) * 0.40f), true, 0.08f);
+    }
+
+    void drawButtonText (juce::Graphics& g, juce::TextButton& button,
+                         bool isMouseOverButton, bool isButtonDown) override
+    {
+        using namespace LandrFxTheme;
+        auto f = getTextButtonFont (button, button.getHeight());
+        g.setFont (f);
+
+        const bool isPrimary = static_cast<bool> (button.getProperties().getWithDefault ("primary", false));
+        const bool isToggled = button.getToggleState();
+
+        juce::Colour textCol;
+        if (isPrimary)
+        {
+            textCol = juce::Colour (0xFF062333); // Dark navy for maximum contrast on white/ice
+        }
+        else if (isToggled)
+        {
+            textCol = juce::Colour (0xFF041926); // Dark navy on bright active background
+        }
+        else if (isButtonDown)
+        {
+            textCol = TEXT_DARK;
+        }
+        else if (isMouseOverButton)
+        {
+            textCol = juce::Colours::white;
+        }
+        else
+        {
+            textCol = juce::Colours::white.withAlpha (0.92f);
+        }
+
+        g.setColour (textCol);
+        g.drawFittedText (button.getButtonText(),
+                          button.getLocalBounds().reduced (4, 1),
+                          juce::Justification::centred, 1);
     }
 
     //--------------------------------------------------------------------------

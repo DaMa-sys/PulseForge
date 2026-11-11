@@ -160,6 +160,7 @@ struct TrackData
     int tempoRatioIdx = 5; // 1/1x (Sync)
     int numSteps = 16;
     bool isExpanded = false;
+    juce::String targetHwDevice = "DAW Only";
     juce::String name = "SEQ 1";
 };
 

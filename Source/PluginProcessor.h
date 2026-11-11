@@ -102,6 +102,10 @@ public:
     int getNumEnabledHardwareMidiOuts() const;
     juce::String getHardwareMidiSummaryText() const;
 
+    juce::String getTrackTargetHardwareMidi (int trackIdx) const;
+    void setTrackTargetHardwareMidi (int trackIdx, const juce::String& devName);
+    void ensureHardwareMidiOutOpen (const juce::String& deviceName);
+
     //==========================================================================
     // UI Telemetry
     //==========================================================================
@@ -173,7 +177,7 @@ private:
         int trackIndex = 0;
     };
 
-    void sendMidiOut (const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset);
+    void sendMidiOut (int trackIdx, const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset);
     void stopAllActiveNotes (juce::MidiBuffer& midiOut, int sampleOffset);
     void triggerStepEventsForTrack (int trackIdx, int stepIdx, double stepDurationSamples,
                                     int sampleOffset, juce::MidiBuffer& midiOut,

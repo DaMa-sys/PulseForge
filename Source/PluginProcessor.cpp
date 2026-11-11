@@ -639,15 +639,27 @@ int PulseForgeAudioProcessor::computeStepMidiNote (int stepIdx, const PulseForge
     return juce::jlimit (12, 115, note);
 }
 
-void PulseForgeAudioProcessor::sendMidiOut (const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset)
+void PulseForgeAudioProcessor::sendMidiOut (int trackIdx, const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset)
 {
     midiOut.addEvent (msg, juce::jmax (0, sampleOffset));
+
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const auto& trk = tracks[static_cast<size_t>(trackIdx)];
+    const juce::String& target = trk.targetHwDevice;
+
+    if (target.isEmpty() || target == "DAW Only" || target == "DAW (VST3)")
+        return;
 
     const juce::ScopedLock sl (midiOutLock);
     for (auto& port : activeHardwareOuts)
     {
         if (port.device != nullptr)
-            port.device->sendMessageNow (msg);
+        {
+            if (target == "All USB Synths" || port.name == target || port.name.containsIgnoreCase (target))
+            {
+                port.device->sendMessageNow (msg);
+            }
+        }
     }
 }
 
@@ -657,7 +669,7 @@ void PulseForgeAudioProcessor::stopAllActiveNotes (juce::MidiBuffer& midiOut, in
     {
         if (an.midiNote >= 0)
         {
-            sendMidiOut (juce::MidiMessage::noteOff (an.channel, an.midiNote), midiOut, sampleOffset);
+            sendMidiOut (an.trackIndex, juce::MidiMessage::noteOff (an.channel, an.midiNote), midiOut, sampleOffset);
             previewSynth.noteOff (an.midiNote);
         }
     }
@@ -700,7 +712,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
 
     // Send per-step MIDI CC modulation (e.g. Filter Cutoff CC74)
     const int effectiveCC = juce::jlimit (0, 127, step.accent ? juce::jmax (step.ccValue, 112) : step.ccValue);
-    sendMidiOut (juce::MidiMessage::controllerEvent (midiChan, ccNumber, effectiveCC), midiOut, sampleOffset);
+    sendMidiOut (trackIdx, juce::MidiMessage::controllerEvent (midiChan, ccNumber, effectiveCC), midiOut, sampleOffset);
     if (isPreviewTrack)
         previewSynth.setCutModCC (effectiveCC);
 
@@ -837,7 +849,8 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
             }
             else
             {
-                sendMidiOut (juce::MidiMessage::noteOff (activeNotes[static_cast<size_t>(i)].channel,
+                sendMidiOut (trackIdx,
+                             juce::MidiMessage::noteOff (activeNotes[static_cast<size_t>(i)].channel,
                                                          activeNotes[static_cast<size_t>(i)].midiNote),
                              midiOut, sampleOffset);
                 if (isPreviewTrack)
@@ -861,7 +874,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
             {
                 for (int n : notesToTrigger)
                 {
-                    sendMidiOut (juce::MidiMessage::noteOn (midiChan, n, static_cast<juce::uint8> (subVel)), midiOut, sampleOffset);
+                    sendMidiOut (trackIdx, juce::MidiMessage::noteOn (midiChan, n, static_cast<juce::uint8> (subVel)), midiOut, sampleOffset);
                     if (isPreviewTrack)
                         previewSynth.noteOn (n, subVel, isLegatoArrival);
                     activeNotes.push_back ({ n, midiChan, subGateLen, false, trackIdx });
@@ -892,7 +905,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
 
         for (int n : notesToTrigger)
         {
-            sendMidiOut (juce::MidiMessage::noteOn (midiChan, n, static_cast<juce::uint8> (vel)), midiOut, sampleOffset);
+            sendMidiOut (trackIdx, juce::MidiMessage::noteOn (midiChan, n, static_cast<juce::uint8> (vel)), midiOut, sampleOffset);
             if (isPreviewTrack)
                 previewSynth.noteOn (n, vel, isLegatoArrival);
             activeNotes.push_back ({ n, midiChan, noteLenSamples, step.slide, trackIdx });
@@ -910,7 +923,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
 
         if (!sameNoteRetriggered)
         {
-            sendMidiOut (juce::MidiMessage::noteOff (prev.channel, prev.midiNote), midiOut, sampleOffset + 1);
+            sendMidiOut (trackIdx, juce::MidiMessage::noteOff (prev.channel, prev.midiNote), midiOut, sampleOffset + 1);
             if (isPreviewTrack)
                 previewSynth.noteOff (prev.midiNote);
         }
@@ -1054,7 +1067,7 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             an.remainingSamples -= 1.0;
             if (an.remainingSamples <= 0.0 && !an.waitingForLegatoOverlap)
             {
-                sendMidiOut (juce::MidiMessage::noteOff (an.channel, an.midiNote), midiMessages, s);
+                sendMidiOut (an.trackIndex, juce::MidiMessage::noteOff (an.channel, an.midiNote), midiMessages, s);
                 if (an.trackIndex == activeTrack)
                     previewSynth.noteOff (an.midiNote);
                 activeNotes.erase (activeNotes.begin() + i);
@@ -1067,7 +1080,7 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
             sub.delaySamples -= 1.0;
             if (sub.delaySamples <= 0.0)
             {
-                sendMidiOut (juce::MidiMessage::noteOn (sub.channel, sub.midiNote, static_cast<juce::uint8> (sub.velocity)),
+                sendMidiOut (sub.trackIndex, juce::MidiMessage::noteOn (sub.channel, sub.midiNote, static_cast<juce::uint8> (sub.velocity)),
                              midiMessages, s);
                 if (sub.trackIndex == activeTrack)
                     previewSynth.noteOn (sub.midiNote, sub.velocity, false);
@@ -1300,6 +1313,36 @@ juce::String PulseForgeAudioProcessor::getHardwareMidiSummaryText() const
     return juce::String (count) + " USB SYNTHS";
 }
 
+juce::String PulseForgeAudioProcessor::getTrackTargetHardwareMidi (int trackIdx) const
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    return tracks[static_cast<size_t>(trackIdx)].targetHwDevice;
+}
+
+void PulseForgeAudioProcessor::setTrackTargetHardwareMidi (int trackIdx, const juce::String& devName)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    {
+        const juce::ScopedLock sl (patternLock);
+        tracks[static_cast<size_t>(trackIdx)].targetHwDevice = devName;
+    }
+    if (devName.isNotEmpty() && devName != "DAW Only" && devName != "DAW (VST3)")
+    {
+        ensureHardwareMidiOutOpen (devName);
+    }
+}
+
+void PulseForgeAudioProcessor::ensureHardwareMidiOutOpen (const juce::String& deviceName)
+{
+    if (deviceName == "All USB Synths")
+    {
+        setAllHardwareMidiOuts (true);
+        return;
+    }
+    setHardwareMidiOutEnabled (deviceName, true);
+}
+
 bool PulseForgeAudioProcessor::hasEditor() const { return true; }
 
 juce::AudioProcessorEditor* PulseForgeAudioProcessor::createEditor()
@@ -1342,6 +1385,7 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         trackXml->setAttribute ("swing", static_cast<double> (trk.swing));
         trackXml->setAttribute ("ratio", trk.tempoRatioIdx);
         trackXml->setAttribute ("expanded", trk.isExpanded);
+        trackXml->setAttribute ("hwOut", trk.targetHwDevice);
 
         for (int i = 0; i < PulseForge::kMaxSteps; ++i)
         {
@@ -1406,6 +1450,9 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
             trk.swing       = static_cast<float> (trackXml->getDoubleAttribute ("swing", trk.swing));
             trk.tempoRatioIdx = trackXml->getIntAttribute ("ratio", trk.tempoRatioIdx);
             trk.isExpanded  = trackXml->getBoolAttribute ("expanded", false);
+            trk.targetHwDevice = trackXml->getStringAttribute ("hwOut", "DAW Only");
+            if (trk.targetHwDevice != "DAW Only" && trk.targetHwDevice != "DAW (VST3)")
+                ensureHardwareMidiOutOpen (trk.targetHwDevice);
 
             for (auto* stepXml : trackXml->getChildWithTagNameIterator ("Step"))
             {

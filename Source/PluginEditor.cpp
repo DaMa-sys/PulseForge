@@ -73,15 +73,15 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     // 4. The 3 Dedicated Horizontal Sequence Strips (RC-20 inspired)
     // Strip 0: Warm Golden Amber for Solid Analog Bass
     strips[0] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 0, juce::Colour (0xFFFFAE33), "SEQ 1 \xe2\x80\xa2 BASS", customLookAndFeel);
+        audioProcessor, 0, juce::Colour (0xFFFFAE33), "SEQ 1 : BASS", customLookAndFeel);
 
     // Strip 1: Electric Cyan for Melodic Arpeggio & Lead Hook
     strips[1] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 1, juce::Colour (0xFF00E5FF), "SEQ 2 \xe2\x80\xa2 ARP", customLookAndFeel);
+        audioProcessor, 1, juce::Colour (0xFF00E5FF), "SEQ 2 : ARP", customLookAndFeel);
 
     // Strip 2: Luminous Violet / Magenta for Polyphonic Chord Stabs
     strips[2] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 2, juce::Colour (0xFFC084FC), "SEQ 3 \xe2\x80\xa2 CHORDS", customLookAndFeel);
+        audioProcessor, 2, juce::Colour (0xFFC084FC), "SEQ 3 : CHORDS", customLookAndFeel);
 
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
@@ -144,7 +144,7 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
 
     g.setColour (TEXT_LABEL);
     g.setFont (font (8.5f, true, 0.08f));
-    g.drawText ("3-TRACK MIDI ENGINE \xe2\x80\xa2 DaMA", 30, 38, 170, 14, juce::Justification::centredLeft, false);
+    g.drawText ("3-TRACK MIDI ENGINE | DaMA", 30, 38, 170, 14, juce::Justification::centredLeft, false);
 
     // 2. Global Dropdown Labels
     g.setColour (TEXT_LABEL);
@@ -158,7 +158,7 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
     const double bpm = audioProcessor.getCurrentHostBpm();
     const bool isPlaying = audioProcessor.isTransportRunning();
 
-    juce::String status = "DaMA PulseForge v1.0 \xe2\x80\xa2 3 Multi-Timbral MIDI Tracks (Ch 1: Bass | Ch 2: Arp | Ch 3: Chords) \xe2\x80\xa2 Ableton Sync: "
+    juce::String status = "DaMA PulseForge v1.0 | 3 Multi-Timbral Tracks (Ch 1: Bass | Ch 2: Arp | Ch 3: Chords) | Ableton Sync: "
                         + juce::String (bpm, 1) + " BPM (" + (isPlaying ? "RUNNING" : "STOPPED") + ")";
 
     g.setColour (TEXT_MUTED);
@@ -272,5 +272,10 @@ void PulseForgeAudioProcessorEditor::showHardwareMidiMenu()
                 audioProcessor.toggleHardwareMidiOut (available[result - 1]);
             }
             updateHwMidiButtonText();
+            for (auto& s : strips)
+            {
+                if (s != nullptr)
+                    s->updateOutputDeviceList();
+            }
         });
 }
