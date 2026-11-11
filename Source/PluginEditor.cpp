@@ -644,12 +644,9 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
         stepMatrix.repaint();
     };
 
-    addAndMakeVisible (hwMidiBox);
-    refreshHardwareMidiList();
-    hwMidiBox.onChange = [this]()
-    {
-        audioProcessor.setHardwareMidiOutDevice (hwMidiBox.getText());
-    };
+    addAndMakeVisible (hwMidiMenuBtn);
+    hwMidiMenuBtn.onClick = [this]() { showHardwareMidiMenu(); };
+    updateHwMidiButtonText();
 
     // 6. Action Buttons: GENERATE with crisp readable text (#1B6F8A on white/cyan)!
     generateBtn.getProperties().set ("primary", true);
@@ -791,16 +788,57 @@ void PulseForgeAudioProcessorEditor::setupKnob (juce::Slider& s, juce::Label& l,
     addAndMakeVisible (l);
 }
 
-void PulseForgeAudioProcessorEditor::refreshHardwareMidiList()
+void PulseForgeAudioProcessorEditor::updateHwMidiButtonText()
 {
-    const auto list = audioProcessor.getAvailableHardwareMidiOuts();
-    hwMidiBox.clear (juce::dontSendNotification);
-    for (int i = 0; i < list.size(); ++i)
-        hwMidiBox.addItem (list[i], i + 1);
+    const juce::String summary = audioProcessor.getHardwareMidiSummaryText();
+    hwMidiMenuBtn.setButtonText (summary + "  \u25BC");
+}
 
-    const auto current = audioProcessor.getCurrentHardwareMidiOutName();
-    int idx = list.indexOf (current);
-    hwMidiBox.setSelectedId (idx >= 0 ? (idx + 1) : 1, juce::dontSendNotification);
+void PulseForgeAudioProcessorEditor::showHardwareMidiMenu()
+{
+    juce::PopupMenu m;
+    m.addSectionHeader ("USB / HARDWARE SYNTH ROUTING");
+
+    const auto available = audioProcessor.getAvailableHardwareMidiOuts();
+    if (available.isEmpty())
+    {
+        m.addItem (1000, "No USB/MIDI Devices Detected", false, false);
+    }
+    else
+    {
+        for (int i = 0; i < available.size(); ++i)
+        {
+            const auto& devName = available[i];
+            const bool isChecked = audioProcessor.isHardwareMidiOutEnabled (devName);
+            m.addItem (i + 1, devName, true, isChecked);
+        }
+
+        m.addSeparator();
+        m.addItem (900, "Disable All (DAW Track Only)");
+        m.addItem (901, "Enable All Connected Synths");
+    }
+
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&hwMidiMenuBtn),
+                     [this, available] (int result)
+    {
+        if (result >= 1 && result <= available.size())
+        {
+            const auto& devName = available[result - 1];
+            const bool newState = !audioProcessor.isHardwareMidiOutEnabled (devName);
+            audioProcessor.setHardwareMidiOutEnabled (devName, newState);
+            updateHwMidiButtonText();
+        }
+        else if (result == 900)
+        {
+            audioProcessor.setAllHardwareMidiOuts (false);
+            updateHwMidiButtonText();
+        }
+        else if (result == 901)
+        {
+            audioProcessor.setAllHardwareMidiOuts (true);
+            updateHwMidiButtonText();
+        }
+    });
 }
 
 void PulseForgeAudioProcessorEditor::renderCachedShadows (int width, int height)
@@ -902,7 +940,7 @@ void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawText ("ROOT",                rootBox.getX(),   76, rootBox.getWidth(),   15, juce::Justification::centredLeft);
     g.drawText ("STEP GRID",           rateBox.getX(),   76, rateBox.getWidth(),   15, juce::Justification::centredLeft);
     g.drawText ("ARP MODE",            arpDirBox.getX(), 76, arpDirBox.getWidth(), 15, juce::Justification::centredLeft);
-    g.drawText ("DIRECT HW MIDI OUT",  hwMidiBox.getX(), 76, hwMidiBox.getWidth(), 15, juce::Justification::centredLeft);
+    g.drawText ("USB / HW MIDI OUT",   hwMidiMenuBtn.getX(), 76, hwMidiMenuBtn.getWidth(), 15, juce::Justification::centredLeft);
 
     // 4. Telemetry in Sub-Header
     const double hostBpm = audioProcessor.getCurrentHostBpm();
@@ -967,7 +1005,7 @@ void PulseForgeAudioProcessorEditor::resized()
     rootBox.setBounds   (x, 94, 68,  32); x += 68  + gap;
     rateBox.setBounds   (x, 94, 74,  32); x += 74  + gap;
     arpDirBox.setBounds (x, 94, 128, 32); x += 128 + gap;
-    hwMidiBox.setBounds (x, 94, juce::jmax (120, w - x - 24), 32);
+    hwMidiMenuBtn.setBounds (x, 94, juce::jmax (120, w - x - 24), 32);
 
     // 3. Action Buttons & Knobs
     generateBtn.setBounds   (24,  154, 102, 36);

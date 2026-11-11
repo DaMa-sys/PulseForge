@@ -61,7 +61,8 @@ public:
 private:
     void timerCallback() override;
     void setupKnob (juce::Slider& s, juce::Label& l, const juce::String& text, juce::Colour col);
-    void refreshHardwareMidiList();
+    void updateHwMidiButtonText();
+    void showHardwareMidiMenu();
     void renderCachedShadows (int width, int height);
 
     PulseForgeAudioProcessor& audioProcessor;
@@ -86,7 +87,8 @@ private:
     };
 
     // Dropdown Selectors
-    juce::ComboBox genreBox, roleBox, scaleBox, rootBox, rateBox, arpDirBox, hwMidiBox;
+    juce::ComboBox genreBox, roleBox, scaleBox, rootBox, rateBox, arpDirBox;
+    juce::TextButton hwMidiMenuBtn { "DAW ONLY" };
 
     // Action Buttons
     juce::TextButton generateBtn   { "GENERATE" };

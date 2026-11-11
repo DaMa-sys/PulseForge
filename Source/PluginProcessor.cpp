@@ -2,8 +2,7 @@
 #include "PluginEditor.h"
 
 PulseForgeAudioProcessor::PulseForgeAudioProcessor()
-    : AudioProcessor (BusesProperties()
-                      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
+    : AudioProcessor (BusesProperties()),
       apvts (*this, nullptr, "PARAMETERS", createParameterLayout())
 {
     activeNotes.reserve (32);
@@ -53,7 +52,7 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
 PulseForgeAudioProcessor::~PulseForgeAudioProcessor()
 {
     const juce::ScopedLock sl (midiOutLock);
-    hardwareMidiOut.reset();
+    activeHardwareOuts.clear();
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::createParameterLayout()
@@ -160,8 +159,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
 const juce::String PulseForgeAudioProcessor::getName() const { return JucePlugin_Name; }
 bool PulseForgeAudioProcessor::acceptsMidi() const { return true; }
 bool PulseForgeAudioProcessor::producesMidi() const { return true; }
-bool PulseForgeAudioProcessor::isMidiEffect() const { return false; }
-double PulseForgeAudioProcessor::getTailLengthSeconds() const { return 0.1; }
+bool PulseForgeAudioProcessor::isMidiEffect() const { return true; }
+double PulseForgeAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 int PulseForgeAudioProcessor::getNumPrograms() { return 1; }
 int PulseForgeAudioProcessor::getCurrentProgram() { return 0; }
 void PulseForgeAudioProcessor::setCurrentProgram (int) {}
@@ -195,8 +194,8 @@ void PulseForgeAudioProcessor::releaseResources()
 
 bool PulseForgeAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    const auto out = layouts.getMainOutputChannelSet();
-    return out == juce::AudioChannelSet::stereo() || out == juce::AudioChannelSet::mono();
+    return layouts.getMainInputChannelSet() == juce::AudioChannelSet::disabled()
+        && layouts.getMainOutputChannelSet() == juce::AudioChannelSet::disabled();
 }
 
 void PulseForgeAudioProcessor::setActiveSlotIndex (int idx)
@@ -360,8 +359,11 @@ void PulseForgeAudioProcessor::sendMidiOut (const juce::MidiMessage& msg, juce::
     midiOut.addEvent (msg, juce::jmax (0, sampleOffset));
 
     const juce::ScopedLock sl (midiOutLock);
-    if (hardwareMidiOut != nullptr)
-        hardwareMidiOut->sendMessageNow (msg);
+    for (auto& port : activeHardwareOuts)
+    {
+        if (port.device != nullptr)
+            port.device->sendMessageNow (msg);
+    }
 }
 
 void PulseForgeAudioProcessor::stopAllActiveNotes (juce::MidiBuffer& midiOut, int sampleOffset)
@@ -911,37 +913,82 @@ juce::File PulseForgeAudioProcessor::exportActivePatternToTempMidiFile()
 juce::StringArray PulseForgeAudioProcessor::getAvailableHardwareMidiOuts() const
 {
     juce::StringArray list;
-    list.add ("None (DAW MIDI Out)");
     for (const auto& dev : juce::MidiOutput::getAvailableDevices())
         list.add (dev.name);
     return list;
 }
 
-void PulseForgeAudioProcessor::setHardwareMidiOutDevice (const juce::String& deviceName)
+bool PulseForgeAudioProcessor::isHardwareMidiOutEnabled (const juce::String& deviceName) const
 {
     const juce::ScopedLock sl (midiOutLock);
-    hardwareMidiOut.reset();
-    currentHardwareMidiOutName = "None (DAW MIDI Out)";
+    return enabledHardwareMidiNames.contains (deviceName);
+}
 
-    if (deviceName.isEmpty() || deviceName == "None (DAW MIDI Out)")
-        return;
-
-    for (const auto& dev : juce::MidiOutput::getAvailableDevices())
+void PulseForgeAudioProcessor::setHardwareMidiOutEnabled (const juce::String& deviceName, bool shouldEnable)
+{
+    const juce::ScopedLock sl (midiOutLock);
+    if (shouldEnable)
     {
-        if (dev.name == deviceName)
+        if (!enabledHardwareMidiNames.contains (deviceName))
         {
-            hardwareMidiOut = juce::MidiOutput::openDevice (dev.identifier);
-            if (hardwareMidiOut != nullptr)
-                currentHardwareMidiOutName = dev.name;
-            break;
+            for (const auto& dev : juce::MidiOutput::getAvailableDevices())
+            {
+                if (dev.name == deviceName)
+                {
+                    auto out = juce::MidiOutput::openDevice (dev.identifier);
+                    if (out != nullptr)
+                    {
+                        enabledHardwareMidiNames.add (deviceName);
+                        activeHardwareOuts.push_back ({ deviceName, std::move (out) });
+                    }
+                    break;
+                }
+            }
         }
+    }
+    else
+    {
+        enabledHardwareMidiNames.removeString (deviceName);
+        activeHardwareOuts.erase (
+            std::remove_if (activeHardwareOuts.begin(), activeHardwareOuts.end(),
+                            [&] (const HardwareOutputPort& p) { return p.name == deviceName; }),
+            activeHardwareOuts.end());
     }
 }
 
-juce::String PulseForgeAudioProcessor::getCurrentHardwareMidiOutName() const
+void PulseForgeAudioProcessor::toggleHardwareMidiOut (const juce::String& deviceName)
+{
+    setHardwareMidiOutEnabled (deviceName, !isHardwareMidiOutEnabled (deviceName));
+}
+
+void PulseForgeAudioProcessor::setAllHardwareMidiOuts (bool enableAll)
+{
+    const auto available = getAvailableHardwareMidiOuts();
+    for (const auto& dev : available)
+        setHardwareMidiOutEnabled (dev, enableAll);
+}
+
+juce::StringArray PulseForgeAudioProcessor::getEnabledHardwareMidiOutNames() const
 {
     const juce::ScopedLock sl (midiOutLock);
-    return currentHardwareMidiOutName;
+    return enabledHardwareMidiNames;
+}
+
+int PulseForgeAudioProcessor::getNumEnabledHardwareMidiOuts() const
+{
+    const juce::ScopedLock sl (midiOutLock);
+    return enabledHardwareMidiNames.size();
+}
+
+juce::String PulseForgeAudioProcessor::getHardwareMidiSummaryText() const
+{
+    const juce::ScopedLock sl (midiOutLock);
+    const int count = enabledHardwareMidiNames.size();
+    if (count == 0)
+        return "DAW ONLY";
+    if (count == 1)
+        return "1 USB: " + enabledHardwareMidiNames[0];
+    return juce::String (count) + " USB SYNTHS";
 }
 
 bool PulseForgeAudioProcessor::hasEditor() const { return true; }
@@ -958,7 +1005,7 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
 
     xml->setAttribute ("activeSlot", activeSlotIndex.load());
-    xml->setAttribute ("hwMidiOut", getCurrentHardwareMidiOutName());
+    xml->setAttribute ("hwMidiOuts", enabledHardwareMidiNames.joinIntoString (";;"));
 
     for (int slot = 0; slot < PulseForge::kNumPatternSlots; ++slot)
     {
@@ -997,7 +1044,14 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
 
         const juce::ScopedLock sl (patternLock);
         activeSlotIndex.store (juce::jlimit (0, PulseForge::kNumPatternSlots - 1, xmlState->getIntAttribute ("activeSlot", 0)));
-        setHardwareMidiOutDevice (xmlState->getStringAttribute ("hwMidiOut", "None (DAW MIDI Out)"));
+
+        const juce::String hwMidiStr = xmlState->getStringAttribute ("hwMidiOuts", xmlState->getStringAttribute ("hwMidiOut", ""));
+        if (hwMidiStr.isNotEmpty() && hwMidiStr != "None (DAW MIDI Out)")
+        {
+            auto tokens = juce::StringArray::fromTokens (hwMidiStr, ";;", "");
+            for (const auto& dev : tokens)
+                if (dev.isNotEmpty()) setHardwareMidiOutEnabled (dev, true);
+        }
 
         for (auto* slotXml : xmlState->getChildWithTagNameIterator ("PatternSlot"))
         {

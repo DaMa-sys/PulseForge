@@ -65,11 +65,16 @@ public:
     juce::File exportActivePatternToTempMidiFile();
 
     //==========================================================================
-    // Direct Hardware MIDI Out Port Management
+    // Multi-Device Direct Hardware MIDI Output Management
     //==========================================================================
     juce::StringArray getAvailableHardwareMidiOuts() const;
-    void setHardwareMidiOutDevice (const juce::String& deviceName);
-    juce::String getCurrentHardwareMidiOutName() const;
+    bool isHardwareMidiOutEnabled (const juce::String& deviceName) const;
+    void setHardwareMidiOutEnabled (const juce::String& deviceName, bool shouldEnable);
+    void toggleHardwareMidiOut (const juce::String& deviceName);
+    void setAllHardwareMidiOuts (bool enableAll);
+    juce::StringArray getEnabledHardwareMidiOutNames() const;
+    int getNumEnabledHardwareMidiOuts() const;
+    juce::String getHardwareMidiSummaryText() const;
 
     //==========================================================================
     // UI Telemetry
@@ -153,10 +158,15 @@ private:
 
     PulseForge::PreviewSynth previewSynth;
 
-    // Optional Direct Hardware MIDI Output
+    // Multi-Device Direct Hardware MIDI Output
     mutable juce::CriticalSection midiOutLock;
-    std::unique_ptr<juce::MidiOutput> hardwareMidiOut;
-    juce::String currentHardwareMidiOutName { "None (DAW MIDI Out)" };
+    struct HardwareOutputPort
+    {
+        juce::String name;
+        std::unique_ptr<juce::MidiOutput> device;
+    };
+    std::vector<HardwareOutputPort> activeHardwareOuts;
+    juce::StringArray enabledHardwareMidiNames;
 
     std::mt19937 probRng { std::random_device{}() };
 
