@@ -3,71 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orage PulseForge — 3-Track Generative Synthesizer & MIDI Engine (VST3 / Standalone)</title>
-  <meta name="description" content="Orage PulseForge: Generatore MIDI a 3 tracce polifoniche indipendenti e synth generativo con estetica hardware in alluminio satinato e controlli tattili vintage 2026.">
+  <title>Orage PulseForge — Guida & Manuale Operativo per Jam con Synth Analogici</title>
+  <meta name="description" content="Manuale e guida pratica all'uso di Orage PulseForge: genera sequenze poliritmiche a 3 tracce armonizzate per jammare dal vivo con i tuoi synth analogici e la tua DAW.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-chassis: #0B0C0E;
-      --bg-card-dark: #121418;
-      --alum-specular: #FFFFFF;
-      --alum-light: #E8EBF0;
-      --alum-base: #D8DCE3;
-      --alum-dark: #C6CBD4;
-      --alum-bevel: #A4AAB5;
-
-      --tint-orange-top: #F6ECE0;
-      --tint-orange-mid: #EBDECE;
-      --tint-orange-bot: #D9C9B8;
-
-      --tint-cyan-top: #E5EEF5;
-      --tint-cyan-mid: #D3E2EC;
-      --tint-cyan-bot: #BFD2DE;
-
-      --tint-green-top: #E6EFE8;
-      --tint-green-mid: #D4E3D8;
-      --tint-green-bot: #C1D4C7;
+      --bg-chassis: #0A0B0E;
+      --bg-card: #12141A;
+      --bg-card-subtle: #171A22;
+      --border-subtle: rgba(255, 255, 255, 0.10);
+      --border-highlight: rgba(255, 172, 32, 0.45);
 
       --amber-led: #FFAC20;
-      --amber-glow: rgba(255, 172, 32, 0.45);
+      --amber-glow: rgba(255, 172, 32, 0.40);
       --blue-led: #1E6BFF;
-      --blue-glow: rgba(30, 107, 255, 0.45);
+      --blue-glow: rgba(30, 107, 255, 0.40);
       --green-led: #10B981;
-      --green-glow: rgba(16, 185, 129, 0.45);
+      --green-glow: rgba(16, 185, 129, 0.40);
 
-      --text-dark: #000000;
-      --text-label: #101215;
+      --tint-orange-border: #BBA894;
+      --tint-cyan-border: #92A7B5;
+      --tint-green-border: #92A999;
+
+      --text-main: #E2E6ED;
+      --text-muted: #959CA8;
       --text-white: #FFFFFF;
-      --text-muted: rgba(255, 255, 255, 0.65);
+      --code-bg: #0E1015;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: radial-gradient(circle at 50% 0%, #16181E 0%, #08090B 80%);
-      color: #E2E6EC;
+      background: radial-gradient(circle at 50% 0%, #161820 0%, #08090C 85%);
+      color: var(--text-main);
       font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.6;
+      line-height: 1.65;
       overflow-x: hidden;
     }
 
-    /* Top Navigation Header */
+    /* Top Navigation */
     header {
-      padding: 1.5rem 2.5rem;
+      padding: 1.4rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1240px;
+      max-width: 1220px;
       margin: 0 auto;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       text-decoration: none;
       color: #FFF;
     }
@@ -77,53 +67,53 @@
       font-size: 1.8rem;
       letter-spacing: 0.5px;
       color: #FFF;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    .brand-sub {
-      font-size: 0.78rem;
-      font-weight: 500;
-      font-style: italic;
-      color: var(--amber-led);
-      letter-spacing: 1px;
+    .brand-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
+      background: rgba(255, 172, 32, 0.15);
+      border: 1px solid rgba(255, 172, 32, 0.4);
+      color: var(--amber-led);
+      padding: 3px 8px;
+      border-radius: 4px;
     }
 
     .nav-links a {
       color: var(--text-muted);
       text-decoration: none;
-      margin-left: 2rem;
-      font-size: 0.92rem;
+      margin-left: 1.8rem;
+      font-size: 0.9rem;
       font-weight: 600;
       transition: color 0.2s;
     }
     .nav-links a:hover { color: #FFF; }
 
-    /* Hero Section */
+    /* Hero */
     .hero {
       text-align: center;
-      padding: 4.5rem 1.5rem 2.5rem;
-      max-width: 980px;
+      padding: 4rem 1.5rem 2.5rem;
+      max-width: 960px;
       margin: 0 auto;
     }
 
-    .badge {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 172, 32, 0.12);
-      border: 1px solid rgba(255, 172, 32, 0.35);
-      color: var(--amber-led);
-      padding: 6px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #FFF;
+      padding: 6px 16px;
       border-radius: 20px;
       font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.4rem;
     }
 
-    .badge-dot {
+    .hero-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
@@ -132,26 +122,23 @@
     }
 
     h1 {
-      font-size: 2.8rem;
+      font-size: 2.7rem;
       font-weight: 800;
       letter-spacing: -0.5px;
-      line-height: 1.15;
+      line-height: 1.2;
       margin-bottom: 1.2rem;
       color: #FFF;
     }
 
     h1 span {
-      background: linear-gradient(135deg, #FFF 0%, #C4CBD6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--amber-led);
     }
 
     .hero p {
       font-size: 1.15rem;
       color: var(--text-muted);
       max-width: 760px;
-      margin: 0 auto 2.2rem;
-      font-weight: 400;
+      margin: 0 auto 2.4rem;
       line-height: 1.7;
     }
 
@@ -167,40 +154,38 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 13px 28px;
+      padding: 13px 26px;
       border-radius: 6px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       text-decoration: none;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       cursor: pointer;
     }
 
     .btn-primary {
-      background: linear-gradient(180deg, #2D3038 0%, #16181D 100%);
+      background: linear-gradient(180deg, #2A2D35 0%, #15171C 100%);
       color: #FFF;
-      border: 1px solid rgba(255, 172, 32, 0.7);
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--amber-led);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
     .btn-primary:hover {
-      border-color: var(--amber-led);
-      box-shadow: 0 6px 24px rgba(255, 172, 32, 0.35);
+      box-shadow: 0 6px 24px var(--amber-glow);
       transform: translateY(-2px);
     }
 
     .btn-secondary {
       background: rgba(255, 255, 255, 0.05);
-      color: #E0E4EB;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #E2E6ED;
+      border: 1px solid var(--border-subtle);
     }
     .btn-secondary:hover {
       background: rgba(255, 255, 255, 0.10);
       color: #FFF;
-      border-color: rgba(255, 255, 255, 0.3);
       transform: translateY(-2px);
     }
 
-    /* Plugin Preview Image Frame */
+    /* GUI Preview Frame */
     .preview-container {
       max-width: 1180px;
       margin: 0 auto 5rem;
@@ -208,406 +193,675 @@
     }
 
     .preview-frame {
-      border-radius: 12px;
-      background: #0D0E11;
-      padding: 8px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
-      overflow: hidden;
-      transition: transform 0.3s ease;
-    }
-    .preview-frame:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 172, 32, 0.35);
+      border-radius: 10px;
+      background: #0B0C0E;
+      padding: 6px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.10);
     }
 
     .preview-frame img {
       width: 100%;
       height: auto;
       display: block;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
-    /* 3 Modular Lanes Section */
-    .modules-section {
+    /* Content Layout */
+    .container {
       max-width: 1180px;
-      margin: 0 auto 5rem;
-      padding: 0 1.5rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
     }
 
     .section-title {
       text-align: center;
-      margin-bottom: 2.8rem;
+      margin-bottom: 3rem;
     }
 
     .section-title h2 {
       font-size: 2.2rem;
       font-weight: 800;
       color: #FFF;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
     }
 
     .section-title p {
       color: var(--text-muted);
       font-size: 1.05rem;
+      max-width: 720px;
+      margin: 0 auto;
     }
 
-    .modules-grid {
+    /* Workflow Cards */
+    .workflow-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 24px;
+      margin-bottom: 5rem;
     }
 
-    .module-card {
+    .workflow-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
       border-radius: 10px;
-      padding: 24px;
-      color: var(--text-dark);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255,255,255,0.8) inset;
+      padding: 28px;
       position: relative;
     }
 
-    .module-orange {
-      background: linear-gradient(180deg, var(--tint-orange-top) 0%, var(--tint-orange-mid) 45%, var(--tint-orange-bot) 100%);
-      border: 1px solid #BBA894;
-    }
-
-    .module-cyan {
-      background: linear-gradient(180deg, var(--tint-cyan-top) 0%, var(--tint-cyan-mid) 45%, var(--tint-cyan-bot) 100%);
-      border: 1px solid #92A7B5;
-    }
-
-    .module-green {
-      background: linear-gradient(180deg, var(--tint-green-top) 0%, var(--tint-green-mid) 45%, var(--tint-green-bot) 100%);
-      border: 1px solid #92A999;
-    }
-
-    .module-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #101114;
-      color: #FFF;
-      padding: 4px 14px;
-      border-radius: 4px;
-      font-size: 0.78rem;
+    .workflow-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
+      color: var(--amber-led);
+      margin-bottom: 10px;
     }
 
-    .jewel-amber { width: 8px; height: 8px; border-radius: 50%; background: var(--amber-led); box-shadow: 0 0 8px var(--amber-led); }
-    .jewel-blue  { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-led);  box-shadow: 0 0 8px var(--blue-led); }
-    .jewel-green { width: 8px; height: 8px; border-radius: 50%; background: var(--green-led); box-shadow: 0 0 8px var(--green-led); }
-
-    .module-card h3 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-      color: #101215;
+    .workflow-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 10px;
     }
 
-    .module-card p {
-      font-size: 0.94rem;
-      font-weight: 500;
-      color: #24272D;
+    .workflow-card p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
       line-height: 1.6;
     }
 
-    /* Features Grid */
-    .features-section {
-      max-width: 1180px;
-      margin: 0 auto 5rem;
-      padding: 0 1.5rem;
+    /* Detailed Manual Sections */
+    .manual-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 36px 32px;
+      margin-bottom: 3rem;
     }
 
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 22px;
+    .manual-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 1.8rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1rem;
     }
 
-    .feat-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 26px;
-      transition: all 0.25s;
-    }
-    .feat-card:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 172, 32, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .feat-icon {
-      font-size: 1.8rem;
-      margin-bottom: 14px;
-    }
-
-    .feat-card h4 {
-      font-size: 1.15rem;
-      font-weight: 700;
+    .manual-header h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
       color: #FFF;
-      margin-bottom: 8px;
     }
 
-    .feat-card p {
-      font-size: 0.92rem;
+    .badge-amber { background: rgba(255, 172, 32, 0.15); color: var(--amber-led); border: 1px solid rgba(255, 172, 32, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    .badge-blue  { background: rgba(30, 107, 255, 0.15); color: #70B5FF; border: 1px solid rgba(30, 107, 255, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+
+    /* Controls Grid Inside Block */
+    .controls-table {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .ctrl-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+
+    .ctrl-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .ctrl-name strong {
+      font-size: 0.95rem;
+      color: #FFF;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+    }
+
+    .ctrl-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--amber-led);
+      text-transform: uppercase;
+    }
+
+    .ctrl-desc {
+      font-size: 0.88rem;
       color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Jam Callout Box */
+    .jam-box {
+      background: linear-gradient(135deg, rgba(255, 172, 32, 0.08) 0%, rgba(30, 107, 255, 0.04) 100%);
+      border: 1px solid rgba(255, 172, 32, 0.35);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-top: 2rem;
+    }
+
+    .jam-box h4 {
+      color: var(--amber-led);
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .jam-box p {
+      font-size: 0.92rem;
+      color: var(--text-main);
       line-height: 1.6;
     }
 
     /* Installation Section */
-    .install-section {
-      max-width: 960px;
-      margin: 0 auto 5rem;
-      padding: 3rem 2rem;
-      background: #0F1116;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .install-box {
+      background: #0E1014;
+      border: 1px solid var(--border-subtle);
       border-radius: 12px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      padding: 36px 32px;
     }
 
-    .install-section h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #FFF;
-      margin-bottom: 0.6rem;
-    }
-
-    .install-steps {
-      margin: 2rem 0;
+    .install-step-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
+      margin: 1.8rem 0;
     }
 
-    .install-step {
+    .install-row {
       display: flex;
-      align-items: flex-start;
       gap: 16px;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 16px 20px;
-      border-radius: 8px;
-      border-left: 3px solid var(--amber-led);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 14px 18px;
+      align-items: center;
     }
 
-    .step-num {
-      font-weight: 800;
-      font-size: 1.1rem;
+    .install-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
       color: var(--amber-led);
+      font-size: 1.1rem;
       min-width: 24px;
     }
 
-    .step-txt {
-      font-size: 0.95rem;
-      color: #E0E4EB;
+    .install-text {
+      font-size: 0.92rem;
+      color: var(--text-main);
     }
 
-    .step-txt strong { color: #FFF; }
-    .step-txt code {
-      background: #1A1C22;
+    .install-text code {
+      background: var(--code-bg);
       color: var(--amber-led);
       padding: 2px 8px;
       border-radius: 4px;
-      font-family: monospace;
-      font-size: 0.88rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.84rem;
     }
 
     /* Footer */
     footer {
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid var(--border-subtle);
       padding: 3rem 1.5rem;
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
 
-    footer a {
-      color: var(--amber-led);
-      text-decoration: none;
-      font-weight: 600;
-    }
+    footer a { color: var(--amber-led); text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation -->
+  <!-- Navigation -->
   <header>
     <a href="#" class="brand">
       <div class="brand-logo">Orage</div>
-      <div class="brand-sub">PulseForge Series</div>
+      <div class="brand-badge">PulseForge v1.0</div>
     </a>
     <nav class="nav-links">
+      <a href="#come-funziona">Come Funziona</a>
+      <a href="#master">Master Header</a>
       <a href="#moduli">I 3 Moduli</a>
-      <a href="#features">Caratteristiche</a>
-      <a href="#install">Installazione 1-Click</a>
-      <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>
+      <a href="#pomelli">I 6 Potenziometri</a>
+      <a href="#matrice">Matrice & EXP</a>
+      <a href="#synth-jam">Jam con Synth</a>
+      <a href="#install">Installazione</a>
     </nav>
   </header>
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="badge">
-      <div class="badge-dot"></div>
-      Release Ufficiale v1.0.0 — VST3 & Standalone 64-bit
+    <div class="hero-badge">
+      <div class="hero-dot"></div>
+      Strumento Generativo per Jam dal Vivo & Studio Session
     </div>
-    <h1>Generazione Poliritmica a 3 Tracce con <span>Design Hardware Orage</span></h1>
+    <h1>Dai vita a sequenze musicali per i tuoi <span>Synth Analogici</span></h1>
     <p>
-      PulseForge unisce la precisione matematica dei sequencer eurorack con la nobiltà dell'alluminio spazzolato satinato. Tre motori generativi simultanei (Bass, Arp, Chords) armonizzati in scala con controlli tattili vintage e prestazioni 2026.
+      PulseForge non è il solito sequencer statico: è un motore algoritmico a 3 canali polifonici sincronizzati che genera al volo linee di basso, arpeggi poliritmici e progressioni di accordi armonizzati in scala, pronti per pilotare via MIDI i tuoi sintetizzatori hardware esterni o la tua DAW in tempo reale.
     </p>
     <div class="hero-actions">
       <a href="download/PulseForge-Windows-v1.0.0.zip" class="btn btn-primary">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         Scarica PulseForge v1.0.0 (Win x64)
       </a>
-      <a href="https://github.com/DaMa-sys/PulseForge" target="_blank" class="btn btn-secondary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GitHub Repository
+      <a href="#synth-jam" class="btn btn-secondary">
+        Guida al Setup con Synth Esterni
       </a>
     </div>
   </section>
 
-  <!-- Plugin Real Screenshot Display -->
+  <!-- Plugin Real GUI Preview -->
   <div class="preview-container">
     <div class="preview-frame">
-      <img src="pulseforge_preview.png" alt="Orage PulseForge GUI Render">
+      <img src="pulseforge_preview.png" alt="Orage PulseForge Generative Synthesizer GUI">
     </div>
   </div>
 
-  <!-- 3 Modular Lanes Section -->
-  <section id="moduli" class="modules-section">
-    <div class="section-title">
-      <h2>I 3 Moduli a Finitura Satinata</h2>
-      <p>Ogni corsia ha una personalità acustica e una gradazione metallica dedicata per una navigazione immediata.</p>
-    </div>
+  <div class="container">
 
-    <div class="modules-grid">
-      <!-- Module 1: Bass -->
-      <div class="module-card module-orange">
-        <div class="module-badge">
-          <div class="jewel-amber"></div>
-          SEQ 1 : BASS
+    <!-- Overview: What PulseForge Does in Practice -->
+    <section id="come-funziona">
+      <div class="section-title">
+        <h2>Il Workflow di Jamming con PulseForge</h2>
+        <p>Progettato per abbattere il blocco della pagina bianca e alimentare jam session dal vivo a latenza zero.</p>
+      </div>
+
+      <div class="workflow-grid">
+        <div class="workflow-card">
+          <div class="workflow-num">FASE 01</div>
+          <h3>1. Scegli Scala & Tonalità</h3>
+          <p>
+            Imposta la scala (Dorian, Aeolian, Melodic Techno, Pentatonica, ecc.) e la nota fondamentale (Root). Tutte e 3 le sequenze rispetteranno rigorosamente la medesima grammatica tonale, eliminando qualsiasi nota dissonante.
+          </p>
         </div>
-        <h3>Alluminio Satinato Ambra</h3>
+
+        <div class="workflow-card">
+          <div class="workflow-num">FASE 02</div>
+          <h3>2. Premi Trio Harmonize</h3>
+          <p>
+            Con un singolo tocco, l'algoritmo di contrappunto calcola 3 parti interconnesse: la linea di basso definisce il groove ritmico, gli accordi tessono il tappeto modale e l'arpeggio riempie le frequenze medio-alte con note guida.
+          </p>
+        </div>
+
+        <div class="workflow-card">
+          <div class="workflow-num">FASE 03</div>
+          <h3>3. Instrada sui tuoi Synth</h3>
+          <p>
+            Assegna ogni sequenza a una porta MIDI o canale differente (es. Canale 1 al Moog per il basso, Canale 2 al MicroFreak per l'arpeggio, Canale 3 al Prophet per i pad). Inizia la jam manipolando filtri, risonanza ed inviluppi sui tuoi strumenti fisici!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: MASTER HEADER CONTROLS -->
+    <section id="master" class="manual-block">
+      <div class="manual-header">
+        <h3>1. Master Header — Controlli Globali</h3>
+        <span class="badge-amber">PANNELLO SUPERIORE</span>
+      </div>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem; font-size:0.95rem;">
+        La barra superiore coordina la tonalità comune a tutte le sequenze, la modalità di riproduzione e il routing globale.
+      </p>
+
+      <div class="controls-table">
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>MUSICAL SCALE</strong>
+            <span class="ctrl-type">Menu a Tendina</span>
+          </div>
+          <div class="ctrl-desc">
+            Seleziona la scala musicale tra 12 modalità (Dorian House/Funk, Natural Minor, Melodic Techno, Harmonic Minor, Mixolydian, Blues, Pentatonic, ecc.). Tutte le note generate vengono quantizzate istantaneamente alla scala selezionata.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>ROOT</strong>
+            <span class="ctrl-type">Menu a Tendina</span>
+          </div>
+          <div class="ctrl-desc">
+            Nota tonale di riferimento (C, C#, D... B). Modificando la Root durante la riproduzione, l'intero arrangiamento delle 3 tracce traspone all'unisono in tempo reale.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>TRIO HARMONIZE</strong>
+            <span class="ctrl-type">Pulsante Primario</span>
+          </div>
+          <div class="ctrl-desc">
+            Il cuore del plugin: rigenera contemporaneamente Basso, Arpeggio e Accordi applicando regole di armonia funzionale e contrappunto a 3 voci, creando un groove completo e coerente.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>FREE RUN</strong>
+            <span class="ctrl-type">Pulsante Toggle</span>
+          </div>
+          <div class="ctrl-desc">
+            Sgancia PulseForge dal tasto Play della DAW: il sequencer suona continuamente al BPM corrente, ideale per jammare sui synth hardware o testare patch senza dover avviare l'arranger di Ableton.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>PREVIEW SYNTH</strong>
+            <span class="ctrl-type">Pulsante Toggle</span>
+          </div>
+          <div class="ctrl-desc">
+            Attiva o disattiva il generatore sonoro polifonico interno a 64-bit. Se attivo, puoi ascoltare le sequenze in cuffia anche se non hai sintetizzatori hardware collegati al computer.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>DRAG MIDI</strong>
+            <span class="ctrl-type">Pulsante Drag & Drop</span>
+          </div>
+          <div class="ctrl-desc">
+            Trascina con il mouse le clip MIDI generate direttamente sulle tracce della DAW (Ableton, FL Studio, Logic, Reaper), conservando velocità, legati, slide e lunghezze delle note.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: THE 3 SEQUENCER LANES -->
+    <section id="moduli" class="manual-block">
+      <div class="manual-header">
+        <h3>2. Le 3 Corsie di Sequenza (Moduli Indipendenti)</h3>
+      </div>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem; font-size:0.95rem;">
+        Ciascuna corsia è un motore generativo autonomo con controlli specifici per gestire stile, ruolo, lunghezza e routing MIDI.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:20px; margin-bottom: 2rem;">
+        <div style="border-left: 3px solid var(--amber-led); padding: 12px 18px; background:rgba(255,172,32,0.05); border-radius:4px;">
+          <strong style="color:var(--amber-led);">SEQ 1 : BASS (Alluminio Ambra)</strong> — Genera linee di basso monofoniche incisive: staccato, walking bass, acid 303 o sub ipnotici con estensione ottava profonda.
+        </div>
+        <div style="border-left: 3px solid #70B5FF; padding: 12px 18px; background:rgba(30,107,255,0.05); border-radius:4px;">
+          <strong style="color:#70B5FF;">SEQ 2 : ARP (Alluminio Ciano)</strong> — Specializzato in arpeggi e melodie guidate: pattern poliritmici, sweep su 1-3 ottave e ratchet per roll veloci.
+        </div>
+        <div style="border-left: 3px solid #6EE7B7; padding: 12px 18px; background:rgba(16,185,129,0.05); border-radius:4px;">
+          <strong style="color:#6EE7B7;">SEQ 3 : CHORDS (Alluminio Salvia)</strong> — Genera accordi polifonici (Min7, Maj9, Sus4, Stabs) che stabiliscono il colore armonico dell'intera jam.
+        </div>
+      </div>
+
+      <div class="controls-table">
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>MUTE</strong>
+            <span class="ctrl-type">Pulsante Toggle</span>
+          </div>
+          <div class="ctrl-desc">
+            Silenzia istantaneamente l'emissione MIDI e audio della singola corsia: essenziale durante le jam dal vivo per creare breakdown, drop o far risaltare solo il basso o l'arpeggio.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>GENRE STYLE</strong>
+            <span class="ctrl-type">Menu a Tendina</span>
+          </div>
+          <div class="ctrl-desc">
+            Imposta le regole stilistiche dell'algoritmo (Classic House 90s, Paul Kalkbrenner Style, Bonobo Organic Downtempo, Fisher Tech House, Acid 303, UK Garage Disclosure, ecc.).
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>ROLE / TYPE</strong>
+            <span class="ctrl-type">Menu a Tendina</span>
+          </div>
+          <div class="ctrl-desc">
+            Definisce la funzione musicale del motore: Mono Bass, Acid Line, Classic Arp, Lead Hook, Chord Stabs, Harmony Chords o Modular Ratchet.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>STEPS</strong>
+            <span class="ctrl-type">Selettore (4, 8, 16, 32)</span>
+          </div>
+          <div class="ctrl-desc">
+            Lunghezza del pattern in step. Impostando lunghezze diverse sulle 3 tracce (es. 16 step sul basso e 8 o 32 sull'arpeggio) si ottengono meravigliose poliritmie evolutive.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>MIDI OUTPUT</strong>
+            <span class="ctrl-type">Routing Dropdown</span>
+          </div>
+          <div class="ctrl-desc">
+            Indirizza la sequenza: <code>DAW Only</code> (per plugin software), <code>All USB Synths</code> (broadcast) oppure seleziona direttamente la porta USB/DIN del tuo synth hardware connesso!
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>GENERATE & MUTATE</strong>
+            <span class="ctrl-type">Pulsanti Azione</span>
+          </div>
+          <div class="ctrl-desc">
+            <code>GENERATE</code> rigenera da zero solo questa traccia. <code>MUTATE</code> applica una mutazione controllata del 15-25% mantenendo il groove di base ma variando note o accenti.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: THE 6 TACTILE SHAPING KNOBS -->
+    <section id="pomelli" class="manual-block">
+      <div class="manual-header">
+        <h3>3. I 6 Potenziometri di Modellazione (Knobs)</h3>
+        <span class="badge-amber">CONTROLLO TATTILITÀ 0-10</span>
+      </div>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem; font-size:0.95rem;">
+        Ciascun modulo dispone di 6 pomelli tipo Davies 1900 per scolpire in tempo reale la complessità, l'intonazione e il tempo della sequenza.
+      </p>
+
+      <div class="controls-table">
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>COMPLEXITY (0 - 100%)</strong>
+            <span class="ctrl-type">Potenziometro</span>
+          </div>
+          <div class="ctrl-desc">
+            Controlla la densità di note per battuta: a valori bassi (15-30%) genera linee ipnotiche e minimali; alzandolo a 70-90% infittisce il ritmo con sincopi, ghost notes e variazioni serrate.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>SWING (0 - 75%)</strong>
+            <span class="ctrl-type">Potenziometro</span>
+          </div>
+          <div class="ctrl-desc">
+            Applica micro-ritardo sui sedicesimi pari. Dal groove rigido dritto (0-20%) fino al rimbalzo tipico del groove House/Garage e Broken Beat anni '90 (55-65%).
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>BASE OCT (-1, 0, +1, +2)</strong>
+            <span class="ctrl-type">Potenziometro a Scatti</span>
+          </div>
+          <div class="ctrl-desc">
+            Imposta l'ottava fondamentale della traccia. Permette di ancorare il basso nel sub profondo (C0-C1) o far salire gli accordi nel registro medio-alto per lasciare spazio al mix.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>ARP OCT (1, 2, 3)</strong>
+            <span class="ctrl-type">Potenziometro a Scatti</span>
+          </div>
+          <div class="ctrl-desc">
+            Determina su quante ottave si estende l'arpeggiatore: 1 ottava per frasi raccolte, 2-3 ottave per arpeggi brillanti che attraversano tutto lo spettro armonico.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>MIDI CH (1 - 16)</strong>
+            <span class="ctrl-type">Selettore Canale</span>
+          </div>
+          <div class="ctrl-desc">
+            Canale MIDI di trasmissione indipendente per la corsia. Consente di pilotare synth multitimbrici o strumenti collegati in cascata (daisy-chain) su una singola porta DIN.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>RATIO (1/2x, 1/1x, 2/1x...)</strong>
+            <span class="ctrl-type">Rapporto di Tempo</span>
+          </div>
+          <div class="ctrl-desc">
+            Moltiplicatore o divisore metrico rispetto al master clock DAW. Puoi far girare il basso a 1/2x (half-time), gli accordi a 1/1x e l'arpeggio a 2/1x (double-time) per poliritmie complesse!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: STEP MATRIX & EXP MODIFIERS -->
+    <section id="matrice" class="manual-block">
+      <div class="manual-header">
+        <h3>4. Matrice Step & Editor Avanzato EXP +</h3>
+      </div>
+      <p style="color:var(--text-muted); margin-bottom: 1.5rem; font-size:0.95rem;">
+        La matrice mostra istantaneamente la nota quantizzata di ogni step (es. <code>C0</code>, <code>Eb0</code>, <code>C3</code>, <code>Cm9</code>) all'interno di tasti chiclet ad alto contrasto.
+      </p>
+
+      <div class="controls-table">
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>Click Sinistro su Pad</strong>
+            <span class="ctrl-type">Attivazione / Disattivazione</span>
+          </div>
+          <div class="ctrl-desc">
+            Accende o spegne lo step al volo per creare buchi di ritmo, pause e respiri nella sequenza durante la jam.
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>Trascina Verticalmente (Drag)</strong>
+            <span class="ctrl-type">Pitch Transpose</span>
+          </div>
+          <div class="ctrl-desc">
+            Fai clic e trascina verso l'alto o verso il basso su qualsiasi pad per trasporre la singola nota: la trasposizione è sempre quantizzata all'interno della scala musicale impostata!
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>Click Destro su Pad</strong>
+            <span class="ctrl-type">Menu Modificatori Rapidi</span>
+          </div>
+          <div class="ctrl-desc">
+            Apre il menu contestuale per impostare al volo: Accent (forte), Slide (legato stile 303), Ratchet (ripetizione 1x, 2x, 3x, 4x) e cambio ottava (+1 / -1).
+          </div>
+        </div>
+
+        <div class="ctrl-item">
+          <div class="ctrl-name">
+            <strong>Pulsante EXP +</strong>
+            <span class="ctrl-type">Matrice Espansa</span>
+          </div>
+          <div class="ctrl-desc">
+            Apre la striscia inferiore di micro-editing dettagliato: corsie dedicate per ACC (Accent), SLD (Slide), RAT (Ratchet), LEG (Legato Gate) e VEL (Velocity fader per ciascun step).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: ANALOG SYNTH JAM SETUP GUIDE -->
+    <section id="synth-jam" class="manual-block" style="border-color: rgba(255, 172, 32, 0.4);">
+      <div class="manual-header">
+        <h3>5. Guida al Setup: Jammare con i tuoi Synth Analogici</h3>
+        <span class="badge-amber">GUIDA DAL VIVO</span>
+      </div>
+      
+      <p style="color:var(--text-main); font-size:1rem; margin-bottom: 1.2rem;">
+        PulseForge è stato concepito specificamente per liberarti dall'editor della DAW e farti concentrare sulle manopole dei tuoi strumenti fisici. Ecco la configurazione ideale consigliata in studio:
+      </p>
+
+      <div style="background:var(--code-bg); padding:20px 24px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); font-size:0.92rem; line-height:1.7; margin-bottom:1.5rem;">
+        <strong>Collegamento Consigliato:</strong><br>
+        1. Collega i tuoi sintetizzatori hardware al computer via <strong>USB-MIDI</strong> o interfaccia MIDI DIN (es. Roland, Moog, Korg, Behringer, Arturia).<br>
+        2. Apri PulseForge (come plugin VST3 nella DAW oppure direttamente in Standalone col file <code>PulseForge.exe</code>).<br>
+        3. Sul menu a tendina <strong>MIDI OUTPUT</strong> del Modulo 1 (Bass), seleziona la porta del tuo synth per il basso (es. <em>Novation Bass Station II</em> o <em>Moog Minitaur</em>).<br>
+        4. Sul Modulo 2 (Arp), seleziona il synth dedicato alle melodie (es. <em>Korg Minilogue</em> o <em>Arturia MicroFreak</em>).<br>
+        5. Sul Modulo 3 (Chords), seleziona il tuo synth polifonico per accordi e pad (es. <em>Sequential Take 5</em> o <em>Roland Juno</em>).<br>
+        6. Premi <strong>FREE RUN</strong> o avvia la DAW: le tre sequenze inizieranno a suonare istantaneamente in perfetto sincrono sui tuoi strumenti analogici!
+      </div>
+
+      <div class="jam-box">
+        <h4>⚡ Il Segreto per una Jam Efficace:</h4>
         <p>
-          Specializzato in linee di basso solide: Acid 303, Sub House, Bassline sincopate e groove melodici. Include pitch-slide autentico, accenti e gestione dell'ottava di base.
+          Lascia che PulseForge generi le note: non toccare il mouse! Concentrati sui controlli fisici dei tuoi synth: apri il Cutoff del filtro sull'arpeggio nei crescendo, aumenta il Decay del basso nei drop e usa i pulsanti <strong>MUTE</strong> e <strong>MUTATE</strong> per creare variazioni vive e organiche durante l'esibizione.
         </p>
       </div>
+    </section>
 
-      <!-- Module 2: Arp -->
-      <div class="module-card module-cyan">
-        <div class="module-badge">
-          <div class="jewel-blue"></div>
-          SEQ 2 : ARP
+    <!-- SECTION 6: 1-CLICK INSTALLATION -->
+    <section id="install" class="install-box">
+      <div class="manual-header">
+        <h3>6. Installazione 1-Click su Windows</h3>
+        <span class="badge-green">VST3 & STANDALONE</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:0.95rem;">
+        Il pacchetto di download è già pronto per l'uso immediato e include l'installer automatico per DAW.
+      </p>
+
+      <div class="install-step-list">
+        <div class="install-row">
+          <div class="install-num">1</div>
+          <div class="install-text">
+            Scarica l'archivio <strong>PulseForge-Windows-v1.0.0.zip</strong> dal pulsante sottostante ed estrailo in una cartella a tua scelta.
+          </div>
         </div>
-        <h3>Alluminio Satinato Ciano</h3>
-        <p>
-          Motore per arpeggi poliritmici, sequenze ipnotiche alla Bonobo e ratchet ad alta velocità (1x..4x). Sincronizzato con divisori di tempo indipendenti da 1/4 a 1/32.
-        </p>
-      </div>
 
-      <!-- Module 3: Chords -->
-      <div class="module-card module-green">
-        <div class="module-badge">
-          <div class="jewel-green"></div>
-          SEQ 3 : CHORDS
+        <div class="install-row">
+          <div class="install-num">2</div>
+          <div class="install-text">
+            Fai doppio clic sul file <code>install_vst3.bat</code>.<br>
+            Lo script installerà <code>PulseForge.vst3</code> nella directory di sistema standard <code>C:\Program Files\Common Files\VST3\DaMA\</code> e resetterà automaticamente la cache VST di Ableton Live per una scansione pulita.
+          </div>
         </div>
-        <h3>Alluminio Satinato Salvia</h3>
-        <p>
-          Generatore di stabs e progressioni armoniche. Crea accordi modali (Min7, Maj9, Sus4, Dim) sempre consonanti e perfettamente sincronizzati con Bass e Arp tramite <strong>Trio Harmonize</strong>.
-        </p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Features Grid -->
-  <section id="features" class="features-section">
-    <div class="section-title">
-      <h2>Architettura Audio Professionale</h2>
-      <p>Zero compromessi: DSP a 64-bit, LookAndFeel ultra-ottimizzato e connettività totale.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feat-card">
-        <div class="feat-icon">⚡</div>
-        <h4>Trio Harmonize</h4>
-        <p>Un solo clic rigenera tutte e tre le tracce simultaneamente applicando regole contrappuntistiche: il basso fonda l'armonia, gli accordi definiscono il colore e l'arpeggio ricama le note guida.</p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-icon">🎛️</div>
-        <h4>Potenziometri Fluted Vintage</h4>
-        <p>Manopole Davies 1900 in bachelite scura con scala graduata 0-10 e display digitale OLED ad incasso per un feedback visivo istantaneo dei valori.</p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-icon">⏱️</div>
-        <h4>Sincronizzazione BPM & Free Run</h4>
-        <p>Sincronizzazione istantanea al clock DAW (Ableton Live, FL Studio, Logic) o modalità Free Run per jam indipendenti sul sintetizzatore interno a latenza zero.</p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-icon">🔄</div>
-        <h4>Drag MIDI to DAW</h4>
-        <p>Trascina con un gesto le 3 clip MIDI generate direttamente sulle tracce del tuo arrangiamento, con automazioni di velocity, slide e note length intatte.</p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-icon">🔌</div>
-        <h4>Supporto Hardware USB/DIN</h4>
-        <p>Instrada ciascuna sequenza su porte MIDI hardware esterne separate (sintetizzatori analogici, drum machine) con filtraggio canali dedicato per traccia.</p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-icon">🪶</div>
-        <h4>Consumo CPU 0.1%</h4>
-        <p>Tutti i gradienti in alluminio satinato e le ombre tridimensionali sono pre-renderizzati in cache ARGB a 60 FPS senza pesare sulla CPU audio.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Technical Specifications & Install Guide -->
-  <section id="install" class="install-section">
-    <h2>Installazione 1-Click per Windows</h2>
-    <p style="color:var(--text-muted); margin-bottom: 1.5rem;">
-      Il pacchetto di rilascio include lo script automatico che copia il VST3 nella cartella standard di Windows e resetta la cache di scansione della DAW.
-    </p>
-
-    <div class="install-steps">
-      <div class="install-step">
-        <div class="step-num">1</div>
-        <div class="step-txt">
-          Scarica ed estrai <strong>PulseForge-Windows-v1.0.0.zip</strong> in una cartella a piacere.
+        <div class="install-row">
+          <div class="install-num">3</div>
+          <div class="install-text">
+            Avvia Ableton Live, FL Studio, Cubase o Reaper: troverai <strong>PulseForge</strong> pronto all'uso sotto la cartella produttore <strong>DaMA</strong>! Se non usi una DAW, puoi avviare direttamente <code>PulseForge.exe</code> per jammare in Standalone.
+          </div>
         </div>
       </div>
-      <div class="install-step">
-        <div class="step-num">2</div>
-        <div class="step-txt">
-          Fai doppio clic sul file <code>install_vst3.bat</code>.<br>
-          Lo script installerà <code>PulseForge.vst3</code> in <code>C:\Program Files\Common Files\VST3\DaMA\</code> e resetterà la cache di scansione di Ableton Live.
-        </div>
-      </div>
-      <div class="install-step">
-        <div class="step-num">3</div>
-        <div class="step-txt">
-          Avvia la tua DAW: troverai <strong>PulseForge</strong> immediatamente disponibile sotto la cartella produttore <strong>DaMA</strong>!
-        </div>
-      </div>
-    </div>
 
-    <div style="text-align: center; margin-top: 2rem;">
-      <a href="download/PulseForge-Windows-v1.0.0.zip" class="btn btn-primary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Scarica PulseForge v1.0.0 (Pacchetto Completo)
-      </a>
-    </div>
-  </section>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="download/PulseForge-Windows-v1.0.0.zip" class="btn btn-primary" style="font-size:1.05rem; padding:15px 34px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Scarica il Pacchetto Completo PulseForge v1.0.0
+        </a>
+      </div>
+    </section>
+
+  </div>
 
   <!-- Footer -->
   <footer>
     <p>
-      <strong>Orage PulseForge</strong> — Progettato e sviluppato da <strong>DaMA Audio</strong>.<br>
-      Finitura in alluminio anodizzato satinato serie 2026. Codice sorgente e aggiornamenti su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>.
+      <strong>Orage PulseForge</strong> — Progettato e sviluppato per musicisti e jam dal vivo da <strong>DaMA Audio</strong>.<br>
+      Codice sorgente, aggiornamenti e supporto disponibili su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>.
     </p>
   </footer>
 
