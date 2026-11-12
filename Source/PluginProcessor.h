@@ -76,6 +76,8 @@ public:
     void toggleTrackMuted (int idx);
     int  getTrackNumSteps (int trackIdx) const noexcept;
     void setTrackNumSteps (int trackIdx, int numSteps);
+    void setTrackGenre (int trackIdx, PulseForge::GenreStyle genre);
+    void setTrackRole (int trackIdx, PulseForge::InstrumentRole role);
 
     void triggerGeneratePattern (bool applyRecommendedScaleAndSwing = true);
     void triggerGenerateTrack (int trackIdx);
@@ -83,6 +85,7 @@ public:
     void triggerClearTrack (int trackIdx);
     void triggerRotateTrack (int trackIdx, int delta);
     void triggerGenerateTrio();
+    void updateTrackComplexity (int trackIdx, float newComplexity);
     bool triggerLoadFromUserSamplesLibrary();
     bool triggerLoadSpecificMidiFile (const juce::File& file);
     void triggerMutatePattern();
@@ -210,6 +213,7 @@ private:
 
     std::atomic<int> currentPlayStep { 0 };
     std::array<std::atomic<int>, PulseForge::kNumTracks> trackPlaySteps { 0, 0, 0 };
+    std::array<std::atomic<float>, PulseForge::kNumTracks> pendingComplexityUpdate { -1.0f, -1.0f, -1.0f };
     std::atomic<int> lastTriggeredNote { 36 };
     std::atomic<bool> transportRunning { false };
     std::atomic<double> currentHostBpm { 124.0 };

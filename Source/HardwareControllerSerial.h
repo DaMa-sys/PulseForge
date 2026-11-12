@@ -8,7 +8,7 @@
 
 //==============================================================================
 // HardwareControllerSerial: Win32 background thread that handles Auto-Discovery
-// and non-blocking serial communication with the DaMA PulseForge Arduino Controller.
+// and non-blocking serial communication with the Orage PulseForge Arduino Controller.
 //==============================================================================
 class HardwareControllerSerial
 {
@@ -389,6 +389,14 @@ private:
         }
     }
 
+    // Incoming Parameter Coalescing & Rate Limiter (protects Host automation thread from flood)
+    std::mutex paramMutex;
+    struct ParamThrottler {
+        int lastDispatchedValue = -9999;
+        std::chrono::steady_clock::time_point lastDispatchTime = std::chrono::steady_clock::now() - std::chrono::milliseconds (500);
+    };
+    std::map<std::pair<int, juce::String>, ParamThrottler> paramThrottlers;
+
     void parseIncomingMessage (const juce::String& msg)
     {
         // Format examples: "T0:GEN", "T1:MUT", "T0:DENS:65", "T2:ENC:STEPS:+1"
@@ -415,7 +423,23 @@ private:
             {
                 auto parts = juce::StringArray::fromTokens (rest, ":", "");
                 if (parts.size() >= 2 && onParameterChange)
-                    onParameterChange (track, parts[0], parts[1].getIntValue());
+                {
+                    const juce::String paramKey = parts[0];
+                    const int paramVal = parts[1].getIntValue();
+
+                    // Coalesce / rate-limit per parameter: minimum 35ms between host updates unless final value changed
+                    std::lock_guard<std::mutex> lock (paramMutex);
+                    auto& thr = paramThrottlers[{ track, paramKey }];
+                    auto now = std::chrono::steady_clock::now();
+                    auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds> (now - thr.lastDispatchTime).count();
+
+                    if (thr.lastDispatchedValue != paramVal && elapsedMs >= 35)
+                    {
+                        thr.lastDispatchedValue = paramVal;
+                        thr.lastDispatchTime = now;
+                        onParameterChange (track, paramKey, paramVal);
+                    }
+                }
             }
         }
     }

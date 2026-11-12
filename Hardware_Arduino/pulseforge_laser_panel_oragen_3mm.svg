@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320mm" height="194mm" viewBox="0 0 320 194">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&amp;family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap');
+      .cut { fill: none; stroke: #ff0000; stroke-width: 0.15; }
+      .font-title { font-family: 'Fugaz One', 'FugazOne-Regular', cursive, sans-serif; fill: #0000cc; }
+      .font-tech  { font-family: 'Montserrat', Arial, sans-serif; fill: #0000aa; }
+      .brand-main   { font-size: 6.2px; font-weight: bold; letter-spacing: 1.2px; }
+      .brand-sub    { font-size: 2.8px; letter-spacing: 0.8px; text-transform: uppercase; font-weight: 600; fill: #5555bb; }
+      .ch-num       { font-size: 2.6px; letter-spacing: 0.5px; font-style: italic; font-weight: 400; fill: #7777cc; }
+      .ch-title     { font-size: 4.8px; font-weight: bold; letter-spacing: 0.8px; }
+      .ch-sub       { font-size: 2.2px; letter-spacing: 0.4px; text-transform: lowercase; font-weight: 400; fill: #6666aa; }
+      .btn-label    { font-size: 3.4px; font-weight: 700; letter-spacing: 0.5px; }
+      .knob-label   { font-size: 3.2px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+      .knob-sub     { font-size: 2.0px; letter-spacing: 0.3px; font-weight: 400; fill: #6666bb; }
+      .badge        { font-size: 2.2px; letter-spacing: 0.6px; font-weight: 600; fill: #444499; }
+      .engrave-line { fill: none; stroke: #0000cc; stroke-width: 0.2; }
+      .divider      { fill: none; stroke: #0000aa; stroke-width: 0.15; stroke-dasharray: 2.5, 2.5; }
+      .frame        { fill: none; stroke: #0000cc; stroke-width: 0.15; }
+      .main-border  { fill: none; stroke: #0000cc; stroke-width: 0.35; }
+      .sub-border   { fill: none; stroke: #0000cc; stroke-width: 0.15; }
+    </style>
+  </defs>
+  <rect class="cut" x="0.5" y="0.5" width="319" height="193" rx="4" />
+  <rect class="main-border" x="6.0" y="5.0" width="308.0" height="184.0" rx="5.0" />
+  <rect class="sub-border" x="7.2" y="6.2" width="305.6" height="181.6" rx="4.0" />
+  <text class="font-title brand-main" x="16" y="13.0">ORAGEN</text>
+  <text class="font-title brand-main" x="54" y="13.0" font-size="5.2px">PULSEFORGE</text>
+  <text class="font-tech brand-sub" x="105" y="13.0">DESK CONSOLE</text>
+  <text class="font-tech ch-num" x="158" y="13.0">3-track algorithmic midi synthesizer engine</text>
+  <text class="font-tech badge" x="252" y="13.0">ORAGEN AUDIO</text>
+  <text class="font-tech ch-sub" x="295" y="13.0">ITALY</text>
+  <line class="engrave-line" x1="16" y1="16.0" x2="304" y2="16.0" />
+  <line class="divider" x1="107" y1="18" x2="107" y2="180" />
+  <line class="divider" x1="213" y1="18" x2="213" y2="180" />
+  <text class="font-tech ch-num" text-anchor="middle" x="53.50" y="21">channel 01</text>
+  <text class="font-title ch-title" text-anchor="middle" x="53.50" y="26">BASS</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="53.50" y="29.5">monophonic synth</text>
+  <rect class="frame" x="40.50" y="32" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="41.50" y="33" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="39.25" cy="30.75" r="1.1" />
+  <circle class="cut" cx="67.75" cy="30.75" r="1.1" />
+  <circle class="cut" cx="39.25" cy="48.25" r="1.1" />
+  <circle class="cut" cx="67.75" cy="48.25" r="1.1" />
+  <circle class="frame" cx="83.00" cy="39.5" r="3.4" />
+  <circle class="cut" cx="83.00" cy="39.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="83.00" y="46.5">beat</text>
+  <rect class="frame" x="23.00" y="51" width="62" height="18.5" rx="2" stroke-dasharray="1.5, 1.5" />
+  <circle class="cut" cx="36.00" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="36.00" y="67.5">GENERATE</text>
+  <circle class="cut" cx="71.00" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="71.00" y="67.5">MUTATE</text>
+  <circle class="cut" cx="36.00" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36.00" y="95.0">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36.00" y="98.0">style select</text>
+  <circle class="cut" cx="71.00" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71.00" y="95.0">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71.00" y="98.0">sound mode</text>
+  <circle class="cut" cx="36.00" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36.00" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36.00" y="125.5">4 • 8 • 16 • 32</text>
+  <circle class="cut" cx="71.00" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71.00" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71.00" y="125.5">div / mult</text>
+  <circle class="cut" cx="36.00" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36.00" y="150.0">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36.00" y="153.0">sparse • full</text>
+  <circle class="cut" cx="71.00" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71.00" y="150.0">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71.00" y="153.0">straight • 75%</text>
+  <circle class="cut" cx="36.00" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36.00" y="177.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36.00" y="180.5">c0 — c5</text>
+  <circle class="cut" cx="71.00" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71.00" y="177.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71.00" y="180.5">1 — 4 oct</text>
+  <text class="font-tech ch-num" text-anchor="middle" x="160.00" y="21">channel 02</text>
+  <text class="font-title ch-title" text-anchor="middle" x="160.00" y="26">ARP / LEAD</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="160.00" y="29.5">melodic sequences</text>
+  <rect class="frame" x="147.00" y="32" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="148.00" y="33" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="145.75" cy="30.75" r="1.1" />
+  <circle class="cut" cx="174.25" cy="30.75" r="1.1" />
+  <circle class="cut" cx="145.75" cy="48.25" r="1.1" />
+  <circle class="cut" cx="174.25" cy="48.25" r="1.1" />
+  <circle class="frame" cx="189.50" cy="39.5" r="3.4" />
+  <circle class="cut" cx="189.50" cy="39.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="189.50" y="46.5">beat</text>
+  <rect class="frame" x="129.50" y="51" width="62" height="18.5" rx="2" stroke-dasharray="1.5, 1.5" />
+  <circle class="cut" cx="142.50" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="142.50" y="67.5">GENERATE</text>
+  <circle class="cut" cx="177.50" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="177.50" y="67.5">MUTATE</text>
+  <circle class="cut" cx="142.50" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.50" y="95.0">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.50" y="98.0">style select</text>
+  <circle class="cut" cx="177.50" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.50" y="95.0">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.50" y="98.0">sound mode</text>
+  <circle class="cut" cx="142.50" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.50" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.50" y="125.5">4 • 8 • 16 • 32</text>
+  <circle class="cut" cx="177.50" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.50" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.50" y="125.5">div / mult</text>
+  <circle class="cut" cx="142.50" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.50" y="150.0">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.50" y="153.0">sparse • full</text>
+  <circle class="cut" cx="177.50" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.50" y="150.0">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.50" y="153.0">straight • 75%</text>
+  <circle class="cut" cx="142.50" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.50" y="177.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.50" y="180.5">c0 — c5</text>
+  <circle class="cut" cx="177.50" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.50" y="177.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.50" y="180.5">1 — 4 oct</text>
+  <text class="font-tech ch-num" text-anchor="middle" x="266.50" y="21">channel 03</text>
+  <text class="font-title ch-title" text-anchor="middle" x="266.50" y="26">CHORDS</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="266.50" y="29.5">polyphonic harmony</text>
+  <rect class="frame" x="253.50" y="32" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="254.50" y="33" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="252.25" cy="30.75" r="1.1" />
+  <circle class="cut" cx="280.75" cy="30.75" r="1.1" />
+  <circle class="cut" cx="252.25" cy="48.25" r="1.1" />
+  <circle class="cut" cx="280.75" cy="48.25" r="1.1" />
+  <circle class="frame" cx="296.00" cy="39.5" r="3.4" />
+  <circle class="cut" cx="296.00" cy="39.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="296.00" y="46.5">beat</text>
+  <rect class="frame" x="236.00" y="51" width="62" height="18.5" rx="2" stroke-dasharray="1.5, 1.5" />
+  <circle class="cut" cx="249.00" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="249.00" y="67.5">GENERATE</text>
+  <circle class="cut" cx="284.00" cy="58.5" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="284.00" y="67.5">MUTATE</text>
+  <circle class="cut" cx="249.00" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249.00" y="95.0">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249.00" y="98.0">style select</text>
+  <circle class="cut" cx="284.00" cy="81.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284.00" y="95.0">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284.00" y="98.0">sound mode</text>
+  <circle class="cut" cx="249.00" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249.00" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249.00" y="125.5">4 • 8 • 16 • 32</text>
+  <circle class="cut" cx="284.00" cy="109.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284.00" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284.00" y="125.5">div / mult</text>
+  <circle class="cut" cx="249.00" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249.00" y="150.0">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249.00" y="153.0">sparse • full</text>
+  <circle class="cut" cx="284.00" cy="136.5" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284.00" y="150.0">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284.00" y="153.0">straight • 75%</text>
+  <circle class="cut" cx="249.00" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249.00" y="177.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249.00" y="180.5">c0 — c5</text>
+  <circle class="cut" cx="284.00" cy="164.0" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284.00" y="177.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284.00" y="180.5">1 — 4 oct</text>
+  <line class="engrave-line" x1="16" y1="184.0" x2="304" y2="184.0" />
+  <text class="font-tech badge" x="16" y="187.8">DESIGNED &amp; CRAFTED IN ITALY BY ORAGEN</text>
+  <text class="font-tech badge" text-anchor="end" x="304" y="187.8">S/N: OG-026-001</text>
+</svg>

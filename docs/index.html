@@ -3,43 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DaMA PulseForge — Generative MIDI Sequencer & Arpeggiator VST3 / Standalone</title>
-  <meta name="description" content="PulseForge è il generatore algoritmico MIDI e sequencer a 16 step con estetica tattile Soft-UI, slide stile 303, ratchet e sincronizzazione perfetta col BPM del progetto.">
+  <title>Orage PulseForge — 3-Track Generative Synthesizer & MIDI Engine (VST3 / Standalone)</title>
+  <meta name="description" content="Orage PulseForge: Generatore MIDI a 3 tracce polifoniche indipendenti e synth generativo con estetica hardware in alluminio satinato e controlli tattili vintage 2026.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-top: #2FC0D0;
-      --bg-bottom: #2587B5;
-      --bg-deep: #0D374D;
-      --bg-darker: #061e2b;
-      --soft-shadow: rgba(11, 61, 92, 0.35);
-      --soft-glow: rgba(191, 243, 248, 0.45);
-      --accent-ice: #E8FBFD;
-      --accent-cyan: #38CBE0;
-      --text-dark: #1B6F8A;
-      --text-bright: #FFFFFF;
-      --text-muted: rgba(255, 255, 255, 0.70);
-      --border-soft: rgba(255, 255, 255, 0.12);
+      --bg-chassis: #0B0C0E;
+      --bg-card-dark: #121418;
+      --alum-specular: #FFFFFF;
+      --alum-light: #E8EBF0;
+      --alum-base: #D8DCE3;
+      --alum-dark: #C6CBD4;
+      --alum-bevel: #A4AAB5;
+
+      --tint-orange-top: #F6ECE0;
+      --tint-orange-mid: #EBDECE;
+      --tint-orange-bot: #D9C9B8;
+
+      --tint-cyan-top: #E5EEF5;
+      --tint-cyan-mid: #D3E2EC;
+      --tint-cyan-bot: #BFD2DE;
+
+      --tint-green-top: #E6EFE8;
+      --tint-green-mid: #D4E3D8;
+      --tint-green-bot: #C1D4C7;
+
+      --amber-led: #FFAC20;
+      --amber-glow: rgba(255, 172, 32, 0.45);
+      --blue-led: #1E6BFF;
+      --blue-glow: rgba(30, 107, 255, 0.45);
+      --green-led: #10B981;
+      --green-glow: rgba(16, 185, 129, 0.45);
+
+      --text-dark: #000000;
+      --text-label: #101215;
+      --text-white: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.65);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: radial-gradient(circle at 50% 0%, #175470 0%, #071c26 80%);
-      color: var(--text-bright);
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #16181E 0%, #08090B 80%);
+      color: #E2E6EC;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.6;
       overflow-x: hidden;
     }
 
+    /* Top Navigation Header */
     header {
-      padding: 1.5rem 2rem;
+      padding: 1.5rem 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -47,46 +67,43 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       text-decoration: none;
-      color: var(--text-bright);
+      color: #FFF;
     }
 
     .brand-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--bg-top), var(--bg-bottom));
-      box-shadow: 0 4px 12px rgba(47, 192, 208, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
+      font-family: 'Fugaz One', cursive;
+      font-size: 1.8rem;
       letter-spacing: 0.5px;
+      color: #FFF;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    .brand-name {
-      font-weight: 800;
-      font-size: 1.3rem;
+    .brand-sub {
+      font-size: 0.78rem;
+      font-weight: 500;
+      font-style: italic;
+      color: var(--amber-led);
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
-    .brand-name span { color: var(--accent-cyan); }
 
     .nav-links a {
       color: var(--text-muted);
       text-decoration: none;
-      margin-left: 1.8rem;
-      font-size: 0.95rem;
-      font-weight: 500;
+      margin-left: 2rem;
+      font-size: 0.92rem;
+      font-weight: 600;
       transition: color 0.2s;
     }
-    .nav-links a:hover { color: var(--text-bright); }
+    .nav-links a:hover { color: #FFF; }
 
+    /* Hero Section */
     .hero {
       text-align: center;
-      padding: 4.5rem 1.5rem 3.5rem;
-      max-width: 960px;
+      padding: 4.5rem 1.5rem 2.5rem;
+      max-width: 980px;
       margin: 0 auto;
     }
 
@@ -94,27 +111,37 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(47, 192, 208, 0.15);
-      border: 1px solid rgba(47, 192, 208, 0.35);
-      color: var(--accent-ice);
+      background: rgba(255, 172, 32, 0.12);
+      border: 1px solid rgba(255, 172, 32, 0.35);
+      color: var(--amber-led);
       padding: 6px 18px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       margin-bottom: 1.5rem;
     }
 
-    .hero h1 {
-      font-size: clamp(2.4rem, 5vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -1px;
-      line-height: 1.15;
-      margin-bottom: 1.2rem;
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber-led);
+      box-shadow: 0 0 8px var(--amber-led);
     }
 
-    .hero h1 span {
-      background: linear-gradient(135deg, #E8FBFD 0%, #2FC0D0 50%, #9FE3EE 100%);
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      color: #FFF;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #FFF 0%, #C4CBD6 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -122,317 +149,268 @@
     .hero p {
       font-size: 1.15rem;
       color: var(--text-muted);
-      max-width: 680px;
-      margin: 0 auto 2.5rem;
+      max-width: 760px;
+      margin: 0 auto 2.2rem;
+      font-weight: 400;
+      line-height: 1.7;
     }
 
     .hero-actions {
       display: flex;
-      gap: 16px;
       justify-content: center;
+      gap: 16px;
       flex-wrap: wrap;
+      margin-bottom: 3.5rem;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 14px 28px;
-      border-radius: 12px;
+      padding: 13px 28px;
+      border-radius: 6px;
+      font-size: 0.95rem;
       font-weight: 700;
-      font-size: 1.02rem;
       text-decoration: none;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s ease;
       cursor: pointer;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #FFFFFF 0%, #D4F4F8 100%);
-      color: var(--text-dark);
-      box-shadow: 0 8px 24px rgba(11, 61, 92, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+      background: linear-gradient(180deg, #2D3038 0%, #16181D 100%);
+      color: #FFF;
+      border: 1px solid rgba(255, 172, 32, 0.7);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
     .btn-primary:hover {
+      border-color: var(--amber-led);
+      box-shadow: 0 6px 24px rgba(255, 172, 32, 0.35);
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(47, 192, 208, 0.5), 0 0 0 1px #fff inset;
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-bright);
+      background: rgba(255, 255, 255, 0.05);
+      color: #E0E4EB;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.10);
+      color: #FFF;
+      border-color: rgba(255, 255, 255, 0.3);
       transform: translateY(-2px);
     }
 
-    /* Plugin Card Preview Mockup */
+    /* Plugin Preview Image Frame */
     .preview-container {
-      max-width: 1100px;
-      margin: 2rem auto 5rem;
-      padding: 0 1.5rem;
+      max-width: 1180px;
+      margin: 0 auto 5rem;
+      padding: 0 1rem;
     }
 
-    .plugin-window {
-      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
-      position: relative;
-    }
-
-    .window-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.08);
+    .preview-frame {
       border-radius: 12px;
-      margin-bottom: 16px;
-    }
-
-    .window-title {
-      font-weight: 800;
-      letter-spacing: 2px;
-      font-size: 0.95rem;
-      color: #fff;
-    }
-
-    .window-modes {
-      display: flex;
-      gap: 8px;
-    }
-
-    .soft-pill {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      background: rgba(255, 255, 255, 0.06);
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .soft-pill.active {
-      background: linear-gradient(135deg, #fff, #D4F4F8);
-      color: var(--text-dark);
-      box-shadow: 0 4px 12px rgba(11, 61, 92, 0.35);
-    }
-
-    /* Knob Mockups Grid */
-    .knobs-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-      gap: 12px;
-      padding: 18px 20px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .knob-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .knob-label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    .knob-circle {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(0,0,0,0.15));
-      box-shadow: 0 4px 10px rgba(11, 61, 92, 0.35), 0 0 0 1px rgba(255,255,255,0.18) inset;
-      position: relative;
-    }
-
-    .knob-circle::after {
-      content: '';
-      position: absolute;
-      top: 6px;
-      left: 21px;
-      width: 2px;
-      height: 12px;
-      background: #FFFFFF;
-      border-radius: 2px;
-      transform-origin: bottom center;
-    }
-
-    .knob-val {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #fff;
-    }
-
-    /* Matrix Preview */
-    .matrix-box {
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      padding: 16px;
-    }
-
-    .step-grid {
-      display: grid;
-      grid-template-columns: repeat(16, 1fr);
-      gap: 6px;
-    }
-
-    .step-col {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .step-cell {
-      height: 28px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      box-shadow: inset 0 2px 4px rgba(11, 61, 92, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .step-cell.active {
-      background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.10));
-      color: var(--accent-ice);
-      box-shadow: 0 2px 6px rgba(11, 61, 92, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3);
-    }
-
-    .step-cell.bar {
-      height: 64px;
-      position: relative;
-      background: rgba(0, 0, 0, 0.12);
-      border-radius: 6px;
+      background: #0D0E11;
+      padding: 8px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.12);
       overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    .preview-frame:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 172, 32, 0.35);
     }
 
-    .bar-fill {
-      position: absolute;
-      bottom: 0;
-      left: 2px;
-      right: 2px;
-      border-radius: 4px;
-      background: linear-gradient(180deg, #E8FBFD 0%, #9FE3EE 100%);
-      opacity: 0.85;
+    .preview-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
     }
 
-    /* Features Grid */
-    .features {
-      max-width: 1200px;
-      margin: 4rem auto;
+    /* 3 Modular Lanes Section */
+    .modules-section {
+      max-width: 1180px;
+      margin: 0 auto 5rem;
       padding: 0 1.5rem;
     }
 
-    .section-header {
+    .section-title {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.8rem;
     }
 
-    .section-header h2 {
+    .section-title h2 {
       font-size: 2.2rem;
       font-weight: 800;
-      margin-bottom: 0.8rem;
+      color: #FFF;
+      margin-bottom: 0.5rem;
     }
 
-    .section-header p {
+    .section-title p {
       color: var(--text-muted);
       font-size: 1.05rem;
     }
 
-    .grid-3 {
+    .modules-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       gap: 24px;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 2rem;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(47, 192, 208, 0.35);
-      background: rgba(255, 255, 255, 0.06);
-    }
-
-    .card-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, rgba(47, 192, 208, 0.25), rgba(37, 135, 181, 0.25));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 1.2rem;
-      border: 1px solid rgba(47, 192, 208, 0.35);
-    }
-
-    .card h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.8rem;
-      color: var(--text-bright);
-    }
-
-    .card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.55;
-    }
-
-    /* Specs & Install */
-    .specs-section {
-      max-width: 900px;
-      margin: 4rem auto;
-      padding: 2.5rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-    }
-
-    .specs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 1.5rem;
-    }
-
-    .spec-item {
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.03);
+    .module-card {
       border-radius: 10px;
+      padding: 24px;
+      color: var(--text-dark);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255,255,255,0.8) inset;
+      position: relative;
     }
 
-    .spec-name {
+    .module-orange {
+      background: linear-gradient(180deg, var(--tint-orange-top) 0%, var(--tint-orange-mid) 45%, var(--tint-orange-bot) 100%);
+      border: 1px solid #BBA894;
+    }
+
+    .module-cyan {
+      background: linear-gradient(180deg, var(--tint-cyan-top) 0%, var(--tint-cyan-mid) 45%, var(--tint-cyan-bot) 100%);
+      border: 1px solid #92A7B5;
+    }
+
+    .module-green {
+      background: linear-gradient(180deg, var(--tint-green-top) 0%, var(--tint-green-mid) 45%, var(--tint-green-bot) 100%);
+      border: 1px solid #92A999;
+    }
+
+    .module-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #101114;
+      color: #FFF;
+      padding: 4px 14px;
+      border-radius: 4px;
       font-size: 0.78rem;
       font-weight: 700;
-      text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--accent-cyan);
-      margin-bottom: 4px;
+      margin-bottom: 16px;
     }
 
-    .spec-val {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #fff;
+    .jewel-amber { width: 8px; height: 8px; border-radius: 50%; background: var(--amber-led); box-shadow: 0 0 8px var(--amber-led); }
+    .jewel-blue  { width: 8px; height: 8px; border-radius: 50%; background: var(--blue-led);  box-shadow: 0 0 8px var(--blue-led); }
+    .jewel-green { width: 8px; height: 8px; border-radius: 50%; background: var(--green-led); box-shadow: 0 0 8px var(--green-led); }
+
+    .module-card h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: #101215;
+    }
+
+    .module-card p {
+      font-size: 0.94rem;
+      font-weight: 500;
+      color: #24272D;
+      line-height: 1.6;
+    }
+
+    /* Features Grid */
+    .features-section {
+      max-width: 1180px;
+      margin: 0 auto 5rem;
+      padding: 0 1.5rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+    }
+
+    .feat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 26px;
+      transition: all 0.25s;
+    }
+    .feat-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 172, 32, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .feat-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+    }
+
+    .feat-card h4 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #FFF;
+      margin-bottom: 8px;
+    }
+
+    .feat-card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Installation Section */
+    .install-section {
+      max-width: 960px;
+      margin: 0 auto 5rem;
+      padding: 3rem 2rem;
+      background: #0F1116;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .install-section h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #FFF;
+      margin-bottom: 0.6rem;
+    }
+
+    .install-steps {
+      margin: 2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .install-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px 20px;
+      border-radius: 8px;
+      border-left: 3px solid var(--amber-led);
+    }
+
+    .step-num {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--amber-led);
+      min-width: 24px;
+    }
+
+    .step-txt {
+      font-size: 0.95rem;
+      color: #E0E4EB;
+    }
+
+    .step-txt strong { color: #FFF; }
+    .step-txt code {
+      background: #1A1C22;
+      color: var(--amber-led);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.88rem;
     }
 
     /* Footer */
@@ -445,8 +423,9 @@
     }
 
     footer a {
-      color: var(--accent-cyan);
+      color: var(--amber-led);
       text-decoration: none;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -455,203 +434,180 @@
   <!-- Top Navigation -->
   <header>
     <a href="#" class="brand">
-      <div class="brand-logo">PF</div>
-      <div class="brand-name">DaMA <span>PulseForge</span></div>
+      <div class="brand-logo">Orage</div>
+      <div class="brand-sub">PulseForge Series</div>
     </a>
     <nav class="nav-links">
+      <a href="#moduli">I 3 Moduli</a>
       <a href="#features">Caratteristiche</a>
-      <a href="#install">Installazione</a>
+      <a href="#install">Installazione 1-Click</a>
       <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>
     </nav>
   </header>
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="badge">✦ Nuova Release v1.0.0 — VST3 & Standalone</div>
-    <h1>Generazione MIDI Algoritmica con <span>Design Tattile Soft-UI</span></h1>
+    <div class="badge">
+      <div class="badge-dot"></div>
+      Release Ufficiale v1.0.0 — VST3 & Standalone 64-bit
+    </div>
+    <h1>Generazione Poliritmica a 3 Tracce con <span>Design Hardware Orage</span></h1>
     <p>
-      PulseForge fonde la complessità matematica dei sequencer eurorack con l'estetica minimalista e tattile dei plugin moderni. Crea pattern ipnotici, linee di basso acid 303 e texture poliritmiche in pochi clic.
+      PulseForge unisce la precisione matematica dei sequencer eurorack con la nobiltà dell'alluminio spazzolato satinato. Tre motori generativi simultanei (Bass, Arp, Chords) armonizzati in scala con controlli tattili vintage e prestazioni 2026.
     </p>
     <div class="hero-actions">
       <a href="download/PulseForge-Windows-v1.0.0.zip" class="btn btn-primary">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Scarica PulseForge (Win x64)
+        Scarica PulseForge v1.0.0 (Win x64)
       </a>
       <a href="https://github.com/DaMa-sys/PulseForge" target="_blank" class="btn btn-secondary">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        Codice Sorgente su GitHub
+        GitHub Repository
       </a>
     </div>
   </section>
 
-  <!-- Interactive Plugin Window Visual Mockup -->
+  <!-- Plugin Real Screenshot Display -->
   <div class="preview-container">
-    <div class="plugin-window">
-      <!-- Window Header Bar -->
-      <div class="window-header">
-        <div class="window-title">PULSEFORGE <span style="font-size:0.75rem; opacity:0.6; font-weight:400; margin-left:8px;">MIDI GENERATOR</span></div>
-        <div class="window-modes">
-          <span class="soft-pill active">SEQUENCER</span>
-          <span class="soft-pill">ARPEGGIATOR</span>
-          <span class="soft-pill">SLOT A</span>
-          <span class="soft-pill">SLOT B</span>
-        </div>
-      </div>
-
-      <!-- Knobs Row -->
-      <div class="knobs-row">
-        <div class="knob-item">
-          <span class="knob-label">DENSITY</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">75%</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">SYNCOP</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">42%</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">SPICE</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">60%</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">RANGE</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">12 st</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">SWING</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">54%</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">GATE</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">85%</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">STEPS</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">16</span>
-        </div>
-        <div class="knob-item">
-          <span class="knob-label">RATIO</span>
-          <div class="knob-circle"></div>
-          <span class="knob-val">1/16</span>
-        </div>
-      </div>
-
-      <!-- 16-Step Matrix Preview -->
-      <div class="matrix-box">
-        <div class="step-grid">
-          <!-- 16 preview columns -->
-          <div class="step-col"><div class="step-cell active">1</div><div class="step-cell bar"><div class="bar-fill" style="height:70%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">ACC</div></div>
-          <div class="step-col"><div class="step-cell">2</div><div class="step-cell bar"><div class="bar-fill" style="height:35%; opacity:0.35"></div></div><div class="step-cell">·</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">3</div><div class="step-cell bar"><div class="bar-fill" style="height:85%"></div></div><div class="step-cell active">ON</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">4</div><div class="step-cell bar"><div class="bar-fill" style="height:50%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">SLD</div></div>
-          <div class="step-col"><div class="step-cell active">5</div><div class="step-cell bar"><div class="bar-fill" style="height:65%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">ACC</div></div>
-          <div class="step-col"><div class="step-cell">6</div><div class="step-cell bar"><div class="bar-fill" style="height:25%; opacity:0.35"></div></div><div class="step-cell">·</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">7</div><div class="step-cell bar"><div class="bar-fill" style="height:90%"></div></div><div class="step-cell active">ON</div><div class="step-cell">2x</div></div>
-          <div class="step-col"><div class="step-cell">8</div><div class="step-cell bar"><div class="bar-fill" style="height:45%"></div></div><div class="step-cell active">ON</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell active">9</div><div class="step-cell bar"><div class="bar-fill" style="height:80%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">ACC</div></div>
-          <div class="step-col"><div class="step-cell">10</div><div class="step-cell bar"><div class="bar-fill" style="height:30%; opacity:0.35"></div></div><div class="step-cell">·</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">11</div><div class="step-cell bar"><div class="bar-fill" style="height:60%"></div></div><div class="step-cell active">ON</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">12</div><div class="step-cell bar"><div class="bar-fill" style="height:75%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">SLD</div></div>
-          <div class="step-col"><div class="step-cell active">13</div><div class="step-cell bar"><div class="bar-fill" style="height:95%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">ACC</div></div>
-          <div class="step-col"><div class="step-cell">14</div><div class="step-cell bar"><div class="bar-fill" style="height:40%"></div></div><div class="step-cell active">ON</div><div class="step-cell">3x</div></div>
-          <div class="step-col"><div class="step-cell">15</div><div class="step-cell bar"><div class="bar-fill" style="height:55%"></div></div><div class="step-cell active">ON</div><div class="step-cell">·</div></div>
-          <div class="step-col"><div class="step-cell">16</div><div class="step-cell bar"><div class="bar-fill" style="height:85%"></div></div><div class="step-cell active">ON</div><div class="step-cell active">SLD</div></div>
-        </div>
-      </div>
+    <div class="preview-frame">
+      <img src="pulseforge_preview.png" alt="Orage PulseForge GUI Render">
     </div>
   </div>
 
-  <!-- Features Grid -->
-  <section id="features" class="features">
-    <div class="section-header">
-      <h2>Creatività Immediata in Pochi Passi</h2>
-      <p>Progettato per abbattere il blocco dello scrittore e generare groove musicali istantanei.</p>
+  <!-- 3 Modular Lanes Section -->
+  <section id="moduli" class="modules-section">
+    <div class="section-title">
+      <h2>I 3 Moduli a Finitura Satinata</h2>
+      <p>Ogni corsia ha una personalità acustica e una gradazione metallica dedicata per una navigazione immediata.</p>
     </div>
 
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-icon">⚡</div>
-        <h3>Generazione Algoritmica per Genere</h3>
-        <p>Motore intelligente ottimizzato per Techno, Melodic House, Acid 303, Cyberpunk, Neo-Soul e Lo-Fi. Genera linee melodiche o di basso con regole musicali autentiche.</p>
+    <div class="modules-grid">
+      <!-- Module 1: Bass -->
+      <div class="module-card module-orange">
+        <div class="module-badge">
+          <div class="jewel-amber"></div>
+          SEQ 1 : BASS
+        </div>
+        <h3>Alluminio Satinato Ambra</h3>
+        <p>
+          Specializzato in linee di basso solide: Acid 303, Sub House, Bassline sincopate e groove melodici. Include pitch-slide autentico, accenti e gestione dell'ottava di base.
+        </p>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🌊</div>
-        <h3>Design Soft-UI Tactile</h3>
-        <p>Interfaccia a membrana con profondità tridimensionale zenitale. Pomelli e pulsanti sembrano deformati dalla luce, garantendo massima leggibilità e zero affaticamento visivo.</p>
+      <!-- Module 2: Arp -->
+      <div class="module-card module-cyan">
+        <div class="module-badge">
+          <div class="jewel-blue"></div>
+          SEQ 2 : ARP
+        </div>
+        <h3>Alluminio Satinato Ciano</h3>
+        <p>
+          Motore per arpeggi poliritmici, sequenze ipnotiche alla Bonobo e ratchet ad alta velocità (1x..4x). Sincronizzato con divisori di tempo indipendenti da 1/4 a 1/32.
+        </p>
       </div>
 
-      <div class="card">
-        <div class="card-icon">⏱️</div>
-        <h3>BPM Sync & Rapporti Ritmi</h3>
-        <p>Sincronizzazione impeccabile al clock del progetto DAW con moltiplicatori e divisori di tempo (1/4, 1/8, 1/16, terzine e figure puntate) per poliritmie avanzate.</p>
+      <!-- Module 3: Chords -->
+      <div class="module-card module-green">
+        <div class="module-badge">
+          <div class="jewel-green"></div>
+          SEQ 3 : CHORDS
+        </div>
+        <h3>Alluminio Satinato Salvia</h3>
+        <p>
+          Generatore di stabs e progressioni armoniche. Crea accordi modali (Min7, Maj9, Sus4, Dim) sempre consonanti e perfettamente sincronizzati con Bass e Arp tramite <strong>Trio Harmonize</strong>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section id="features" class="features-section">
+    <div class="section-title">
+      <h2>Architettura Audio Professionale</h2>
+      <p>Zero compromessi: DSP a 64-bit, LookAndFeel ultra-ottimizzato e connettività totale.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <h4>Trio Harmonize</h4>
+        <p>Un solo clic rigenera tutte e tre le tracce simultaneamente applicando regole contrappuntistiche: il basso fonda l'armonia, gli accordi definiscono il colore e l'arpeggio ricama le note guida.</p>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🎹</div>
-        <h3>Slide 303 & Ratchet</h3>
-        <p>Autentico legato pitch-slide in stile Roland TB-303 con estensione automatica del gate e note bursts ad alta velocità (ratchet 1x..4x per trap e glitch fills).</p>
+      <div class="feat-card">
+        <div class="feat-icon">🎛️</div>
+        <h4>Potenziometri Fluted Vintage</h4>
+        <p>Manopole Davies 1900 in bachelite scura con scala graduata 0-10 e display digitale OLED ad incasso per un feedback visivo istantaneo dei valori.</p>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🔄</div>
-        <h3>Drag MIDI to DAW & 4 Slot</h3>
-        <p>Trascina il pattern generato direttamente su qualsiasi traccia della DAW con un solo gesto. Salva fino a 4 pattern A/B/C/D per variazioni dal vivo senza interruzioni.</p>
+      <div class="feat-card">
+        <div class="feat-icon">⏱️</div>
+        <h4>Sincronizzazione BPM & Free Run</h4>
+        <p>Sincronizzazione istantanea al clock DAW (Ableton Live, FL Studio, Logic) o modalità Free Run per jam indipendenti sul sintetizzatore interno a latenza zero.</p>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🎛️</div>
-        <h3>Hardware MIDI & Synth Integrato</h3>
-        <p>Pilota direttamente i tuoi sintetizzatori hardware via porta DIN/USB MIDI o ascolta subito le tue creazioni col sintetizzatore polifonico interno a latenza zero.</p>
+      <div class="feat-card">
+        <div class="feat-icon">🔄</div>
+        <h4>Drag MIDI to DAW</h4>
+        <p>Trascina con un gesto le 3 clip MIDI generate direttamente sulle tracce del tuo arrangiamento, con automazioni di velocity, slide e note length intatte.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">🔌</div>
+        <h4>Supporto Hardware USB/DIN</h4>
+        <p>Instrada ciascuna sequenza su porte MIDI hardware esterne separate (sintetizzatori analogici, drum machine) con filtraggio canali dedicato per traccia.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon">🪶</div>
+        <h4>Consumo CPU 0.1%</h4>
+        <p>Tutti i gradienti in alluminio satinato e le ombre tridimensionali sono pre-renderizzati in cache ARGB a 60 FPS senza pesare sulla CPU audio.</p>
       </div>
     </div>
   </section>
 
   <!-- Technical Specifications & Install Guide -->
-  <section id="install" class="specs-section">
-    <h2 style="font-size:1.8rem; margin-bottom: 0.6rem;">Installazione Semplice</h2>
+  <section id="install" class="install-section">
+    <h2>Installazione 1-Click per Windows</h2>
     <p style="color:var(--text-muted); margin-bottom: 1.5rem;">
-      PulseForge non richiede installer invasivi. Funziona immediatamente dopo aver scompattato il file ZIP.
+      Il pacchetto di rilascio include lo script automatico che copia il VST3 nella cartella standard di Windows e resetta la cache di scansione della DAW.
     </p>
 
-    <div style="background:rgba(0,0,0,0.25); padding:18px 22px; border-radius:12px; margin-bottom:2rem; font-family:'Space Mono', monospace; font-size:0.88rem; line-height:1.7;">
-      1. Scarica e scompatta <span style="color:var(--accent-cyan)">PulseForge-Windows-v1.0.0.zip</span><br>
-      2. Copia la cartella <span style="color:#fff">PulseForge.vst3</span> in: <span style="color:var(--accent-ice)">C:\Program Files\Common Files\VST3\DaMA\</span><br>
-      3. Riavvia Ableton Live o effettua la scansione dei plug-in nelle preferenze.<br>
-      4. Troverai PulseForge pronto all'uso sotto la cartella <strong>DaMA</strong>!
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="step-num">1</div>
+        <div class="step-txt">
+          Scarica ed estrai <strong>PulseForge-Windows-v1.0.0.zip</strong> in una cartella a piacere.
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">2</div>
+        <div class="step-txt">
+          Fai doppio clic sul file <code>install_vst3.bat</code>.<br>
+          Lo script installerà <code>PulseForge.vst3</code> in <code>C:\Program Files\Common Files\VST3\DaMA\</code> e resetterà la cache di scansione di Ableton Live.
+        </div>
+      </div>
+      <div class="install-step">
+        <div class="step-num">3</div>
+        <div class="step-txt">
+          Avvia la tua DAW: troverai <strong>PulseForge</strong> immediatamente disponibile sotto la cartella produttore <strong>DaMA</strong>!
+        </div>
+      </div>
     </div>
 
-    <div class="specs-grid">
-      <div class="spec-item">
-        <div class="spec-name">Formato</div>
-        <div class="spec-val">VST3 & Standalone (.exe)</div>
-      </div>
-      <div class="spec-item">
-        <div class="spec-name">Compatibilità</div>
-        <div class="spec-val">Ableton Live 11/12, FL Studio, Reaper, Cubase, Studio One</div>
-      </div>
-      <div class="spec-item">
-        <div class="spec-name">Sistema Operativo</div>
-        <div class="spec-val">Windows 10 / 11 (64-bit)</div>
-      </div>
-      <div class="spec-item">
-        <div class="spec-name">Consumo CPU</div>
-        <div class="spec-val">~0.1% (Ombre e gradienti pre-renderizzati in cache)</div>
-      </div>
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="download/PulseForge-Windows-v1.0.0.zip" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Scarica PulseForge v1.0.0 (Pacchetto Completo)
+      </a>
     </div>
   </section>
 
   <!-- Footer -->
   <footer>
     <p>
-      <strong>PulseForge</strong> — Progettato con passione da <strong>DaMA Audio</strong>.<br>
-      Rilasciato sotto licenza open source MIT. Consulta il progetto su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>.
+      <strong>Orage PulseForge</strong> — Progettato e sviluppato da <strong>DaMA Audio</strong>.<br>
+      Finitura in alluminio anodizzato satinato serie 2026. Codice sorgente e aggiornamenti su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>.
     </p>
   </footer>
 

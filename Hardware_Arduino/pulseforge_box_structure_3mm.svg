@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="410mm" height="400mm" viewBox="0 0 410 400">
+  <defs>
+    <style>
+      .cut { fill: none; stroke: #ff0000; stroke-width: 0.15; }
+      .engrave { font-family: sans-serif; font-size: 3.5px; fill: #0000ff; text-anchor: middle; }
+      .title { font-weight: bold; font-size: 5px; }
+      .dim { font-size: 3px; fill: #555555; }
+    </style>
+  </defs>
+
+  <!-- Titolo Foglio -->
+  <text class="engrave title" x="205" y="10">DaMA PULSEFORGE - KIT STRUTTURA CASE LEGNO 3MM (SCULPFUN S9)</text>
+
+  <!-- ========================================================================= -->
+  <!-- 1. PANNELLO FONDO (BOTTOM BASE): 320 mm x 190 mm                          -->
+  <!-- Posizionato a x=10, y=18                                                  -->
+  <!-- ========================================================================= -->
+  <rect class="cut" x="10" y="18" width="320" height="190" rx="3" />
+  <text class="engrave" x="170" y="30">FONDO (BOTTOM BASE) - 320 x 190 mm</text>
+  
+  <!-- 4 Fori per piedini in gomma antiscivolo (Ø 4mm) agli angoli -->
+  <circle class="cut" cx="22" cy="30" r="2.0" />
+  <circle class="cut" cx="318" cy="30" r="2.0" />
+  <circle class="cut" cx="22" cy="196" r="2.0" />
+  <circle class="cut" cx="318" cy="196" r="2.0" />
+
+  <!-- 4 Fori distanziatori per Arduino Mega 2560 (M3 - Ø 3.2mm) -->
+  <!-- Posizionato verso il retro a destra per allineare la porta USB -->
+  <!-- Mega origin: x=200, y=120 -->
+  <circle class="cut" cx="214.0" cy="122.5" r="1.6" />
+  <circle class="cut" cx="215.2" cy="170.8" r="1.6" />
+  <circle class="cut" cx="266.0" cy="127.6" r="1.6" />
+  <circle class="cut" cx="266.0" cy="155.6" r="1.6" />
+  <text class="engrave dim" x="240" y="145">Arduino Mega 2560</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. PANNELLO POSTERIORE (BACK PANEL): 320 mm x 68 mm                       -->
+  <!-- Posizionato a x=10, y=216                                                 -->
+  <!-- ========================================================================= -->
+  <rect class="cut" x="10" y="216" width="320" height="68" rx="2" />
+  <text class="engrave" x="170" y="230">PANNELLO POSTERIORE (BACK) - 320 x 68 mm</text>
+  
+  <!-- Asola per connettore USB Type-B dell'Arduino Mega (13 x 12 mm) -->
+  <!-- Allineata all'Arduino posizionato sul fondo: x=202, y=258 -->
+  <rect class="cut" x="202" y="258" width="13" height="12" rx="1.5" />
+  <text class="engrave dim" x="208.5" y="254">USB MEGA</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- 3. PANNELLO ANTERIORE BASSO (FRONT LIP): 320 mm x 28 mm                   -->
+  <!-- Posizionato a x=10, y=292                                                 -->
+  <!-- ========================================================================= -->
+  <rect class="cut" x="10" y="292" width="320" height="28" rx="2" />
+  <text class="engrave" x="170" y="308">BORDO ANTERIORE (FRONT LIP) - 320 x 28 mm</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- 4. FIANCO SINISTRO (LEFT WEDGE): base 190 mm, front 28 mm, rear 68 mm     -->
+  <!-- Posizionato a x=10, y=328                                                 -->
+  <!-- ========================================================================= -->
+  <polygon class="cut" points="10,396 200,396 200,328 10,368" />
+  <text class="engrave" x="105" y="380">FIANCO SX (LEFT)</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- 5. FIANCO DESTRO (RIGHT WEDGE): speculare                                 -->
+  <!-- Posizionato a x=210, y=328                                                -->
+  <!-- ========================================================================= -->
+  <polygon class="cut" points="210,396 400,396 400,368 210,328" />
+  <text class="engrave" x="305" y="380">FIANCO DX (RIGHT)</text>
+
+</svg>

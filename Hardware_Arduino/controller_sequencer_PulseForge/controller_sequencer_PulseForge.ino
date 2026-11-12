@@ -1,6 +1,6 @@
 /*
  * ==============================================================================
- * DaMA PulseForge - Dedicated Hardware Desktop Controller
+ * Oragen PulseForge - Dedicated Hardware Desktop Controller
  * Target: Arduino Mega 2560 (ATmega2560)
  * Communication: High-Speed Serial @ 115200 Baud with Auto-Discovery Handshake
  *
@@ -12,12 +12,35 @@
 #include <Arduino.h>
 
 //==============================================================================
-// IMPOSTAZIONI HARDWARE:
-// De-commenta la riga sotto SOLO quando avrai collegato gli schermi OLED
-// e avrai installato la libreria 'U8g2' dall'Arduino IDE.
-// Lasciala commentata per ora così lo sketch funziona subito senza dipendenze!
+// MASCHERE CONFIGURABILI COMPONENTI COLLEGATI (Hardware Connection Masks)
+// Se l'Arduino è "a vuoto" o stai montando solo alcuni componenti, metti 'false'
+// sui componenti NON ancora collegati.
+// I pin contrassegnati come 'false' verranno impostati in INPUT_PULLUP (legati a 5V)
+// così NON fluttuano, NON captano ronzio a 50Hz e NON mandano glitch seriali!
+// Quando saldi un potenziometro o encoder, basta cambiare il relativo 'false' in 'true'.
 //==============================================================================
-// #define ENABLE_OLED 1
+
+// Maschera dei 15 Potenziometri [Track 0..2][Param 0..4 (Dens, Swing, BaseOct, ArpOct, Ratio)]
+// Se la scheda è vuota, lasciali tutti a false. Non appena ne colleghi uno, metti true.
+const bool CONNECTED_POTS[3][5] = {
+    { false, false, false, false, false }, // Traccia 1 (Basso)
+    { false, false, false, false, false }, // Traccia 2 (Arp)
+    { false, false, false, false, false }  // Traccia 3 (Accordi)
+};
+
+// Maschera dei 6 Pulsanti [Gen, Mut per Track 0..2]
+const bool CONNECTED_BUTTONS_GEN[3] = { false, false, false };
+const bool CONNECTED_BUTTONS_MUT[3] = { false, false, false };
+
+// Maschera dei 9 Encoder rotativi [Track 0..2][Encoder 0..2 (Genre, Role, Steps)]
+const bool CONNECTED_ENCODERS[3][3] = {
+    { false, false, false },
+    { false, false, false },
+    { false, false, false }
+};
+
+// Maschera dei 3 LED di stato
+const bool CONNECTED_LEDS[3] = { false, false, false };
 
 #ifdef ENABLE_OLED
   #include <U8g2lib.h>
@@ -111,18 +134,35 @@ void setup()
 {
     Serial.begin (115200);
 
-    // Initialize Buttons & LEDs
+    // Initialize Buttons, LEDs & Potentiometers with hardware mask protection
     for (int t = 0; t < 3; ++t)
     {
-        pinMode (BTN_GEN[t], INPUT_PULLUP);
-        pinMode (BTN_MUT[t], INPUT_PULLUP);
+        if (CONNECTED_BUTTONS_GEN[t]) pinMode (BTN_GEN[t], INPUT_PULLUP);
+        else                          pinMode (BTN_GEN[t], INPUT_PULLUP);
 
-        pinMode (LED_PINS[t], OUTPUT);
-        digitalWrite (LED_PINS[t], LOW);
+        if (CONNECTED_BUTTONS_MUT[t]) pinMode (BTN_MUT[t], INPUT_PULLUP);
+        else                          pinMode (BTN_MUT[t], INPUT_PULLUP);
+
+        if (CONNECTED_LEDS[t])
+        {
+            pinMode (LED_PINS[t], OUTPUT);
+            digitalWrite (LED_PINS[t], LOW);
+        }
 
         for (int p = 0; p < 5; ++p)
         {
-            lastPotRaw[t][p] = analogRead (POT_PINS[t][p]);
+            if (CONNECTED_POTS[t][p])
+            {
+                // Connected potentiometer: standard high-impedance analog input
+                pinMode (POT_PINS[t][p], INPUT);
+                lastPotRaw[t][p] = analogRead (POT_PINS[t][p]);
+            }
+            else
+            {
+                // Unconnected/floating pin: tie to 5V via internal pullup so ADC stays rock-solid at 1023!
+                pinMode (POT_PINS[t][p], INPUT_PULLUP);
+                lastPotRaw[t][p] = 1023;
+            }
         }
 
         for (int e = 0; e < 3; ++e)
@@ -191,30 +231,42 @@ void scanButtons()
     for (int t = 0; t < 3; ++t)
     {
         // 1. GENERATE Button
-        int gVal = digitalRead (BTN_GEN[t]);
-        if (gVal != lastBtnGenState[t] && (now - lastBtnDebounceTime[t] > 50))
+        if (CONNECTED_BUTTONS_GEN[t])
         {
-            lastBtnDebounceTime[t] = now;
-            lastBtnGenState[t] = gVal;
-            if (gVal == LOW) // Pressed
+            int gVal = digitalRead (BTN_GEN[t]);
+            if (gVal != lastBtnGenState[t] && (now - lastBtnDebounceTime[t] > 50))
             {
-                Serial.print ("T"); Serial.print (t); Serial.println (":GEN");
-                digitalWrite (LED_PINS[t], HIGH);
-                ledOffTime[t] = now + 60;
+                lastBtnDebounceTime[t] = now;
+                lastBtnGenState[t] = gVal;
+                if (gVal == LOW) // Pressed
+                {
+                    Serial.print ("T"); Serial.print (t); Serial.println (":GEN");
+                    if (CONNECTED_LEDS[t])
+                    {
+                        digitalWrite (LED_PINS[t], HIGH);
+                        ledOffTime[t] = now + 60;
+                    }
+                }
             }
         }
 
         // 2. MUTATE Button
-        int mVal = digitalRead (BTN_MUT[t]);
-        if (mVal != lastBtnMutState[t] && (now - lastBtnDebounceTime[t] > 50))
+        if (CONNECTED_BUTTONS_MUT[t])
         {
-            lastBtnDebounceTime[t] = now;
-            lastBtnMutState[t] = mVal;
-            if (mVal == LOW)
+            int mVal = digitalRead (BTN_MUT[t]);
+            if (mVal != lastBtnMutState[t] && (now - lastBtnDebounceTime[t] > 50))
             {
-                Serial.print ("T"); Serial.print (t); Serial.println (":MUT");
-                digitalWrite (LED_PINS[t], HIGH);
-                ledOffTime[t] = now + 60;
+                lastBtnDebounceTime[t] = now;
+                lastBtnMutState[t] = mVal;
+                if (mVal == LOW) // Pressed
+                {
+                    Serial.print ("T"); Serial.print (t); Serial.println (":MUT");
+                    if (CONNECTED_LEDS[t])
+                    {
+                        digitalWrite (LED_PINS[t], HIGH);
+                        ledOffTime[t] = now + 60;
+                    }
+                }
             }
         }
     }
@@ -233,6 +285,10 @@ void scanPotentiometers()
     {
         for (int p = 0; p < 5; ++p)
         {
+            // Skip scanning unconnected pins completely
+            if (!CONNECTED_POTS[t][p])
+                continue;
+
             int raw = analogRead (POT_PINS[t][p]);
 
             // Deadband threshold to eliminate ADC noise jitter
@@ -268,6 +324,9 @@ void scanEncoders()
     {
         for (int e = 0; e < 3; ++e)
         {
+            if (!CONNECTED_ENCODERS[t][e])
+                continue;
+
             uint8_t clk = digitalRead (ENCODERS[t][e].pinCLK);
             if (clk != lastEncoderState[t][e] && clk == LOW)
             {

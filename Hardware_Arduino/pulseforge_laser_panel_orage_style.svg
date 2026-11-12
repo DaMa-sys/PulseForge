@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320mm" height="194mm" viewBox="0 0 320 194">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fugaz+One&amp;family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap');
+      
+      /* TAGLIO LASER (ROSSO PASSANTE) */
+      .cut { fill: none; stroke: #ff0000; stroke-width: 0.15; }
+      
+      /* INCISIONE LASER (BLU / NERO) */
+      .font-title { font-family: 'Fugaz One', 'FugazOne-Regular', cursive, sans-serif; fill: #0000cc; }
+      .font-tech  { font-family: 'Montserrat', Arial, sans-serif; fill: #0000aa; }
+      
+      /* GERARCHIA TIPOGRAFICA ORAGE / DaMA */
+      .brand-main   { font-size: 6.2px; font-weight: bold; letter-spacing: 1.2px; }
+      .brand-sub    { font-size: 2.8px; letter-spacing: 0.8px; text-transform: uppercase; font-weight: 600; fill: #5555bb; }
+      .ch-num       { font-size: 2.6px; letter-spacing: 0.5px; font-style: italic; font-weight: 400; fill: #7777cc; }
+      .ch-title     { font-size: 4.8px; font-weight: bold; letter-spacing: 0.8px; }
+      .ch-sub       { font-size: 2.2px; letter-spacing: 0.4px; text-transform: lowercase; font-weight: 400; fill: #6666aa; }
+      
+      .btn-label    { font-size: 3.4px; font-weight: 700; letter-spacing: 0.5px; }
+      .knob-label   { font-size: 3.2px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+      .knob-sub     { font-size: 2.0px; letter-spacing: 0.3px; font-weight: 400; fill: #6666bb; }
+      
+      .badge        { font-size: 2.2px; letter-spacing: 0.6px; font-weight: 600; fill: #444499; }
+      .engrave-line { fill: none; stroke: #0000cc; stroke-width: 0.2; }
+      .divider      { fill: none; stroke: #0000aa; stroke-width: 0.15; stroke-dasharray: 2.5, 2.5; }
+      .frame        { fill: none; stroke: #0000cc; stroke-width: 0.15; }
+    </style>
+  </defs>
+
+  <!-- Taglio Bordo Esterno con angoli arrotondati R=4mm -->
+  <rect class="cut" x="0.5" y="0.5" width="319" height="193" rx="4" />
+
+  <!-- ========================================================================= -->
+  <!-- HEADER CONSOLE (Stile Boutique Orage)                                     -->
+  <!-- ========================================================================= -->
+  <!-- Logo & Titolo Master a Sinistra -->
+  <text class="font-title brand-main" x="18" y="10.5">PULSEFORGE</text>
+  <text class="font-tech brand-sub" x="78" y="10.5">DESK CONSOLE</text>
+  <text class="font-tech ch-num" x="145" y="10.5">3-track algorithmic midi synthesizer engine</text>
+
+  <!-- Marchio & Made in Italy a Destra (Come nei sintetizzatori Orage) -->
+  <text class="font-tech badge" x="245" y="10.5">DaMA AUDIO LABS</text>
+  <text class="font-tech ch-sub" x="306" y="10.5">ITALY</text>
+  <line class="engrave-line" x1="18" y1="13.5" x2="306" y2="13.5" />
+
+  <!-- LINEE DIVISORIE TRA LE 3 SEZIONI DI CANALE -->
+  <line class="divider" x1="107" y1="16" x2="107" y2="182" />
+  <line class="divider" x1="213" y1="16" x2="213" y2="182" />
+
+
+  <!-- ========================================================================= -->
+  <!-- CANALE 1: BASS (Mono Bass Synth)                                          -->
+  <!-- ========================================================================= -->
+  <!-- Intestazione Canale con Gerarchia (numero in minuscolo, titolo maiuscolo) -->
+  <text class="font-tech ch-num" text-anchor="middle" x="53.5" y="19">channel 01</text>
+  <text class="font-title ch-title" text-anchor="middle" x="53.5" y="24">BASS</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="53.5" y="27.5">monophonic synth</text>
+
+  <!-- Finestra OLED 1 (24 x 13 mm) con cornice e 4 fori M2 -->
+  <rect class="frame" x="40.5" y="30" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="41.5" y="31" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="39.25" cy="28.75" r="1.1" />
+  <circle class="cut" cx="67.75" cy="28.75" r="1.1" />
+  <circle class="cut" cx="39.25" cy="46.25" r="1.1" />
+  <circle class="cut" cx="67.75" cy="46.25" r="1.1" />
+
+  <!-- LED Beat 1 (Foro 5mm con cerchietto grafico) -->
+  <circle class="frame" cx="83" cy="37.5" r="3.4" />
+  <circle class="cut" cx="83" cy="37.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="83" y="44.5">beat</text>
+
+  <!-- Pulsanti d'Azione Primari (GENERATE & MUTATE) -->
+  <rect class="frame" x="23" y="50" width="62" height="19" rx="2" stroke-dasharray="1.5, 1.5" />
+  <!-- Tasto GENERATE -->
+  <circle class="cut" cx="36" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="36" y="67">GENERATE</text>
+  <!-- Tasto MUTATE -->
+  <circle class="cut" cx="71" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="71" y="67">MUTATE</text>
+
+  <!-- SEZIONE CONTROLLI A 2 COLONNE CON GERARCHIA (Offset 14mm dai fori) -->
+  <!-- Riga 1 (Encoders): GENRE & ROLE -->
+  <circle class="cut" cx="36" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36" y="94.5">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36" y="97.5">style select</text>
+
+  <circle class="cut" cx="71" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71" y="94.5">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71" y="97.5">sound mode</text>
+
+  <!-- Riga 2: STEPS & RATIO -->
+  <circle class="cut" cx="36" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36" y="125.5">4 • 8 • 16 • 32</text>
+
+  <circle class="cut" cx="71" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71" y="125.5">div / mult</text>
+
+  <!-- Riga 3 (Potenziometri): DENSITY & SWING -->
+  <circle class="cut" cx="36" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36" y="150.5">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36" y="153.5">sparse • full</text>
+
+  <circle class="cut" cx="71" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71" y="150.5">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71" y="153.5">straight • 75%</text>
+
+  <!-- Riga 4 (Potenziometri): BASE OCT & ARP OCT -->
+  <circle class="cut" cx="36" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="36" y="178.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="36" y="181.5">c0 — c5</text>
+
+  <circle class="cut" cx="71" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="71" y="178.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="71" y="181.5">1 — 4 oct</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- CANALE 2: ARP / LEAD (Melodic Arpeggio)                                   -->
+  <!-- ========================================================================= -->
+  <text class="font-tech ch-num" text-anchor="middle" x="160" y="19">channel 02</text>
+  <text class="font-title ch-title" text-anchor="middle" x="160" y="24">ARP / LEAD</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="160" y="27.5">melodic sequences</text>
+
+  <!-- OLED 2 con cornice -->
+  <rect class="frame" x="147" y="30" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="148" y="31" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="145.75" cy="28.75" r="1.1" />
+  <circle class="cut" cx="174.25" cy="28.75" r="1.1" />
+  <circle class="cut" cx="145.75" cy="46.25" r="1.1" />
+  <circle class="cut" cx="174.25" cy="46.25" r="1.1" />
+
+  <!-- LED Beat 2 -->
+  <circle class="frame" cx="189.5" cy="37.5" r="3.4" />
+  <circle class="cut" cx="189.5" cy="37.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="189.5" y="44.5">beat</text>
+
+  <!-- Tasti GENERATE & MUTATE Canale 2 -->
+  <rect class="frame" x="129.5" y="50" width="62" height="19" rx="2" stroke-dasharray="1.5, 1.5" />
+  <circle class="cut" cx="142.5" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="142.5" y="67">GENERATE</text>
+
+  <circle class="cut" cx="177.5" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="177.5" y="67">MUTATE</text>
+
+  <!-- Riga 1 Canale 2 -->
+  <circle class="cut" cx="142.5" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.5" y="94.5">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.5" y="97.5">style select</text>
+
+  <circle class="cut" cx="177.5" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.5" y="94.5">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.5" y="97.5">sound mode</text>
+
+  <!-- Riga 2 Canale 2 -->
+  <circle class="cut" cx="142.5" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.5" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.5" y="125.5">4 • 8 • 16 • 32</text>
+
+  <circle class="cut" cx="177.5" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.5" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.5" y="125.5">div / mult</text>
+
+  <!-- Riga 3 Canale 2 -->
+  <circle class="cut" cx="142.5" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.5" y="150.5">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.5" y="153.5">sparse • full</text>
+
+  <circle class="cut" cx="177.5" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.5" y="150.5">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.5" y="153.5">straight • 75%</text>
+
+  <!-- Riga 4 Canale 2 -->
+  <circle class="cut" cx="142.5" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="142.5" y="178.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="142.5" y="181.5">c1 — c6</text>
+
+  <circle class="cut" cx="177.5" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="177.5" y="178.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="177.5" y="181.5">1 — 4 oct</text>
+
+
+  <!-- ========================================================================= -->
+  <!-- CANALE 3: CHORDS (Polyphonic Harmony)                                     -->
+  <!-- ========================================================================= -->
+  <text class="font-tech ch-num" text-anchor="middle" x="266.5" y="19">channel 03</text>
+  <text class="font-title ch-title" text-anchor="middle" x="266.5" y="24">CHORDS</text>
+  <text class="font-tech ch-sub" text-anchor="middle" x="266.5" y="27.5">polyphonic harmony</text>
+
+  <!-- OLED 3 con cornice -->
+  <rect class="frame" x="253.5" y="30" width="26" height="15" rx="1.5" />
+  <rect class="cut" x="254.5" y="31" width="24" height="13" rx="0.8" />
+  <circle class="cut" cx="252.25" cy="28.75" r="1.1" />
+  <circle class="cut" cx="280.75" cy="28.75" r="1.1" />
+  <circle class="cut" cx="252.25" cy="46.25" r="1.1" />
+  <circle class="cut" cx="280.75" cy="46.25" r="1.1" />
+
+  <!-- LED Beat 3 -->
+  <circle class="frame" cx="296" cy="37.5" r="3.4" />
+  <circle class="cut" cx="296" cy="37.5" r="2.5" />
+  <text class="font-tech ch-sub" text-anchor="middle" x="296" y="44.5">beat</text>
+
+  <!-- Tasti GENERATE & MUTATE Canale 3 -->
+  <rect class="frame" x="236" y="50" width="62" height="19" rx="2" stroke-dasharray="1.5, 1.5" />
+  <circle class="cut" cx="249" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="249" y="67">GENERATE</text>
+
+  <circle class="cut" cx="284" cy="58" r="3.5" />
+  <text class="font-title btn-label" text-anchor="middle" x="284" y="67">MUTATE</text>
+
+  <!-- Riga 1 Canale 3 -->
+  <circle class="cut" cx="249" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249" y="94.5">GENRE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249" y="97.5">style select</text>
+
+  <circle class="cut" cx="284" cy="81" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284" y="94.5">ROLE</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284" y="97.5">sound mode</text>
+
+  <!-- Riga 2 Canale 3 -->
+  <circle class="cut" cx="249" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249" y="122.5">STEPS</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249" y="125.5">4 • 8 • 16 • 32</text>
+
+  <circle class="cut" cx="284" cy="109" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284" y="122.5">RATIO</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284" y="125.5">div / mult</text>
+
+  <!-- Riga 3 Canale 3 -->
+  <circle class="cut" cx="249" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249" y="150.5">DENSITY</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249" y="153.5">sparse • full</text>
+
+  <circle class="cut" cx="284" cy="137" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284" y="150.5">SWING</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284" y="153.5">straight • 75%</text>
+
+  <!-- Riga 4 Canale 3 -->
+  <circle class="cut" cx="249" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="249" y="178.5">BASE OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="249" y="181.5">c2 — c6</text>
+
+  <circle class="cut" cx="284" cy="165" r="3.6" />
+  <text class="font-title knob-label" text-anchor="middle" x="284" y="178.5">ARP OCT</text>
+  <text class="font-tech knob-sub" text-anchor="middle" x="284" y="181.5">voicings</text>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER & MATRICOLA SERIALE (Stile Identico a Orage PMS-4 / Evolver)        -->
+  <!-- ========================================================================= -->
+  <line class="engrave-line" x1="18" y1="186.5" x2="306" y2="186.5" />
+  <text class="font-tech badge" x="18" y="190.5">DESIGNED &amp; CRAFTED IN ITALY BY DaMA AUDIO</text>
+  <text class="font-tech badge" text-anchor="end" x="306" y="190.5">S/N: PF-026-001</text>
+
+</svg>

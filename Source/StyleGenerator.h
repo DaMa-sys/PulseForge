@@ -1,5 +1,13 @@
 #pragma once
 #include "PatternData.h"
+#include "GenreProfiles.h"
+#include "FisherBassBricks.h"
+#include "LayeredPatternGenerator.h"
+#include "KalkbrennerBricks.h"
+#include "FredAgainBricks.h"
+#include "DisclosureBricks.h"
+#include "BonoboBricks.h"
+#include "HouseEdmBricks.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <random>
 
@@ -15,10 +23,11 @@ public:
         InstrumentRole role = InstrumentRole::MonoBass;
         EngineMode mode = EngineMode::Sequencer;
         ScaleType scale = ScaleType::Dorian;
-        float density = 0.65f;       // 0.0 .. 1.0
+        float density = 0.65f;       // In Acid 303: 0.0 .. 1.0 (density); In other genres: COMPLEXITY (0.0 .. 1.0)
         float syncopation = 0.55f;   // 0.0 .. 1.0
         float spice = 0.45f;         // 0.0 .. 1.0 (slides, accents, ratchets, octave jumps)
         float pitchRange = 0.50f;    // 0.0 .. 1.0
+        float freedom = 0.35f;       // 0.0 .. 1.0 (LIBERTA': a 0 segue strettamente i mattoncini, a 1 improvvisa)
         int numSteps = 16;
     };
 
@@ -40,7 +49,7 @@ public:
         {
             case GenreStyle::ClassicHouse:
                 outScale = ScaleType::Dorian;
-                outSwing = 0.24f;
+                outSwing = 0.24f; // 90s Chicago swing ~56%
                 break;
             case GenreStyle::AcidTechno:
                 outScale = ScaleType::Phrygian;
@@ -48,27 +57,27 @@ public:
                 break;
             case GenreStyle::ItaloSynthwave:
                 outScale = ScaleType::MinorNatural;
-                outSwing = 0.0f;
+                outSwing = 0.0f; // Dritto Moroder / EDM ~50%
                 break;
-            case GenreStyle::BerlinSchool:
+            case GenreStyle::BerlinSchool: // Fisher
                 outScale = ScaleType::Dorian;
-                outSwing = 0.0f;
+                outSwing = 0.16f; // Tech House groove ~54%
                 break;
-            case GenreStyle::MelodicTechno:
+            case GenreStyle::MelodicTechno: // Kalkbrenner
                 outScale = ScaleType::MinorNatural;
-                outSwing = 0.05f;
+                outSwing = 0.04f; // Berlin hypnotic ~51%
                 break;
-            case GenreStyle::DetroitElectro:
+            case GenreStyle::DetroitElectro: // Disclosure
+                outScale = ScaleType::Dorian;
+                outSwing = 0.28f; // UK Garage shuffle ~59%
+                break;
+            case GenreStyle::FunkBoogie: // Fred again..
                 outScale = ScaleType::MinorNatural;
-                outSwing = 0.14f;
+                outSwing = 0.22f; // Emotional 2-step ~56%
                 break;
-            case GenreStyle::FunkBoogie:
-                outScale = ScaleType::MinorPentatonic;
-                outSwing = 0.30f;
-                break;
-            case GenreStyle::EuclideanIDM:
-                outScale = ScaleType::MinorNatural;
-                outSwing = 0.10f;
+            case GenreStyle::EuclideanIDM: // Bonobo
+                outScale = ScaleType::Dorian;
+                outSwing = 0.12f; // Organic humanized ~53%
                 break;
             default:
                 outScale = ScaleType::MinorNatural;
@@ -366,12 +375,6 @@ public:
 
         bank.numSteps = juce::jlimit (1, kMaxSteps, p.numSteps);
 
-        if (p.role == InstrumentRole::HarmonyChords)
-        {
-            generateHarmonyChords (bank, p, rng);
-            return;
-        }
-
         //======================================================================
         // Curated Library of Real Musical Templates Distilled from G:\samples\MIDI
         //======================================================================
@@ -479,180 +482,420 @@ public:
             default: break;
         }
 
-        const PhraseTemplate& tmpl = pool[randInt (0, poolCount - 1)];
+        // Check if using the golden Acid 303 path (which must remain 100% bug-for-bug identical)
+        const bool isAcid303 = (p.genre == GenreStyle::AcidTechno);
 
-        // Optional musical transposition of the non-root motif tones (keeps Root=0 anchored!)
-        const int motifShiftChoices[] = { 0, 0, 2, -2, 5 };
-        const int motifShift = motifShiftChoices[randInt (0, 4)];
-        const float rangeScale = juce::jlimit (0.25f, 1.50f, p.pitchRange * 1.45f);
+        if (isAcid303)
+        {
+            // =================================================================
+            // ACID 303 REFERENCE ENGINE (PURA IMPLEMENTAZIONE GOLDEN REGRESSIONE)
+            // =================================================================
+            const PhraseTemplate& tmpl = acidTemplates[randInt (0, 3)];
+            const int motifShiftChoices[] = { 0, 0, 2, -2, 5 };
+            const int motifShift = motifShiftChoices[randInt (0, 4)];
+            const float rangeScale = juce::jlimit (0.25f, 1.50f, p.pitchRange * 1.45f);
 
-        for (int i = 0; i < kMaxSteps; ++i)
+            for (int i = 0; i < kMaxSteps; ++i)
+            {
+                auto& s = bank.steps[static_cast<size_t>(i)];
+                if (i >= bank.numSteps)
+                {
+                    s.active = false;
+                    continue;
+                }
+
+                const int mod16 = i % 16;
+                const char maskChar = tmpl.rhythmMask[mod16];
+
+                // 1. Rhythmic Activation
+                if (maskChar == 'X')
+                    s.active = (i == 0) || (p.density > 0.22f) || (randFloat() < (0.4f + p.density));
+                else if (maskChar == 'o')
+                    s.active = (randFloat() < (p.density * 0.75f + p.syncopation * 0.35f));
+                else
+                    s.active = (p.density > 0.78f) && (randFloat() < (p.density - 0.72f) * 1.8f);
+
+                // 2. Pitch
+                int rawSemi = tmpl.semitones[static_cast<size_t>(mod16)];
+                if (rawSemi != 0)
+                    rawSemi = static_cast<int> (std::round ((rawSemi + motifShift) * rangeScale));
+                s.semitoneOffset = juce::jlimit (-12, 24, quantizeSemitoneToScale (rawSemi, p.scale));
+
+                // 3. Octave Shift
+                s.octaveShift = tmpl.octaves[static_cast<size_t>(mod16)];
+                if (p.pitchRange < 0.25f)
+                    s.octaveShift = 0;
+                else if (p.spice > 0.65f && (i == 7 || i == 15) && randFloat() < 0.35f)
+                    s.octaveShift = 1;
+
+                // 4. Accent & Velocity
+                const bool isTresilloHit = (i == 0 || i == 3 || i == 6 || i == 8 || i == 11 || i == 14);
+                const bool isDownbeat = (i % 4 == 0);
+                s.accent = s.active && ((i == 0) || (isTresilloHit && randFloat() < (0.35f + 0.45f * p.spice)));
+
+                if (s.accent)
+                {
+                    s.velocity = randInt (115, 126);
+                    s.ccValue  = randInt (102, 125);
+                }
+                else if (isDownbeat)
+                {
+                    s.velocity = randInt (96, 108);
+                    s.ccValue  = randInt (72, 92);
+                }
+                else
+                {
+                    s.velocity = randInt (76, 94);
+                    s.ccValue  = randInt (48, 76);
+                }
+
+                // 5. Slide
+                s.slide = false;
+                if (s.active)
+                {
+                    float slideChance = (s.semitoneOffset != 0 || s.octaveShift != 0) ? (0.35f + 0.40f * p.spice) : (0.15f * p.spice);
+                    s.slide = (randFloat() < slideChance);
+                }
+
+                // 6. Ratchet
+                s.ratchet = 1;
+                s.probability = 100;
+                s.chordType = 0;
+            }
+
+            // Phrase symmetry for Acid
+            if (randFloat() < 0.65f)
+            {
+                for (int i = 0; i < 6; ++i)
+                {
+                    if (i + 8 < bank.numSteps)
+                        bank.steps[static_cast<size_t>(i + 8)].active = bank.steps[static_cast<size_t>(i)].active;
+                }
+            }
+
+            // 32-step extension for Acid
+            if (bank.numSteps > 16)
+            {
+                if (randFloat() < 0.65f)
+                {
+                    for (int sIdx : { 19, 21, 23, 25 })
+                    {
+                        if (sIdx < bank.numSteps && bank.steps[static_cast<size_t>(sIdx)].active && randFloat() < 0.50f)
+                            bank.steps[static_cast<size_t>(sIdx)].octaveShift = 1;
+                    }
+                }
+
+                const int turnaroundChoices[] = { 5, 7, -2, -5, 10, 3 };
+                const int tPick = turnaroundChoices[randInt (0, 5)];
+                const int tSemi = quantizeSemitoneToScale (tPick, p.scale);
+                const int pickupStep = (randFloat() < 0.5f) ? 26 : 28;
+                if (pickupStep < bank.numSteps)
+                {
+                    auto& st = bank.steps[static_cast<size_t>(pickupStep)];
+                    st.active = true;
+                    st.semitoneOffset = tSemi;
+                    st.accent = true;
+                    st.velocity = randInt (118, 127);
+                    st.ccValue = 120;
+                }
+
+                if (30 < bank.numSteps && randFloat() < (0.35f + 0.40f * p.spice))
+                {
+                    auto& st30 = bank.steps[30];
+                    st30.active = true;
+                    st30.ratchet = 2;
+                    st30.velocity = 110;
+                }
+                if (31 < bank.numSteps && randFloat() < (0.25f + 0.50f * p.spice))
+                {
+                    auto& st31 = bank.steps[31];
+                    st31.active = true;
+                    st31.ratchet = (p.spice > 0.6f) ? 2 : 1;
+                    st31.slide = true;
+                    st31.velocity = 122;
+                    st31.semitoneOffset = quantizeSemitoneToScale (-2, p.scale);
+                }
+            }
+
+            const bool isArpOrPluck = (p.role == InstrumentRole::ClassicArp || p.mode == EngineMode::Arpeggiator);
+            applyMusicalGates (bank, tmpl.sustainRatio, isArpOrPluck, p.spice);
+            return;
+        }
+
+        // =====================================================================
+        // MOTORI DEDICATI A STRATI PER ARTISTA (COMPLEXITY 0..100)
+        // =====================================================================
+        if (p.genre != GenreStyle::AcidTechno)
+        {
+            const int N = juce::jlimit (4, kMaxSteps, bank.numSteps);
+            const float compKnob = juce::jlimit (0.0f, 100.0f, p.density * 100.0f); // COMPLEXITY 0..100
+            const uint32_t effSeed = (seed != 0 ? seed : 101);
+
+            std::vector<LayeredCandidateEvent> candidates;
+
+            switch (p.genre)
+            {
+                case GenreStyle::BerlinSchool: // FISHER (Tech House)
+                    candidates = LayeredFisherBassGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::MelodicTechno: // PAUL KALKBRENNER (Melodic Techno)
+                    candidates = LayeredKalkbrennerGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::FunkBoogie: // FRED AGAIN.. (Emotional UK)
+                    candidates = LayeredFredAgainGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::DetroitElectro: // DISCLOSURE (UK Garage)
+                    candidates = LayeredDisclosureGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::EuclideanIDM: // BONOBO (Organic Downtempo)
+                    candidates = LayeredBonoboGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::ClassicHouse: // CLASSIC CHICAGO HOUSE
+                    candidates = LayeredClassicHouseGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::ItaloSynthwave: // ITALO DISCO / FESTIVAL EDM
+                    candidates = LayeredItaloEdmGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (!candidates.empty())
+            {
+                std::vector<StepData> full128;
+                LayeredFisherBassGenerator::evaluate128Steps (candidates, compKnob, full128);
+
+                for (int i = 0; i < N; ++i)
+                    bank.steps[static_cast<size_t>(i)] = full128[static_cast<size_t>(i)];
+
+                for (int i = N; i < kMaxSteps; ++i)
+                    bank.steps[static_cast<size_t>(i)].active = false;
+
+                return;
+            }
+        }
+        const auto& prof = getGenreProfile (p.genre);
+        const float comp = juce::jlimit (0.0f, 1.0f, p.density); // Knob COMPLEXITY 0.0 .. 1.0
+
+        // Curve di interpolazione da specifiche (0 / 50 / 100):
+        // step attivi: 35% / 60% / 85%
+        float targetActiveRatio = (comp < 0.5f) ? (0.35f + comp * 0.50f) : (0.60f + (comp - 0.5f) * 0.50f);
+        if (p.genre == GenreStyle::ItaloSynthwave)
+            targetActiveRatio = (comp < 0.5f) ? (0.60f + comp * 0.30f) : (0.75f + (comp - 0.5f) * 0.20f); // EDM più denso: 70-85%
+
+        // Note distinte in palette: interpolazione da minPaletteNotes a maxPaletteNotes
+        const int numPaletteNotes = static_cast<int>(std::round (prof.minPaletteNotes + comp * (prof.maxPaletteNotes - prof.minPaletteNotes)));
+
+        // Probabilità scalate
+        const float baseAccentProb = ((comp < 0.5f) ? (0.12f + comp * 0.26f) : (0.25f + (comp - 0.5f) * 0.20f)) * prof.accentWeight;
+        const float baseSlideProb  = ((comp < 0.5f) ? (0.05f + comp * 0.20f) : (0.15f + (comp - 0.5f) * 0.30f)) * prof.slideWeight;
+        const float baseOctaveProb = ((comp < 0.5f) ? (comp * 0.15f)         : (0.08f + (comp - 0.5f) * 0.25f)) * prof.octaveJumpWeight;
+        const float baseGhostProb  = ((comp < 0.5f) ? (comp * 0.25f)         : (0.12f + (comp - 0.5f) * 0.35f)) * prof.ghostNoteWeight;
+
+        // Costruzione Palette Ordinata (Gradi congiunti: fondamentale, 2a, 3a, 4a, 5a, 6a, 7a)
+        const auto& scaleIntervals = getScaleIntervals (p.scale);
+        std::vector<int> orderedScaleDegrees;
+        orderedScaleDegrees.reserve (12);
+        orderedScaleDegrees.push_back (0); // Root
+
+        // Aggiungiamo i gradi diatoni reali ordinati
+        for (int interval : scaleIntervals)
+        {
+            if (interval > 0 && interval < 12)
+                orderedScaleDegrees.push_back (interval);
+        }
+
+        // Palette attiva ristretta a numPaletteNotes
+        int effectivePaletteSize = juce::jlimit (2, prof.maxPaletteNotes, numPaletteNotes);
+        std::vector<int> activePalette;
+        activePalette.push_back (0); // Root sempre presente
+        if (orderedScaleDegrees.size() > 4) activePalette.push_back (orderedScaleDegrees[4]); // 5a
+        if (orderedScaleDegrees.size() > 2) activePalette.push_back (orderedScaleDegrees[2]); // 3a
+        if (effectivePaletteSize >= 4 && orderedScaleDegrees.size() > 6) activePalette.push_back (orderedScaleDegrees[6]); // 7a
+        if (effectivePaletteSize >= 5 && orderedScaleDegrees.size() > 1) activePalette.push_back (orderedScaleDegrees[1]); // 2a
+        if (effectivePaletteSize >= 6 && orderedScaleDegrees.size() > 3) activePalette.push_back (orderedScaleDegrees[3]); // 4a
+        std::sort (activePalette.begin(), activePalette.end());
+
+        const int N = juce::jlimit (4, kMaxSteps, bank.numSteps);
+        const int motifLen = (N % 4 == 0) ? (N / 4) : 4;
+
+        // Struttura a 4 sezioni (A - A' - A - B)
+        // 1. Generazione ritmo con matrice probabilistica dipendente dal seed (varietà tra seed!)
+        std::vector<bool> rhythmMask (static_cast<size_t>(N), false);
+        for (int i = 0; i < N; ++i)
+        {
+            int step16 = i % 16;
+            float baseW = prof.rhythmWeights[static_cast<size_t>(step16)];
+
+            // Varietà per seed: micro-jitter sui pesi metrici (+/- 12%) così ogni seed ha una maschera unica!
+            float jitter = (randFloat() - 0.5f) * 0.24f;
+            float effW = juce::jlimit (0.05f, 0.98f, baseW + jitter);
+
+            rhythmMask[static_cast<size_t>(i)] = (randFloat() < (effW * targetActiveRatio * 1.35f));
+        }
+
+        // Garantire che in Classic House lo step 0 non mangi la sincope
+        if (p.genre == GenreStyle::ClassicHouse)
+        {
+            // Classic house downbeats sono per la cassa: la linea di basso deve respirare e suonare sui levare!
+            if (randFloat() < 0.65f) rhythmMask[0] = false;
+            rhythmMask[2] = true; // Offbeat garantito
+            if (N >= 8) rhythmMask[6] = true;
+            if (N >= 12) rhythmMask[10] = true;
+            if (N >= 16) rhythmMask[14] = true;
+        }
+        else if (p.genre == GenreStyle::DetroitElectro) // UK Garage 2-step
+        {
+            rhythmMask[0] = true;
+            rhythmMask[3] = true; // Sincope 2-step
+            if (N >= 8)  { rhythmMask[4] = false; rhythmMask[6] = true; }
+            if (N >= 12) { rhythmMask[10] = true; }
+            if (N >= 16) { rhythmMask[12] = false; rhythmMask[13] = true; }
+        }
+
+        // Generazione del Motivo Base A (altezze melodiche)
+        struct StepInfo {
+            int semi = 0;
+            int oct = 0;
+            bool accent = false;
+        };
+        std::vector<StepInfo> motifA (static_cast<size_t>(motifLen));
+        int currentDegreeIdx = 0; // Parte dalla tonica
+
+        for (int m = 0; m < motifLen; ++m)
+        {
+            // Melodia per gradi congiunti (stepwise movement)
+            if (m == 0 && randFloat() < prof.rootAnchorWeight)
+            {
+                currentDegreeIdx = 0; // Ancoraggio root sui tempi forti
+            }
+            else
+            {
+                // Passo per grado congiunto con probabilità stepwiseTendency
+                if (randFloat() < prof.stepwiseTendency)
+                {
+                    int step = (randFloat() < 0.5f) ? 1 : -1;
+                    currentDegreeIdx = juce::jlimit (0, static_cast<int>(activePalette.size()) - 1, currentDegreeIdx + step);
+                }
+                else
+                {
+                    // Salto (es. alla 5a o alla 3a)
+                    currentDegreeIdx = randInt (0, static_cast<int>(activePalette.size()) - 1);
+                }
+            }
+
+            motifA[m].semi = activePalette[static_cast<size_t>(currentDegreeIdx)];
+            motifA[m].oct = 0;
+            if (randFloat() < baseOctaveProb)
+                motifA[m].oct = (randFloat() < 0.70f) ? 1 : -1;
+
+            motifA[m].accent = (m == 0 && randFloat() < baseAccentProb * 1.3f) || (randFloat() < baseAccentProb * 0.8f);
+        }
+
+        // Struttura di Frase A - A' - A - B su N step:
+        for (int i = 0; i < N; ++i)
         {
             auto& s = bank.steps[static_cast<size_t>(i)];
-            if (i >= bank.numSteps)
+            int mIdx = i % motifLen;
+            int section = i / motifLen; // 0=A, 1=A', 2=A, 3=B (turnaround)
+
+            s.active = rhythmMask[static_cast<size_t>(i)];
+            if (!s.active)
             {
-                s.active = false;
+                s.semitoneOffset = 0;
+                s.octaveShift = 0;
+                s.accent = false;
+                s.slide = false;
+                s.ratchet = 1;
                 continue;
             }
 
-            const int mod16 = i % 16;
-            const char maskChar = tmpl.rhythmMask[mod16];
+            // Clona da A come base del motivo
+            s.semitoneOffset = motifA[mIdx].semi;
+            s.octaveShift = motifA[mIdx].oct;
+            s.accent = motifA[mIdx].accent;
 
-            // 1. Rhythmic Activation (preserves the core groove, scales density smoothly!)
-            if (maskChar == 'X')
+            // Sezione 1: A' (variazione moderata del motivo)
+            if (section == 1 && randFloat() < prof.variationRate)
             {
-                // Core groove step: always active unless density is very low
-                s.active = (i == 0) || (p.density > 0.22f) || (randFloat() < (0.4f + p.density));
+                if (mIdx > 0)
+                {
+                    int altIdx = randInt (0, static_cast<int>(activePalette.size()) - 1);
+                    s.semitoneOffset = activePalette[static_cast<size_t>(altIdx)];
+                }
             }
-            else if (maskChar == 'o')
+            // Sezione 2: A (ripresa fedele del motivo A con identità di pitch per target repetition)
+            else if (section == 2)
             {
-                // Secondary groove step: activates as Density / Syncopation increases
-                s.active = (randFloat() < (p.density * 0.75f + p.syncopation * 0.35f));
+                // Mantiene il motivo A identico
             }
-            else
+            // Sezione 3: B (Turnaround finale verso la fondamentale o 5a)
+            else if (section >= 3)
             {
-                // Rest step: only activates at very high density (>78%) and mirrors step (i % 8) for symmetry!
-                s.active = (p.density > 0.78f) && (randFloat() < (p.density - 0.72f) * 1.8f);
+                if (mIdx == motifLen - 1)
+                {
+                    s.semitoneOffset = (randFloat() < 0.75f) ? 0 : activePalette[juce::jmin (1, static_cast<int>(activePalette.size()) - 1)];
+                    s.accent = (randFloat() < baseAccentProb * 1.5f);
+                }
+                else if (randFloat() < 0.50f)
+                {
+                    int cadIdx = randInt (0, static_cast<int>(activePalette.size()) - 1);
+                    s.semitoneOffset = activePalette[static_cast<size_t>(cadIdx)];
+                    if (randFloat() < baseOctaveProb * 1.4f)
+                        s.octaveShift = 1;
+                }
             }
 
-            if (p.role == InstrumentRole::PolyChordStab && (i % 2 == 1) && maskChar != 'X')
-                s.active = (randFloat() < 0.25f * p.syncopation);
-
-            // 2. Musical Pitch (Quantized to Scale, preserving Call-and-Response symmetry!)
-            int rawSemi = tmpl.semitones[static_cast<size_t>(mod16)];
-            if (rawSemi != 0)
-            {
-                rawSemi = static_cast<int> (std::round ((rawSemi + motifShift) * rangeScale));
-            }
-            s.semitoneOffset = juce::jlimit (-12, 24, quantizeSemitoneToScale (rawSemi, p.scale));
-
-            // 3. Octave Shift (from template + controlled Spice variation)
-            s.octaveShift = tmpl.octaves[static_cast<size_t>(mod16)];
-            if (p.pitchRange < 0.25f)
-                s.octaveShift = 0;
-            else if (p.spice > 0.65f && (i == 7 || i == 15) && randFloat() < 0.35f)
-                s.octaveShift = 1;
-
-            // 4. Velocity & Accent (Musical phrasing: strong on beat 1, tresillo accents & turnarounds)
-            const bool isTresilloHit = (i == 0 || i == 3 || i == 6 || i == 8 || i == 11 || i == 14);
-            const bool isDownbeat = (i % 4 == 0);
-            s.accent = s.active && ((i == 0) || (isTresilloHit && randFloat() < (0.35f + 0.45f * p.spice)));
-
+            // Accento dosato precisamente
             if (s.accent)
             {
-                s.velocity = randInt (115, 126);
-                s.ccValue  = randInt (102, 125);
-            }
-            else if (isDownbeat)
-            {
-                s.velocity = randInt (96, 108);
-                s.ccValue  = randInt (72, 92);
+                s.velocity = randInt (118, 126);
+                s.ccValue  = randInt (105, 124);
             }
             else
             {
-                s.velocity = randInt (76, 94);
-                s.ccValue  = randInt (48, 76);
+                bool isGhost = (randFloat() < baseGhostProb);
+                s.velocity = isGhost ? randInt (52, 70) : randInt (82, 98);
+                s.ccValue  = isGhost ? randInt (35, 52) : randInt (58, 80);
             }
 
-            // 5. Slide / Legato Glide (Placed musically on transitions into or out of non-root notes!)
+            // Slide controllato: solo se previsto dal profilo e MAI tra note uguali
             s.slide = false;
-            if (s.active)
+            if (prof.slideWeight > 0.05f && randFloat() < baseSlideProb)
             {
-                float slideChance = 0.0f;
-                if (p.genre == GenreStyle::AcidTechno || p.role == InstrumentRole::AcidLine)
-                    slideChance = (s.semitoneOffset != 0 || s.octaveShift != 0) ? (0.35f + 0.40f * p.spice) : (0.15f * p.spice);
-                else if (p.genre == GenreStyle::MelodicTechno || p.role == InstrumentRole::LeadHook)
-                    slideChance = (i == 3 || i == 6 || i == 11 || i == 14) ? (0.28f + 0.35f * p.spice) : 0.0f;
-                else if (p.genre == GenreStyle::FunkBoogie || p.genre == GenreStyle::DetroitElectro)
-                    slideChance = (i >= 12) ? (0.30f * p.spice) : (0.08f * p.spice);
-
-                s.slide = (randFloat() < slideChance);
+                int nextIdx = (i + 1) % N;
+                int curPitch = s.semitoneOffset + s.octaveShift * 12;
+                int nextPitch = bank.steps[static_cast<size_t>(nextIdx)].semitoneOffset + bank.steps[static_cast<size_t>(nextIdx)].octaveShift * 12;
+                if (curPitch != nextPitch)
+                    s.slide = true;
             }
 
-            // 6. Ratchets (Only on turnaround steps 7, 14, 15 or in Berlin/Modular mode so they never clutter the groove!)
+            // Ratchet sul turnaround finale
             s.ratchet = 1;
-            if (s.active && !s.slide)
+            if (i >= N - 2 && comp > 0.65f && randFloat() < 0.15f)
             {
-                if ((p.genre == GenreStyle::BerlinSchool || p.role == InstrumentRole::ModularRatchet)
-                    && (i == 6 || i == 7 || i == 14 || i == 15) && randFloat() < (0.25f + 0.45f * p.spice))
-                {
-                    s.ratchet = (randFloat() < 0.7f) ? 2 : 3;
-                }
-                else if (p.spice > 0.72f && (i == 15) && randFloat() < 0.30f)
-                {
-                    s.ratchet = 2;
-                }
+                s.ratchet = 2;
             }
 
             s.probability = 100;
             s.chordType = (p.role == InstrumentRole::PolyChordStab) ? ((p.genre == GenreStyle::ClassicHouse || p.genre == GenreStyle::FunkBoogie) ? 4 : 3) : 0;
         }
 
-        // Enforce Phrase Symmetry: copy rhythmic/pitch tweaks from Bar-Half 1 (0..5) to Bar-Half 2 (8..13) when appropriate
-        if (p.genre != GenreStyle::FunkBoogie && randFloat() < 0.65f)
+        // Spegni gli step eccedenti N
+        for (int i = N; i < kMaxSteps; ++i)
         {
-            for (int i = 0; i < 6; ++i)
-            {
-                if (i + 8 < bank.numSteps)
-                    bank.steps[static_cast<size_t>(i + 8)].active = bank.steps[static_cast<size_t>(i)].active;
-            }
+            bank.steps[static_cast<size_t>(i)].active = false;
         }
 
-        // 32-Step Phrase Evolution (A - B form): Bar 2 (16..31) variations and cadence turnaround
-        if (bank.numSteps > 16)
-        {
-            // 1. Subtle rhythmic or pitch evolution in Bar 2 body (steps 18..25)
-            if (randFloat() < 0.65f)
-            {
-                for (int sIdx : { 19, 21, 23, 25 })
-                {
-                    if (sIdx < bank.numSteps && bank.steps[static_cast<size_t>(sIdx)].active)
-                    {
-                        if (randFloat() < 0.50f)
-                            bank.steps[static_cast<size_t>(sIdx)].octaveShift = 1;
-                    }
-                }
-            }
-
-            // 2. Bar 2 Turnaround & Cadence (steps 26..31): Fills, octave hooks, and pickup notes
-            const int turnaroundChoices[] = { 5, 7, -2, -5, 10, 3 };
-            const int tPick = turnaroundChoices[randInt (0, 5)];
-            const int tSemi = quantizeSemitoneToScale (tPick, p.scale);
-
-            // Pickup on step 26 or 28
-            const int pickupStep = (randFloat() < 0.5f) ? 26 : 28;
-            if (pickupStep < bank.numSteps)
-            {
-                auto& st = bank.steps[static_cast<size_t>(pickupStep)];
-                st.active = true;
-                st.semitoneOffset = tSemi;
-                st.accent = true;
-                st.velocity = randInt (118, 127);
-                st.ccValue = 120;
-            }
-
-            // Final drum/synth roll on step 30 / 31
-            if (30 < bank.numSteps && randFloat() < (0.35f + 0.40f * p.spice))
-            {
-                auto& st30 = bank.steps[30];
-                st30.active = true;
-                st30.ratchet = 2;
-                st30.velocity = 110;
-            }
-            if (31 < bank.numSteps && randFloat() < (0.25f + 0.50f * p.spice))
-            {
-                auto& st31 = bank.steps[31];
-                st31.active = true;
-                st31.ratchet = (p.spice > 0.6f) ? 2 : 1;
-                st31.slide = true;
-                st31.velocity = 122;
-                st31.semitoneOffset = quantizeSemitoneToScale (-2, p.scale); // leading tone back to Root 0
-            }
-        }
-
-        // Calculate intelligent musical gate lengths based on inter-onset gaps!
         const bool isArpOrPluck = (p.role == InstrumentRole::ClassicArp || p.mode == EngineMode::Arpeggiator);
-        applyMusicalGates (bank, tmpl.sustainRatio, isArpOrPluck, p.spice);
+        applyMusicalGates (bank, prof.sustainRatio, isArpOrPluck, p.spice);
     }
 
     //==========================================================================
@@ -868,23 +1111,63 @@ public:
         const int* targets = (n > 16) ? mutableSteps32 : mutableSteps16;
         const int numTargets = (n > 16) ? 15 : 7;
 
+        bool toggledStep = false;
+
         for (int i = 0; i < numTargets; ++i)
         {
             const int stepIdx = targets[i];
             if (stepIdx >= n) continue;
 
             auto& s = bank.steps[static_cast<size_t>(stepIdx)];
-            if (randFloat() < 0.38f)
+
+            // 1. Toggling 1 syncopated pad (Step ON <-> OFF) for visible rhythmic variation
+            if (!toggledStep && randFloat() < 0.35f)
+            {
+                s.active = !s.active;
+                toggledStep = true;
+                if (s.active)
+                {
+                    s.velocity = randInt (85, 115);
+                    s.gate = 0.50f;
+                }
+            }
+
+            // 2. Note Pitch Alteration (musical scale degrees)
+            if (s.active && randFloat() < 0.38f)
             {
                 const int musicalIntervals[] = { 0, 0, 3, 5, 7, -2, -5, 10 };
                 int pick = musicalIntervals[randInt (0, 7)];
                 s.semitoneOffset = quantizeSemitoneToScale (pick, scale);
             }
-            if (randFloat() < 0.25f * (0.4f + spice))
+
+            // 3. Octave Jump
+            if (s.active && randFloat() < 0.25f * (0.4f + spice))
                 s.octaveShift = (randFloat() < 0.65f) ? 1 : 0;
-            if (randFloat() < 0.20f)
-                s.slide = !s.slide && s.active;
+
+            // 4. Accent & Slide
+            if (s.active && randFloat() < 0.25f)
+                s.accent = !s.accent;
+
+            if (s.active && randFloat() < 0.20f)
+                s.slide = !s.slide;
         }
+
+        // Se nessun step è stato invertito casualmente, invertiamo con certezza il primo target syncopato valido
+        if (!toggledStep && numTargets > 0)
+        {
+            const int pickTarget = targets[randInt (0, numTargets - 1)];
+            if (pickTarget < n)
+            {
+                auto& s = bank.steps[static_cast<size_t>(pickTarget)];
+                s.active = !s.active;
+                if (s.active)
+                {
+                    s.velocity = randInt (85, 115);
+                    s.gate = 0.50f;
+                }
+            }
+        }
+
         applyMusicalGates (bank, 0.80f, false, spice);
     }
 

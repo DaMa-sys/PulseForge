@@ -2,11 +2,12 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "PluginProcessor.h"
-#include "DamaTheme.h"
+#include "OrageTheme.h"
 
 //==============================================================================
 // SequenceStripComponent: A modular, high-contrast horizontal sequence lane
 // with dedicated Per-Track USB Hardware Output, Generative Controls & 16-Step Pads
+// Styled after Orage Evolver Hardware Aesthetics
 //==============================================================================
 class SequenceStripComponent : public juce::Component,
                                public juce::SettableTooltipClient
@@ -14,7 +15,7 @@ class SequenceStripComponent : public juce::Component,
 public:
     SequenceStripComponent (PulseForgeAudioProcessor& proc, int tIndex,
                             juce::Colour trackAccent, const juce::String& defaultName,
-                            LandrLookAndFeel& lookAndFeel,
+                            OrageLookAndFeel& lookAndFeel,
                             juce::Colour cardTopColor = juce::Colour(),
                             juce::Colour cardBotColor = juce::Colour())
         : processor (proc), trackIndex (tIndex), accent (trackAccent), trackName (defaultName),
@@ -53,30 +54,42 @@ public:
         };
         addAndMakeVisible (mutBtn);
 
-        expandBtn.setButtonText ("[ + EXP ]");
+        expandBtn.setButtonText ("EXP +");
         expandBtn.setTooltip ("Toggle Expanded Controls (Accent, Glide/Slide, Ratchet, Legato, Velocity)");
         expandBtn.setClickingTogglesState (true);
         expandBtn.setLookAndFeel (&customLnF);
         expandBtn.onClick = [this]()
         {
             isExpanded = expandBtn.getToggleState();
-            expandBtn.setButtonText (isExpanded ? "[ - EXP ]" : "[ + EXP ]");
+            expandBtn.setButtonText (isExpanded ? "EXP -" : "EXP +");
             if (onExpandToggled)
                 onExpandToggled();
         };
         addAndMakeVisible (expandBtn);
 
+
         // 3. Dropdowns (Genre, Role, Steps Length, and Per-Track USB Output!)
         const juce::StringArray genres {
-            "Classic House", "Acid 303", "Italo/Synthwave", "Berlin School",
-            "Melodic Techno", "Detroit Electro", "Funk Boogie", "Euclidean IDM"
+            "Classic House (Deep/90s)",
+            "Acid 303 (TB-303 Reference)",
+            "Italo Disco / EDM",
+            "Fisher (Tech House)",
+            "Paul Kalkbrenner (Melodic Techno)",
+            "UK Garage / Detroit (Disclosure)",
+            "Fred again.. (Emotional UK)",
+            "Bonobo (Organic Downtempo)"
         };
         genreBox.addItemList (genres, 1);
         genreBox.setLookAndFeel (&customLnF);
         genreBox.onChange = [this]()
         {
-            processor.triggerGenerateTrack (trackIndex);
-            repaint();
+            const int id = genreBox.getSelectedId() - 1;
+            if (id >= 0)
+            {
+                processor.setTrackGenre (trackIndex, static_cast<PulseForge::GenreStyle> (id));
+                processor.triggerGenerateTrack (trackIndex);
+                repaint();
+            }
         };
         addAndMakeVisible (genreBox);
 
@@ -87,8 +100,13 @@ public:
         roleBox.setLookAndFeel (&customLnF);
         roleBox.onChange = [this]()
         {
-            processor.triggerGenerateTrack (trackIndex);
-            repaint();
+            const int id = roleBox.getSelectedId() - 1;
+            if (id >= 0)
+            {
+                processor.setTrackRole (trackIndex, static_cast<PulseForge::InstrumentRole> (id));
+                processor.triggerGenerateTrack (trackIndex);
+                repaint();
+            }
         };
         addAndMakeVisible (roleBox);
 
@@ -126,7 +144,12 @@ public:
         updateOutputDeviceList();
 
         // 4. 6 Prominent Tactile Knobs (Increased size & clarity)
-        setupKnob (densitySlider,     densityLabel,     "DENSITY");
+        setupKnob (densitySlider,     densityLabel,     "COMPLEXITY");
+        densitySlider.onValueChange = [this]()
+        {
+            processor.updateTrackComplexity (trackIndex, static_cast<float> (densitySlider.getValue()));
+            repaint();
+        };
         setupKnob (swingSlider,       swingLabel,       "SWING");
         setupKnob (baseOctSlider,     baseOctLabel,     "BASE OCT");
         setupKnob (arpOctSlider,      arpOctLabel,      "ARP OCT");
@@ -166,6 +189,12 @@ public:
         arpOctSlider.setLookAndFeel (nullptr);
         chanSlider.setLookAndFeel (nullptr);
         tempoRatioSlider.setLookAndFeel (nullptr);
+        densityLabel.setLookAndFeel (nullptr);
+        swingLabel.setLookAndFeel (nullptr);
+        baseOctLabel.setLookAndFeel (nullptr);
+        arpOctLabel.setLookAndFeel (nullptr);
+        chanLabel.setLookAndFeel (nullptr);
+        tempoRatioLabel.setLookAndFeel (nullptr);
     }
 
     void updateOutputDeviceList()
@@ -196,12 +225,12 @@ public:
     }
 
     bool getIsExpanded() const noexcept { return isExpanded; }
-    int getStripHeight() const noexcept { return isExpanded ? 208 : 126; }
+    int getStripHeight() const noexcept { return isExpanded ? 224 : 134; }
     void setIsExpanded (bool exp)
     {
         isExpanded = exp;
         expandBtn.setToggleState (exp, juce::dontSendNotification);
-        expandBtn.setButtonText (isExpanded ? "[ - EXP ]" : "[ + EXP ]");
+        expandBtn.setButtonText (isExpanded ? "EXP -" : "EXP +");
     }
 
     std::function<void()> onExpandToggled;
@@ -219,61 +248,115 @@ public:
 
     void paint (juce::Graphics& g) override
     {
-        using namespace LandrFxTheme;
+        using namespace OrageTheme;
         const auto bounds = getLocalBounds().toFloat();
 
-        // 1. Strip Card Chassis (Satin gradient with 14px rounded corners)
+        // 1. Strip Card Chassis: Brushed Anodized Aluminum with Subtle Track Metallic Tint
         auto cardArea = bounds.reduced (2.0f);
 
-        // Soft ambient drop shadow
-        g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (0.24f));
-        g.fillRoundedRectangle (cardArea.translated (0.0f, 3.5f), 14.0f);
+        // Soft ambient drop shadow beneath strip
+        g.setColour (juce::Colours::black.withAlpha (0.28f));
+        g.fillRoundedRectangle (cardArea.translated (0.0f, 2.5f), 8.0f);
 
-        // Card glass background with custom module blue hue
-        const float normY = static_cast<float> (getY()) / static_cast<float> (juce::jmax (1, getParentHeight()));
-        const juce::Colour fallbackBg = BG_TOP.interpolatedWith (BG_BOTTOM, juce::jlimit (0.0f, 1.0f, normY));
-        const juce::Colour topBg = customCardTop.isOpaque() ? customCardTop : fallbackBg.brighter (0.04f);
-        const juce::Colour botBg = customCardBot.isOpaque() ? customCardBot : fallbackBg.darker (0.05f);
+        // Brushed aluminum gradient faceplate with subtle sophisticated metallic tint
+        juce::Colour topAlum, midAlum, botAlum, bevelCol;
 
-        juce::ColourGradient cardGrad (topBg, 0.0f, cardArea.getY(),
-                                       botBg, 0.0f, cardArea.getBottom(), false);
+        if (trackIndex == 0) // Track 1: Bass — Warm Satin Orange / Amber Tint
+        {
+            topAlum  = juce::Colour (0xFFF6ECE0); // Satin warm cream highlight
+            midAlum  = juce::Colour (0xFFEBDECE); // Soft brushed amber/orange aluminum
+            botAlum  = juce::Colour (0xFFD9C9B8); // Shaded bronze/orange aluminum
+            bevelCol = juce::Colour (0xFFBBA894); // Warm machined bevel
+        }
+        else if (trackIndex == 1) // Track 2: Arp — Cool Satin Cyan / Ice Blue Tint
+        {
+            topAlum  = juce::Colour (0xFFE5EEF5); // Satin ice silver highlight
+            midAlum  = juce::Colour (0xFFD3E2EC); // Soft brushed cyan aluminum
+            botAlum  = juce::Colour (0xFFBFD2DE); // Shaded cobalt/cyan aluminum
+            bevelCol = juce::Colour (0xFF92A7B5); // Cool cyan machined bevel
+        }
+        else // Track 3: Chords — Fresh Satin Sage / Emerald Green Tint
+        {
+            topAlum  = juce::Colour (0xFFE6EFE8); // Satin sage silver highlight
+            midAlum  = juce::Colour (0xFFD4E3D8); // Soft brushed jade/green aluminum
+            botAlum  = juce::Colour (0xFFC1D4C7); // Shaded emerald aluminum
+            bevelCol = juce::Colour (0xFF92A999); // Sage machined bevel
+        }
+
+        juce::ColourGradient cardGrad (topAlum, 0.0f, cardArea.getY(),
+                                       botAlum, 0.0f, cardArea.getBottom(), false);
+        cardGrad.addColour (0.45, midAlum);
         g.setGradientFill (cardGrad);
-        g.fillRoundedRectangle (cardArea, 14.0f);
+        g.fillRoundedRectangle (cardArea, 6.0f);
 
-        // Subtle glowing perimeter border matching module accent
-        g.setColour (accent.withAlpha (0.35f));
-        g.drawRoundedRectangle (cardArea, 14.0f, 1.2f);
+        // Precision machined perimeter bevel matching metallic tint
+        g.setColour (bevelCol);
+        g.drawRoundedRectangle (cardArea, 6.0f, 1.0f);
 
-        // Specular top hairline
-        g.setColour (juce::Colours::white.withAlpha (0.16f));
-        g.drawHorizontalLine (static_cast<int> (cardArea.getY() + 0.5f), cardArea.getX() + 8.0f, cardArea.getRight() - 8.0f);
+        // Specular top hairline (machined chamfer highlight)
+        g.setColour (juce::Colours::white.withAlpha (0.85f));
+        g.drawHorizontalLine (static_cast<int> (cardArea.getY() + 0.5f), cardArea.getX() + 6.0f, cardArea.getRight() - 6.0f);
 
-        // 2. Left Accent Badge
-        auto badgeArea = juce::Rectangle<float> (cardArea.getX() + 12.0f, cardArea.getY() + 12.0f, 150.0f, 26.0f);
-        g.setColour (accent.withAlpha (0.22f));
-        g.fillRoundedRectangle (badgeArea, 6.0f);
-        g.setColour (accent.withAlpha (0.85f));
-        g.drawRoundedRectangle (badgeArea, 6.0f, 1.2f);
+        // 2. Left Track Badge: Solid black anodized plate with stark white text & Evolver Jewel LED
+        auto badgeArea = juce::Rectangle<float> (cardArea.getX() + 12.0f, cardArea.getY() + 19.0f, 150.0f, 22.0f);
+        g.setColour (juce::Colour (0xFF101114));
+        g.fillRoundedRectangle (badgeArea, 3.0f);
+        g.setColour (juce::Colour (0xFF3A3D44));
+        g.drawRoundedRectangle (badgeArea, 3.0f, 1.0f);
 
-        // Luminous Color Indicator Pip
-        g.setColour (accent);
-        g.fillEllipse (badgeArea.getX() + 8.0f, badgeArea.getCentreY() - 4.5f, 9.0f, 9.0f);
+        // Evolver Jewel Indicator Lamp: Track 0=Amber, Track 1=Cobalt Blue, Track 2=Emerald/Amber
+        const float pipX = badgeArea.getX() + 12.0f;
+        const float pipY = badgeArea.getCentreY();
+        if (trackIndex == 1) // Arp Track: Iconic Evolver Cobalt Blue Jewel
+            drawJewelLed (g, pipX, pipY, 3.5f, BLUE_LED, BLUE_LED_BRIGHT, BLUE_LED_GLOW);
+        else if (trackIndex == 2) // Chords Track
+            drawJewelLed (g, pipX, pipY, 3.5f, juce::Colour (0xFF10B981), juce::Colour (0xFF6EE7B7), juce::Colour (0x5510B981));
+        else // Bass Track: Warm Tungsten Amber Jewel
+            drawJewelLed (g, pipX, pipY, 3.5f, AMBER_LED, AMBER_LED_BRIGHT, AMBER_LED_GLOW);
 
         g.setColour (TEXT_BRIGHT);
-        g.setFont (font (12.0f, true, 0.10f));
+        g.setFont (font (10.5f, true, 0.10f));
         g.drawText (trackName, static_cast<int> (badgeArea.getX() + 24.0f), static_cast<int> (badgeArea.getY()),
                     static_cast<int> (badgeArea.getWidth() - 28.0f), static_cast<int> (badgeArea.getHeight()),
                     juce::Justification::centredLeft, true);
 
-        // 3. Dropdown Labels in Row 1 (Bold high-contrast text)
+        // 3. Dropdown Labels in Row 1: High-contrast technical jet-black silkscreen labels
         g.setColour (TEXT_LABEL);
-        g.setFont (font (9.0f, true, 0.08f));
-        g.drawText ("GENRE STYLE", genreBox.getX(),  static_cast<int> (cardArea.getY() + 1.0f), genreBox.getWidth(),  11, juce::Justification::centredLeft);
-        g.drawText ("ROLE / TYPE", roleBox.getX(),   static_cast<int> (cardArea.getY() + 1.0f), roleBox.getWidth(),   11, juce::Justification::centredLeft);
-        g.drawText ("STEPS",       stepsBox.getX(),  static_cast<int> (cardArea.getY() + 1.0f), stepsBox.getWidth(),  11, juce::Justification::centredLeft);
-        g.drawText ("MIDI OUTPUT", outputBox.getX(), static_cast<int> (cardArea.getY() + 1.0f), outputBox.getWidth(), 11, juce::Justification::centredLeft);
+        g.setFont (montserratSemiBold (9.5f, 0.06f));
+        g.drawText ("GENRE STYLE", genreBox.getX(),  static_cast<int> (cardArea.getY() + 2.0f), genreBox.getWidth(),  13, juce::Justification::centredLeft);
+        g.drawText ("ROLE / TYPE", roleBox.getX(),   static_cast<int> (cardArea.getY() + 2.0f), roleBox.getWidth(),   13, juce::Justification::centredLeft);
+        g.drawText ("STEPS",       stepsBox.getX(),  static_cast<int> (cardArea.getY() + 2.0f), stepsBox.getWidth(),  13, juce::Justification::centredLeft);
+        g.drawText ("MIDI OUTPUT", outputBox.getX(), static_cast<int> (cardArea.getY() + 2.0f), outputBox.getWidth(), 13, juce::Justification::centredLeft);
 
-        // 4. Horizontal Pitch Matrix + EXP Controls
+        // 4. Evolver Hairline Silkscreen Enclosures
+        const float frameY = cardArea.getY() + 45.0f;
+        const float frameH = 82.0f;
+
+        // Knobs Macro Bay: clean hairline silkscreen enclosure
+        auto knobBay = juce::Rectangle<float> (cardArea.getX() + 10.0f, frameY, 376.0f, frameH);
+        g.setColour (juce::Colour (0xFF000000).withAlpha (0.45f));
+        g.drawRoundedRectangle (knobBay, 5.0f, 1.0f);
+
+        // High-contrast jet-black knob titles (pure silkscreen on aluminum)
+        const char* knobTitles[] = { "COMPLEXITY", "SWING", "BASE OCT", "ARP OCT", "MIDI CH", "RATIO" };
+        g.setColour (TEXT_DARK);
+        int tkx = 16;
+        for (int i = 0; i < 6; ++i)
+        {
+            const float fontSize = (i == 0) ? 9.0f : 10.0f;
+            g.setFont (montserratSemiBold (fontSize, 0.04f));
+            g.drawText (knobTitles[i], tkx - 2, static_cast<int> (frameY + 2.0f), 62, 13, juce::Justification::centred);
+            tkx += 58 + 5;
+        }
+
+        // Step Matrix Bay: Recessed matte graphite socket well for high-contrast tactile chiclet keys
+        auto matrixBay = juce::Rectangle<float> (cardArea.getX() + 392.0f, frameY, cardArea.getWidth() - 402.0f, frameH);
+        g.setColour (juce::Colour (0xFF14161A));
+        g.fillRoundedRectangle (matrixBay, 5.0f);
+        g.setColour (juce::Colour (0xFF2E323A));
+        g.drawRoundedRectangle (matrixBay, 5.0f, 1.0f);
+
+        // 5. Horizontal Pitch Matrix + EXP Controls
         paintStepMatrix (g, cardArea);
     }
 
@@ -281,36 +364,36 @@ public:
     {
         const int w = getWidth();
 
-        // Row 1: Header controls
-        const int topY = 14;
-        const int btnH = 26;
+        // Row 1: Header controls (Slender height = 22px, topY = 19)
+        const int topY = 19;
+        const int btnH = 22;
         int x = 168;
 
         muteBtn.setBounds (x, topY, 44, btnH);
-        x += 50;
+        x += 49;
 
-        genreBox.setBounds (x, topY, 115, btnH);
-        x += 121;
+        genreBox.setBounds (x, topY, 155, btnH);
+        x += 160;
 
-        roleBox.setBounds (x, topY, 115, btnH);
-        x += 121;
+        roleBox.setBounds (x, topY, 120, btnH);
+        x += 125;
 
-        stepsBox.setBounds (x, topY, 52, btnH);
-        x += 58;
+        stepsBox.setBounds (x, topY, 50, btnH);
+        x += 55;
 
-        outputBox.setBounds (x, topY, 115, btnH);
-        x += 121;
+        outputBox.setBounds (x, topY, 118, btnH);
+        x += 123;
 
-        genBtn.setBounds (x, topY, 80, btnH);
-        x += 86;
+        genBtn.setBounds (x, topY, 82, btnH);
+        x += 87;
 
-        mutBtn.setBounds (x, topY, 64, btnH);
-        x += 70;
+        mutBtn.setBounds (x, topY, 66, btnH);
+        x += 71;
 
-        expandBtn.setBounds (w - 96, topY, 80, btnH);
+        expandBtn.setBounds (w - 88, topY, 72, btnH);
 
-        // Row 2: 6 Tactile Knobs (Aligned to 8px rhythm, height 68)
-        const int knobY = 44;
+        // Row 2: 6 Tactile Knobs (Increased spacing, clear separation from Row 1)
+        const int knobY = 60;
         const int knobW = 58;
         const int knobGap = 5;
         int kx = 16;
@@ -319,18 +402,15 @@ public:
             &densitySlider, &swingSlider, &baseOctSlider,
             &arpOctSlider, &chanSlider, &tempoRatioSlider
         };
-        juce::Label* labels[] = {
-            &densityLabel, &swingLabel, &baseOctLabel,
-            &arpOctLabel, &chanLabel, &tempoRatioLabel
-        };
 
         for (int i = 0; i < 6; ++i)
         {
-            labels[i]->setBounds (kx, knobY, knobW, 12);
-            knobs[i]->setBounds  (kx, knobY + 12, knobW, 56);
+            knobs[i]->setBounds (kx, knobY, knobW, 64);
             kx += knobW + knobGap;
         }
     }
+
+
 
     void mouseDown (const juce::MouseEvent& e) override
     {
@@ -438,11 +518,12 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> genreAttach, roleAttach, stepsAttach;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>   muteAttach;
 
-    void setupKnob (juce::Slider& s, juce::Label& l, const juce::String& text)
+    void setupKnob (juce::Slider& s, juce::Label&, const juce::String&)
     {
-        s.setSliderStyle (juce::Slider::RotaryVerticalDrag);
-        s.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 56, 14);
         s.setLookAndFeel (&customLnF);
+        s.setSliderStyle (juce::Slider::RotaryVerticalDrag);
+        s.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
+
         s.onDragEnd = [this, &s]()
         {
             if (&s == &densitySlider || &s == &arpOctSlider)
@@ -452,13 +533,9 @@ private:
             repaint();
         };
         addAndMakeVisible (s);
-
-        l.setText (text, juce::dontSendNotification);
-        l.setFont (LandrFxTheme::font (9.0f, true, 0.07f));
-        l.setJustificationType (juce::Justification::centred);
-        l.setColour (juce::Label::textColourId, LandrFxTheme::TEXT_LABEL);
-        addAndMakeVisible (l);
     }
+
+
 
     int getNumSteps() const noexcept
     {
@@ -469,9 +546,10 @@ private:
     {
         const int nSteps = juce::jlimit (4, 32, getNumSteps());
         const float matrixX = cardArea.getX() + 398.0f;
-        const float matrixY = cardArea.getY() + 56.0f;
+        const float matrixY = cardArea.getY() + 58.0f;
         const float availW  = cardArea.getRight() - 14.0f - matrixX;
-        const float padH    = 58.0f;
+        const float padH    = 60.0f;
+
 
         const float padGap = (nSteps > 16) ? 2.0f : 3.5f;
         const float beatExtraGap = (nSteps > 16) ? 3.0f : 5.0f;
@@ -604,13 +682,10 @@ private:
 
     void paintStepMatrix (juce::Graphics& g, juce::Rectangle<float> cardArea)
     {
-        using namespace LandrFxTheme;
+        using namespace OrageTheme;
         const auto& track = processor.getTrack (trackIndex);
         const int curPlayStep = processor.getTrackPlayStep (trackIndex);
         const bool isPlaying = processor.isTransportRunning();
-
-        const float normY = static_cast<float> (getY()) / static_cast<float> (juce::jmax (1, getParentHeight()));
-        const juce::Colour localBg = BG_TOP.interpolatedWith (BG_BOTTOM, juce::jlimit (0.0f, 1.0f, normY));
 
         const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (processor.apvts.getRawParameterValue ("scale")->load()));
         const int rootKey = static_cast<int> (processor.apvts.getRawParameterValue ("rootNote")->load());
@@ -623,35 +698,29 @@ private:
             const auto& step = track.pattern.steps[static_cast<size_t>(i)];
             const bool isPlayhead = isPlaying && (curPlayStep == i);
 
-            // 1. Recessed Pad Background
-            g.setColour (localBg.darker (0.12f));
-            g.fillRoundedRectangle (pad, 6.0f);
-            g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (0.35f));
-            g.drawRoundedRectangle (pad.reduced (0.5f), 6.0f, 1.0f);
+            // 1. Recessed Pad Socket (Machined black pocket)
+            g.setColour (juce::Colour (0xFF0E0F11));
+            g.fillRoundedRectangle (pad, 4.0f);
+            g.setColour (juce::Colour (0xFF26282D));
+            g.drawRoundedRectangle (pad.reduced (0.5f), 4.0f, 1.0f);
 
-            // 2. Active Step Pill
+            // 2. Step Pad Body
             if (step.active)
             {
-                auto innerPill = pad.reduced (2.0f);
-                juce::Colour topCol = accent.brighter (0.16f);
-                juce::Colour botCol = accent.darker (0.12f);
-
-                if (step.accent)
-                {
-                    topCol = topCol.brighter (0.25f);
-                    botCol = botCol.brighter (0.10f);
-                }
+                auto innerPill = pad.reduced (1.5f);
+                juce::Colour topCol = step.accent ? PAD_ACTIVE_ACCENT : PAD_ACTIVE;
+                juce::Colour botCol = step.accent ? juce::Colour (0xFFEDE3D0) : juce::Colour (0xFFDFE2E6);
 
                 juce::ColourGradient pillGrad (topCol, innerPill.getX(), innerPill.getY(),
                                                botCol, innerPill.getRight(), innerPill.getBottom(), false);
                 g.setGradientFill (pillGrad);
-                g.fillRoundedRectangle (innerPill, 5.0f);
+                g.fillRoundedRectangle (innerPill, 3.5f);
 
                 // Top highlight
-                g.setColour (juce::Colours::white.withAlpha (0.32f));
-                g.drawHorizontalLine (static_cast<int> (innerPill.getY() + 1.0f), innerPill.getX() + 2.0f, innerPill.getRight() - 2.0f);
+                g.setColour (juce::Colours::white.withAlpha (0.60f));
+                g.drawHorizontalLine (static_cast<int> (innerPill.getY() + 0.5f), innerPill.getX() + 2.0f, innerPill.getRight() - 2.0f);
 
-                // Note Name Badge (Displays rich chord name like Cm9, F9, Ebmaj9, Gm11 or note pitch)
+                // Note Name Badge
                 juce::String noteName;
                 if (track.role == PulseForge::InstrumentRole::HarmonyChords || track.role == PulseForge::InstrumentRole::PolyChordStab || step.chordType > 0)
                 {
@@ -663,22 +732,26 @@ private:
                     noteName = PulseForge::getMidiNoteName (noteNum);
                 }
 
+                // Pure deep black text on stark white pad for maximum legibility!
                 g.setColour (TEXT_DARK);
-                const float noteFontSize = (nSteps > 16) ? ((noteName.length() > 4) ? 7.0f : 8.5f) : ((noteName.length() > 4) ? 9.5f : 11.5f);
-                g.setFont (font (noteFontSize, true, 0.02f));
+                const float noteFontSize = (nSteps > 16) ? ((noteName.length() > 4) ? 8.5f : 10.0f) : ((noteName.length() > 4) ? 10.5f : 12.5f);
+                g.setFont (montserratSemiBold (noteFontSize, 0.02f));
                 g.drawText (noteName, innerPill, juce::Justification::centred, false);
 
-                // Accent dot
+
+                // Accent: Warm amber vintage jewel pip
                 if (step.accent)
                 {
-                    g.setColour (juce::Colours::white);
+                    g.setColour (AMBER_LED_GLOW);
+                    g.fillEllipse (innerPill.getRight() - 7.5f, innerPill.getY() + 1.5f, 6.0f, 6.0f);
+                    g.setColour (AMBER_LED);
                     g.fillEllipse (innerPill.getRight() - 6.0f, innerPill.getY() + 3.0f, 3.5f, 3.5f);
                 }
 
                 // Slide marker '~'
                 if (step.slide)
                 {
-                    g.setColour (TEXT_DARK.withAlpha (0.80f));
+                    g.setColour (TEXT_DARK.withAlpha (0.85f));
                     g.setFont (font (8.0f, true, 0.0f));
                     g.drawText ("~", static_cast<int> (innerPill.getX() + 2.0f), static_cast<int> (innerPill.getY() + 1.0f), 8, 8, juce::Justification::centred);
                 }
@@ -693,25 +766,31 @@ private:
             }
             else
             {
-                // Inactive Dash
+                // Inactive Pad: Matte charcoal with soft subtle dash
+                auto innerPill = pad.reduced (1.5f);
+                g.setColour (PAD_OFF);
+                g.fillRoundedRectangle (innerPill, 3.5f);
+
                 g.setColour (juce::Colours::white.withAlpha (0.16f));
                 g.setFont (font (11.0f, false, 0.0f));
                 g.drawText ("-", pad, juce::Justification::centred, false);
             }
 
-            // 3. Step Number Label at Top (Min 10px, 60% white, full white when playhead)
-            g.setColour (isPlayhead ? juce::Colours::white : juce::Colours::white.withAlpha (0.60f));
-            g.setFont (font (10.0f, true, 0.04f));
-            g.drawText (juce::String (i + 1), static_cast<int> (pad.getX()), static_cast<int> (pad.getY() - 14.0f), static_cast<int> (pad.getWidth()), 12, juce::Justification::centred);
+            // 3. Step Number Label at Top: High-contrast white/silver on dark graphite pocket
+            g.setColour (isPlayhead ? AMBER_LED : juce::Colour (0xFFE2E6EC));
+            g.setFont (montserratSemiBold (11.0f, 0.04f));
+            g.drawText (juce::String (i + 1), static_cast<int> (pad.getX()), static_cast<int> (pad.getY() - 15.0f), static_cast<int> (pad.getWidth()), 14, juce::Justification::centred);
 
-            // 4. Real-time Playhead LED Beam
+            // 4. Real-time Playhead: Warm Amber glowing border & moving LED
             if (isPlayhead)
             {
-                g.setColour (juce::Colours::white.withAlpha (0.90f));
-                g.drawRoundedRectangle (pad.expanded (1.0f), 7.0f, 2.0f);
+                g.setColour (AMBER_LED);
+                g.drawRoundedRectangle (pad.expanded (1.0f), 5.0f, 1.8f);
 
-                g.setColour (juce::Colours::white);
-                g.fillEllipse (pad.getCentreX() - 2.5f, pad.getBottom() + 2.0f, 5.0f, 5.0f);
+                g.setColour (AMBER_LED_GLOW);
+                g.fillEllipse (pad.getCentreX() - 4.0f, pad.getBottom() + 1.0f, 8.0f, 8.0f);
+                g.setColour (AMBER_LED);
+                g.fillEllipse (pad.getCentreX() - 2.5f, pad.getBottom() + 2.5f, 5.0f, 5.0f);
             }
         }
 
@@ -725,19 +804,19 @@ private:
             // Row Title Tags on the Left
             g.setFont (font (8.5f, true, 0.06f));
 
-            g.setColour (accent);
+            g.setColour (AMBER_LED);
             g.drawText ("ACCENT", static_cast<int> (labelX), static_cast<int> (expY + 1.0f), static_cast<int> (labelW), 14, juce::Justification::centredRight);
 
-            g.setColour (juce::Colour (0xFFF59E0B));
+            g.setColour (juce::Colour (0xFFE2E5EA));
             g.drawText ("GLIDE", static_cast<int> (labelX), static_cast<int> (expY + 18.0f), static_cast<int> (labelW), 14, juce::Justification::centredRight);
 
-            g.setColour (juce::Colour (0xFF00E5FF));
+            g.setColour (juce::Colour (0xFFD0D4DA));
             g.drawText ("RATCHET", static_cast<int> (labelX), static_cast<int> (expY + 35.0f), static_cast<int> (labelW), 14, juce::Justification::centredRight);
 
-            g.setColour (juce::Colour (0xFFA855F7));
+            g.setColour (juce::Colour (0xFFB0B5BD));
             g.drawText ("LEGATO", static_cast<int> (labelX), static_cast<int> (expY + 52.0f), static_cast<int> (labelW), 14, juce::Justification::centredRight);
 
-            g.setColour (TEXT_LABEL);
+            g.setColour (juce::Colour (0xFF8A909A));
             g.drawText ("VELOCITY", static_cast<int> (labelX), static_cast<int> (expY + 69.0f), static_cast<int> (labelW), 14, juce::Justification::centredRight);
 
             for (int i = 0; i < nSteps; ++i)
@@ -754,7 +833,7 @@ private:
                 // Row 1: ACCENT
                 if (step.accent)
                 {
-                    g.setColour (accent);
+                    g.setColour (AMBER_LED);
                     g.fillRoundedRectangle (rAcc, 3.0f);
                     g.setColour (TEXT_DARK);
                     g.setFont (font (8.5f, true, 0.02f));
@@ -762,7 +841,7 @@ private:
                 }
                 else
                 {
-                    g.setColour (juce::Colours::black.withAlpha (0.28f));
+                    g.setColour (juce::Colours::black.withAlpha (0.40f));
                     g.fillRoundedRectangle (rAcc, 3.0f);
                     g.setColour (juce::Colours::white.withAlpha (0.25f));
                     g.setFont (font (8.0f, false, 0.0f));
@@ -772,7 +851,7 @@ private:
                 // Row 2: GLIDE (TB-303 Slide)
                 if (step.slide)
                 {
-                    g.setColour (juce::Colour (0xFFF59E0B));
+                    g.setColour (juce::Colour (0xFFE2E5EA));
                     g.fillRoundedRectangle (rGld, 3.0f);
                     g.setColour (TEXT_DARK);
                     g.setFont (font (8.5f, true, 0.02f));
@@ -780,7 +859,7 @@ private:
                 }
                 else
                 {
-                    g.setColour (juce::Colours::black.withAlpha (0.28f));
+                    g.setColour (juce::Colours::black.withAlpha (0.40f));
                     g.fillRoundedRectangle (rGld, 3.0f);
                     g.setColour (juce::Colours::white.withAlpha (0.25f));
                     g.setFont (font (8.0f, false, 0.0f));
@@ -790,7 +869,7 @@ private:
                 // Row 3: RATCHET
                 if (step.ratchet > 1)
                 {
-                    g.setColour (juce::Colour (0xFF00E5FF));
+                    g.setColour (juce::Colour (0xFFFFF0D0));
                     g.fillRoundedRectangle (rRat, 3.0f);
                     g.setColour (TEXT_DARK);
                     g.setFont (font (8.5f, true, 0.02f));
@@ -798,7 +877,7 @@ private:
                 }
                 else
                 {
-                    g.setColour (juce::Colours::black.withAlpha (0.28f));
+                    g.setColour (juce::Colours::black.withAlpha (0.40f));
                     g.fillRoundedRectangle (rRat, 3.0f);
                     g.setColour (juce::Colours::white.withAlpha (0.25f));
                     g.setFont (font (8.0f, false, 0.0f));
@@ -808,15 +887,15 @@ private:
                 // Row 4: LEGATO
                 if (step.gate >= 1.2f)
                 {
-                    g.setColour (juce::Colour (0xFFA855F7));
+                    g.setColour (juce::Colour (0xFFC8CCD4));
                     g.fillRoundedRectangle (rLeg, 3.0f);
-                    g.setColour (juce::Colours::white);
+                    g.setColour (TEXT_DARK);
                     g.setFont (font (8.5f, true, 0.02f));
                     g.drawText ("LEG", rLeg, juce::Justification::centred, false);
                 }
                 else
                 {
-                    g.setColour (juce::Colours::black.withAlpha (0.28f));
+                    g.setColour (juce::Colours::black.withAlpha (0.40f));
                     g.fillRoundedRectangle (rLeg, 3.0f);
                     g.setColour (juce::Colours::white.withAlpha (0.25f));
                     g.setFont (font (8.0f, false, 0.0f));
@@ -824,14 +903,14 @@ private:
                 }
 
                 // Row 5: VELOCITY
-                g.setColour (juce::Colours::black.withAlpha (0.32f));
+                g.setColour (juce::Colours::black.withAlpha (0.45f));
                 g.fillRoundedRectangle (rVel, 3.0f);
 
                 if (step.active)
                 {
                     const float velRatio = static_cast<float> (juce::jlimit (1, 127, step.velocity)) / 127.0f;
                     auto bar = rVel.withWidth (rVel.getWidth() * velRatio);
-                    g.setColour (accent.withAlpha (0.75f));
+                    g.setColour (AMBER_LED.withAlpha (0.85f));
                     g.fillRoundedRectangle (bar, 3.0f);
 
                     g.setColour (juce::Colours::white);

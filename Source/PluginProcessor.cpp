@@ -233,14 +233,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     const juce::StringArray genres {
-        "Classic House (90s/Deep)",
-        "Acid House & Techno (303)",
-        "Italo Disco & Synthwave",
-        "Berlin School (70s Modular)",
-        "Melodic Techno & Prog",
-        "Detroit Electro & Bass House",
-        "Funk & Old-School Boogie",
-        "Organic / Euclidean IDM"
+        "Classic House (Deep/90s)",
+        "Acid 303 (TB-303 Reference)",
+        "Italo Disco / EDM",
+        "Fisher (Tech House)",
+        "Paul Kalkbrenner (Melodic Techno)",
+        "UK Garage / Detroit (Disclosure)",
+        "Fred again.. (Emotional UK)",
+        "Bonobo (Organic Downtempo)"
     };
 
     const juce::StringArray roles {
@@ -504,47 +504,75 @@ void PulseForgeAudioProcessor::setTrackNumSteps (int trackIdx, int numSteps)
     updatePlaybackSnapshot();
 }
 
+void PulseForgeAudioProcessor::setTrackGenre (int trackIdx, PulseForge::GenreStyle genre)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    tracks[static_cast<size_t>(trackIdx)].genre = genre;
+
+    const juce::String prefix = "t" + juce::String (trackIdx) + "_";
+    if (auto* p = apvts.getParameter (prefix + "genre"))
+        p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (genre)));
+
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::setTrackRole (int trackIdx, PulseForge::InstrumentRole role)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    tracks[static_cast<size_t>(trackIdx)].role = role;
+
+    const juce::String prefix = "t" + juce::String (trackIdx) + "_";
+    if (auto* p = apvts.getParameter (prefix + "role"))
+        p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (role)));
+
+    updatePlaybackSnapshot();
+}
+
 void PulseForgeAudioProcessor::triggerGenerateTrio()
 {
     const juce::ScopedLock sl (patternLock);
-    const auto genre = static_cast<PulseForge::GenreStyle> (static_cast<int> (apvts.getRawParameterValue ("genre")->load()));
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
 
-    // Track 0: Bass
-    PulseForge::StyleGenerator::GenerationParams gp0;
-    gp0.genre = genre;
-    gp0.role  = tracks[0].role;
-    gp0.scale = scale;
-    gp0.density = 0.60f;
-    gp0.syncopation = 0.55f;
-    gp0.spice = 0.40f;
-    gp0.pitchRange = 0.40f;
-    gp0.numSteps = tracks[0].numSteps;
-    PulseForge::StyleGenerator::generatePattern (tracks[0].pattern, gp0);
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        const juce::String prefix = "t" + juce::String (t) + "_";
+        PulseForge::GenreStyle genre = tracks[static_cast<size_t>(t)].genre;
+        if (auto* p = apvts.getRawParameterValue (prefix + "genre"))
+            genre = static_cast<PulseForge::GenreStyle> (static_cast<int> (p->load()));
+        else if (auto* pg = apvts.getRawParameterValue ("genre"))
+            genre = static_cast<PulseForge::GenreStyle> (static_cast<int> (pg->load()));
 
-    // Track 1: Arp / Lead
-    PulseForge::StyleGenerator::GenerationParams gp1;
-    gp1.genre = genre;
-    gp1.role  = tracks[1].role;
-    gp1.scale = scale;
-    gp1.density = 0.75f;
-    gp1.syncopation = 0.40f;
-    gp1.spice = 0.50f;
-    gp1.pitchRange = 0.65f;
-    gp1.numSteps = tracks[1].numSteps;
-    PulseForge::StyleGenerator::generatePattern (tracks[1].pattern, gp1);
+        PulseForge::InstrumentRole role = tracks[static_cast<size_t>(t)].role;
+        if (auto* p = apvts.getRawParameterValue (prefix + "role"))
+            role = static_cast<PulseForge::InstrumentRole> (static_cast<int> (p->load()));
 
-    // Track 2: Harmony / PolyChordStab
-    PulseForge::StyleGenerator::GenerationParams gp2;
-    gp2.genre = genre;
-    gp2.role  = tracks[2].role;
-    gp2.scale = scale;
-    gp2.density = 0.45f;
-    gp2.syncopation = 0.60f;
-    gp2.spice = 0.35f;
-    gp2.pitchRange = 0.40f;
-    gp2.numSteps = tracks[2].numSteps;
-    PulseForge::StyleGenerator::generatePattern (tracks[2].pattern, gp2);
+        float density = tracks[static_cast<size_t>(t)].density * 0.01f;
+        if (auto* p = apvts.getRawParameterValue (prefix + "density"))
+            density = p->load() * 0.01f;
+
+        uint32_t newSeed = 0;
+        while (newSeed == 0 || newSeed == tracks[static_cast<size_t>(t)].seed)
+        {
+            newSeed = static_cast<uint32_t> (juce::Random::getSystemRandom().nextInt()) ^ static_cast<uint32_t> (juce::Time::getHighResolutionTicks() + t * 7919);
+        }
+        tracks[static_cast<size_t>(t)].seed = newSeed;
+        tracks[static_cast<size_t>(t)].genre = genre;
+        tracks[static_cast<size_t>(t)].role = role;
+
+        PulseForge::StyleGenerator::GenerationParams gp;
+        gp.genre       = genre;
+        gp.role        = role;
+        gp.scale       = scale;
+        gp.density     = density;
+        gp.syncopation = (t == 0) ? 0.55f : ((t == 1) ? 0.40f : 0.60f);
+        gp.spice       = (t == 0) ? 0.40f : ((t == 1) ? 0.50f : 0.35f);
+        gp.pitchRange  = (t == 0) ? 0.40f : ((t == 1) ? 0.65f : 0.40f);
+        gp.numSteps    = tracks[static_cast<size_t>(t)].numSteps;
+
+        PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(t)].pattern, gp, newSeed);
+    }
 
     updatePlaybackSnapshot();
 }
@@ -578,8 +606,18 @@ void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
         else if (sIdx == 2) numSteps = 16;
         else if (sIdx == 3) numSteps = 32;
     }
+    tracks[static_cast<size_t>(trackIdx)].genre = genre;
+    tracks[static_cast<size_t>(trackIdx)].role = role;
     tracks[static_cast<size_t>(trackIdx)].numSteps = numSteps;
     tracks[static_cast<size_t>(trackIdx)].pattern.numSteps = numSteps;
+
+    // Genera un nuovo SEED casuale e unico a ogni click di GENERATE
+    uint32_t newSeed = 0;
+    while (newSeed == 0 || newSeed == tracks[static_cast<size_t>(trackIdx)].seed)
+    {
+        newSeed = static_cast<uint32_t> (juce::Random::getSystemRandom().nextInt()) ^ static_cast<uint32_t> (juce::Time::getHighResolutionTicks());
+    }
+    tracks[static_cast<size_t>(trackIdx)].seed = newSeed;
 
     PulseForge::StyleGenerator::GenerationParams gp;
     gp.genre       = genre;
@@ -591,7 +629,7 @@ void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
     gp.pitchRange  = 0.55f;
     gp.numSteps    = numSteps;
 
-    PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, gp);
+    PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, gp, newSeed);
     updatePlaybackSnapshot();
 }
 
@@ -599,9 +637,37 @@ void PulseForgeAudioProcessor::triggerMutateTrack (int trackIdx)
 {
     trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
     const juce::ScopedLock sl (patternLock);
+    auto& trk = tracks[static_cast<size_t>(trackIdx)];
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
-    PulseForge::StyleGenerator::mutatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, scale, 0.45f);
+
+    // Autentica mutazione musicale sul pattern esistente (~10-15% variazione note, step e articolazioni)
+    PulseForge::StyleGenerator::mutatePattern (trk.pattern, scale, 0.45f);
+
     updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::updateTrackComplexity (int trackIdx, float newComplexity)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    auto& trk = tracks[static_cast<size_t>(trackIdx)];
+    trk.density = newComplexity;
+
+    if (!transportRunning.load())
+    {
+        const juce::ScopedLock sl (patternLock);
+        PulseForge::StyleGenerator::GenerationParams gp;
+        gp.genre = trk.genre;
+        gp.role = trk.role;
+        gp.scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
+        gp.density = newComplexity * 0.01f;
+        gp.numSteps = trk.numSteps;
+        PulseForge::StyleGenerator::generatePattern (trk.pattern, gp, trk.seed);
+        updatePlaybackSnapshot();
+    }
+    else
+    {
+        pendingComplexityUpdate[static_cast<size_t>(trackIdx)].store (newComplexity);
+    }
 }
 
 void PulseForgeAudioProcessor::triggerClearTrack (int trackIdx)
@@ -767,6 +833,7 @@ int PulseForgeAudioProcessor::computeStepMidiNote (int stepIdx, const PulseForge
 
 void PulseForgeAudioProcessor::sendMidiOut (int trackIdx, const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset)
 {
+    // 1. Always deliver to DAW host output buffer with zero locks or blocking
     midiOut.addEvent (msg, juce::jmax (0, sampleOffset));
 
     trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
@@ -776,24 +843,29 @@ void PulseForgeAudioProcessor::sendMidiOut (int trackIdx, const juce::MidiMessag
     if (target.isEmpty() || target == "DAW Only" || target == "DAW (VST3)")
         return;
 
-    const juce::ScopedLock sl (midiOutLock);
-    for (auto& port : activeHardwareOuts)
+    // 2. Hardware USB Out: Use tryEnter() (non-blocking try-lock)
+    // If the GUI or host state serialization currently holds midiOutLock, NEVER block processBlock!
+    // Skip this specific hardware USB mirror rather than causing a buffer dropout in the DAW.
+    if (midiOutLock.tryEnter())
     {
-        if (port.device != nullptr)
+        for (auto& port : activeHardwareOuts)
         {
-            if (target == "All USB Synths" || port.name == target || port.name.containsIgnoreCase (target))
+            if (port.device != nullptr)
             {
-                port.device->sendMessageNow (msg);
-                // When targeting a dedicated hardware synth port and the sequence is on Channel 2 or 3,
-                // also mirror on Channel 1 so synths set to factory default Channel 1 play seamlessly!
-                if (target != "All USB Synths" && msg.getChannel() != 1)
+                if (target == "All USB Synths" || port.name == target || port.name.containsIgnoreCase (target))
                 {
-                    auto ch1Msg = msg;
-                    ch1Msg.setChannel (1);
-                    port.device->sendMessageNow (ch1Msg);
+                    port.device->sendMessageNow (msg);
+                    // Mirror on Channel 1 for dedicated synths set to factory Ch1
+                    if (target != "All USB Synths" && msg.getChannel() != 1)
+                    {
+                        auto ch1Msg = msg;
+                        ch1Msg.setChannel (1);
+                        port.device->sendMessageNow (ch1Msg);
+                    }
                 }
             }
         }
+        midiOutLock.exit();
     }
 }
 
@@ -1246,6 +1318,24 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
                     if (t == activeTrack)
                         currentPlayStep.store (wrappedStep);
 
+                    // Aggiornamento dinamico Complexity alla battuta successiva senza click né note appese
+                    if (wrappedStep == 0)
+                    {
+                        float pendingC = pendingComplexityUpdate[static_cast<size_t>(t)].exchange (-1.0f);
+                        if (pendingC >= 0.0f)
+                        {
+                            auto& trk = tracks[static_cast<size_t>(t)];
+                            PulseForge::StyleGenerator::GenerationParams gp;
+                            gp.genre = trk.genre;
+                            gp.role = trk.role;
+                            gp.scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
+                            gp.density = pendingC * 0.01f;
+                            gp.numSteps = trk.numSteps;
+                            PulseForge::StyleGenerator::generatePattern (trk.pattern, gp, trk.seed);
+                            updatePlaybackSnapshot();
+                        }
+                    }
+
                     triggerStepEventsForTrack (t, wrappedStep, stepDurationSamples, s, midiMessages, playbackSnap);
                 }
             }
@@ -1481,6 +1571,7 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         trackXml->setAttribute ("baseOctave", trk.baseOctave);
         trackXml->setAttribute ("rate", trk.rateIdx);
         trackXml->setAttribute ("numSteps", trk.numSteps);
+        trackXml->setAttribute ("seed", static_cast<int> (trk.seed));
         trackXml->setAttribute ("density", static_cast<double> (trk.density));
         trackXml->setAttribute ("sync", static_cast<double> (trk.syncopation));
         trackXml->setAttribute ("spice", static_cast<double> (trk.spice));
@@ -1547,6 +1638,7 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
             trk.rateIdx     = trackXml->getIntAttribute ("rate", trk.rateIdx);
             trk.numSteps    = trackXml->getIntAttribute ("numSteps", 16);
             trk.pattern.numSteps = trk.numSteps;
+            trk.seed        = static_cast<uint32_t> (trackXml->getIntAttribute ("seed", static_cast<int> (101 + t * 100)));
             trk.density     = static_cast<float> (trackXml->getDoubleAttribute ("density", trk.density));
             trk.syncopation = static_cast<float> (trackXml->getDoubleAttribute ("sync", trk.syncopation));
             trk.spice       = static_cast<float> (trackXml->getDoubleAttribute ("spice", trk.spice));

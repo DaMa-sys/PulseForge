@@ -161,6 +161,7 @@ struct TrackData
     float swing = 20.0f;
     int tempoRatioIdx = 5; // 1/1x (Sync)
     int numSteps = 16;
+    uint32_t seed = 101;
     bool isExpanded = false;
     juce::String targetHwDevice = "DAW Only";
     juce::String name = "SEQ 1";
@@ -422,21 +423,21 @@ inline juce::String getGenreDescription (GenreStyle genre)
     switch (genre)
     {
         case GenreStyle::ClassicHouse:
-            return "Deep & Jazzy House (SmashUp/Chicago): Groove Tresillo & Off-beat, fondamentale solida con risposte di 3a/5a/7a e note basse tenute.";
+            return "Classic House: Groove sincopato sui levare (offbeat), fondamentale solida con risposte di 3a/5a e respiro per la cassa.";
         case GenreStyle::AcidTechno:
-            return "TB-303 Acid & Techno: Pedale di 16esimi sulla tonica alternato a b2/b3/5a/Ottava con Slide (legato analogico) e Accenti filtro.";
+            return "Acid 303 (Reference): Pedale di 16esimi sulla tonica alternato a b2/b3/5a/Ottava con Slide legato analogico e Accenti filtro.";
         case GenreStyle::ItaloSynthwave:
-            return "Italo Disco & Synthwave (Moroder/DMS): Ottave pulsanti (Root-Oct-5th), arpeggi in 16esimi simmetrici A-A-A-B e tiro dritto.";
+            return "Italo / EDM: Ottave pulsanti Moroder (Root-Oct-5th), arpeggi simmetrici A-A-A-B e tiro dritto sui quarti.";
         case GenreStyle::BerlinSchool:
-            return "Berlin School (Tangerine Dream/Moog): Ostinati ipnotici a contrappunto (pedale basso + melodia modale) con Ratchets 2x-4x.";
+            return "Fisher (Tech House): Rolling groove a coppie di semicrome, pause strategiche per la cassa, ghost percussive e pop d'ottava a fine battuta.";
         case GenreStyle::MelodicTechno:
-            return "Melodic Techno (PML Afterlife/Bodzin): Groove XX.XXX.XXX.XXX.X con arpeggi contrappuntistici tra registro medio e pedale a -12st.";
+            return "Paul Kalkbrenner (Melodic Techno): Arpeggi ipnotici in semicrome, minore, evoluzione lenta e contorno melodico morbido.";
         case GenreStyle::DetroitElectro:
-            return "Electro & Bass House (DABRO/Detroit): Riff sincopati Call & Response, walkdown cromatici/frigi e salti d'ottava percussivi.";
+            return "UK Garage / Detroit (Disclosure): 2-step sincopato, swing 56-58%, ghost notes e slide controllati.";
         case GenreStyle::FunkBoogie:
-            return "Funky House & Boogie (Nano Loops): 'The One' lungo sul primo quarto seguito da walkdown pentatonici (12->10->7->3->0) con swing.";
+            return "Fred again.. (Emotional UK): Motivo intimo di 3-4 note ripetuto, micro-variazioni di dinamica e sospensioni.";
         case GenreStyle::EuclideanIDM:
-            return "Organic / Euclidean Electronica: Poliritmie di Bjorklund con motivi ripetuti di 3 o 6 note su griglie di 16 step.";
+            return "Bonobo (Organic Downtempo): Accordi estesi, timing umano, dinamica ampia e pause ampie.";
         default:
             return "";
     }

@@ -2,11 +2,11 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include "PluginProcessor.h"
-#include "DamaTheme.h"
+#include "OrageTheme.h"
 #include "SequenceStripComponent.h"
 
 //==============================================================================
-// Main Editor Window (RC-20 inspired Modular 3-Track Strips & Global Header)
+// Main Editor Window (Orage Evolver-Inspired 3-Track Strips & Global Header)
 //==============================================================================
 class PulseForgeAudioProcessorEditor : public juce::AudioProcessorEditor,
                                        public juce::DragAndDropContainer,
@@ -24,7 +24,7 @@ private:
     void renderCachedShadows (int width, int height);
 
     PulseForgeAudioProcessor& audioProcessor;
-    LandrLookAndFeel customLookAndFeel;
+    OrageLookAndFeel customLookAndFeel;
 
     juce::Image cachedBackground;
 

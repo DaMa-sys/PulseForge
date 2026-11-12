@@ -60,29 +60,26 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     runAttach     = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "autoPlay",     runBtn);
     previewAttach = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "previewSynth", previewBtn);
 
-    // 4. The 3 Dedicated Horizontal Sequence Strips (Custom 3-Tone Azure Blue Palette)
-    // Strip 0: Deep Marine Cobalt Azure for Grounded Bass Foundation
+    // 4. The 3 Dedicated Horizontal Sequence Strips (Orage Evolver Titanium / Dark Graphite bays)
     strips[0] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 0, juce::Colour (0xFF38BDF8), "SEQ 1 : BASS", customLookAndFeel,
-        juce::Colour (0xFF14476B), juce::Colour (0xFF0D324D));
+        audioProcessor, 0, OrageTheme::TEXT_BRIGHT, "SEQ 1 : BASS", customLookAndFeel,
+        juce::Colour (0xFF1A1C1F), juce::Colour (0xFF121315));
 
-    // Strip 1: Vibrant Electric Cyan Turquoise for Melodic Arpeggio & Lead Hook
     strips[1] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 1, juce::Colour (0xFF00F0FF), "SEQ 2 : ARP", customLookAndFeel,
-        juce::Colour (0xFF0F5A6D), juce::Colour (0xFF0A3B48));
+        audioProcessor, 1, OrageTheme::TEXT_BRIGHT, "SEQ 2 : ARP", customLookAndFeel,
+        juce::Colour (0xFF1C1E22), juce::Colour (0xFF141517));
 
-    // Strip 2: Royal Indigo / Cerulean Azure for Polyphonic Chord Progressions
     strips[2] = std::make_unique<SequenceStripComponent> (
-        audioProcessor, 2, juce::Colour (0xFF818CF8), "SEQ 3 : CHORDS", customLookAndFeel,
-        juce::Colour (0xFF224E82), juce::Colour (0xFF153457));
+        audioProcessor, 2, OrageTheme::TEXT_BRIGHT, "SEQ 3 : CHORDS", customLookAndFeel,
+        juce::Colour (0xFF1E2024), juce::Colour (0xFF151719));
 
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
         strips[static_cast<size_t>(i)]->onExpandToggled = [this]()
         {
-            int h = 76;
+            int h = 78;
             for (auto& s : strips)
-                h += (s != nullptr ? s->getStripHeight() : 126) + 8;
+                h += (s != nullptr ? s->getStripHeight() : 134) + 8;
             h += 24; // footer
             setSize (getWidth(), h);
         };
@@ -94,7 +91,7 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
         juce::MessageManager::callAsync ([this]() { repaint(); });
     };
 
-    setSize (1180, 502);
+    setSize (1180, 528);
     startTimerHz (60);
 }
 
@@ -107,83 +104,106 @@ PulseForgeAudioProcessorEditor::~PulseForgeAudioProcessorEditor()
 
 void PulseForgeAudioProcessorEditor::renderCachedShadows (int width, int height)
 {
-    using namespace LandrFxTheme;
+    using namespace OrageTheme;
     cachedBackground = juce::Image (juce::Image::ARGB, width, height, true);
     juce::Graphics g (cachedBackground);
 
+    // 1. Dark Studio Surround / Outer Chassis
+    g.fillAll (BG_CHASSIS_DARK);
+
     auto cardArea = juce::Rectangle<float> (0.0f, 0.0f, static_cast<float> (width), static_cast<float> (height)).reduced (6.0f);
 
-    // Soft drop shadow around window chassis
-    g.setColour (SHADOW_COLOR);
-    g.fillRoundedRectangle (cardArea.translated (0.0f, 4.0f), 16.0f);
+    // Soft ambient drop shadow around aluminum faceplate
+    g.setColour (SHADOW_SOFT);
+    g.fillRoundedRectangle (cardArea.translated (0.0f, 4.0f), 10.0f);
 
-    // Chassis Gradient (#2FC0D0 -> #2587B5)
-    juce::ColourGradient bgGrad (BG_TOP, 0.0f, cardArea.getY(),
-                                 BG_BOTTOM, 0.0f, cardArea.getBottom(), false);
-    g.setGradientFill (bgGrad);
-    g.fillRoundedRectangle (cardArea, 14.0f);
+    // 2. Anodized Natural Brushed Aluminum Faceplate
+    juce::ColourGradient alGrad (ALUMINUM_LIGHT, 0.0f, cardArea.getY(),
+                                 ALUMINUM_DARK,  0.0f, cardArea.getBottom(), false);
+    alGrad.addColour (0.45, ALUMINUM_BASE);
+    g.setGradientFill (alGrad);
+    g.fillRoundedRectangle (cardArea, 8.0f);
 
-    // Top Master Header Bar
-    auto headR = juce::Rectangle<float> (16.0f, 12.0f, static_cast<float> (width - 32), 62.0f);
-    g.setColour (juce::Colour (0x0B, 0x3D, 0x5C).withAlpha (0.22f));
-    g.fillRoundedRectangle (headR.translated (0.0f, 3.0f), 12.0f);
+    // Precision machined perimeter bevel
+    g.setColour (ALUMINUM_BEVEL);
+    g.drawRoundedRectangle (cardArea, 8.0f, 1.2f);
 
-    g.setColour (juce::Colours::white.withAlpha (0.07f));
-    g.fillRoundedRectangle (headR, 12.0f);
+    // Top specular hairline
+    g.setColour (ALUMINUM_SPECULAR.withAlpha (0.75f));
+    g.drawHorizontalLine (static_cast<int> (cardArea.getY() + 0.5f), cardArea.getX() + 8.0f, cardArea.getRight() - 8.0f);
 
-    // Top Specular Hairline
-    g.setColour (juce::Colours::white.withAlpha (0.12f));
-    g.drawHorizontalLine (static_cast<int> (headR.getY() + 0.5f), headR.getX() + 6.0f, headR.getRight() - 6.0f);
+    // 3. Top Master Header Silkscreen Frame (Seamless desktop chassis)
+    auto headR = juce::Rectangle<float> (16.0f, 10.0f, static_cast<float> (width - 32), 62.0f);
+    g.setColour (PANEL_LINE.withAlpha (0.40f));
+    g.drawRoundedRectangle (headR, 6.0f, 1.0f);
+
+    auto headWell = headR.reduced (1.0f);
+    g.setColour (ALUMINUM_BASE.darker (0.02f));
+    g.fillRoundedRectangle (headWell, 5.0f);
 }
+
 
 void PulseForgeAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    using namespace LandrFxTheme;
+    using namespace OrageTheme;
 
     if (cachedBackground.isValid())
         g.drawImageAt (cachedBackground, 0, 0);
 
-    // 1. Logo & Typography (Upper Left)
-    g.setColour (TEXT_BRIGHT);
-    g.setFont (font (15.0f, true, 0.14f));
-    g.drawText ("PULSEFORGE", 30, 20, 150, 20, juce::Justification::centredLeft, false);
+    // 1. Logo & Brand Typography (Upper Left, aligned with header)
+    g.setColour (TEXT_DARK);
+    g.setFont (getOrageLogoFont (27.0f));
+    g.drawText ("Orage", 28, 14, 120, 27, juce::Justification::centredLeft, false);
 
+    // Subtitle in Montserrat Italic (400) - Jet black, crisp definition
     g.setColour (TEXT_LABEL);
-    g.setFont (font (8.5f, true, 0.08f));
-    g.drawText ("3-TRACK MIDI ENGINE | DaMA", 30, 38, 170, 14, juce::Justification::centredLeft, false);
+    g.setFont (montserratItalic (10.5f));
+    g.drawText ("3-Track Generative Synthesizer", 30, 43, 240, 16, juce::Justification::centredLeft, false);
 
-    // 2. Global Dropdown Labels
+    // 2. Global Dropdown Labels in Montserrat Semi-Bold (600) - Jet black, high-contrast
     g.setColour (TEXT_LABEL);
-    g.setFont (font (9.0f, true, 0.08f));
-    g.drawText ("MUSICAL SCALE", scaleBox.getX(), 15, scaleBox.getWidth(), 12, juce::Justification::centredLeft);
-    g.drawText ("ROOT",          rootBox.getX(),  15, rootBox.getWidth(),  12, juce::Justification::centredLeft);
+    g.setFont (montserratSemiBold (10.0f, 0.08f));
+    g.drawText ("MUSICAL SCALE", scaleBox.getX(), 11, scaleBox.getWidth(), 16, juce::Justification::centredLeft);
+    g.drawText ("ROOT",          rootBox.getX(),  11, rootBox.getWidth(),  16, juce::Justification::centredLeft);
 
-    // 3. Footer Telemetry & Status (Crisp Bold Typography)
-    const int footerY = getHeight() - 24;
+    // 3. Top Right: Warm Amber Power Jewel Lamp
+    const float ledX = static_cast<float> (getWidth() - 36);
+    const float ledY = 32.0f;
+    const float ledR = 5.0f;
+    drawJewelLed (g, ledX, ledY, ledR, AMBER_LED, AMBER_LED_BRIGHT, AMBER_LED_GLOW);
+
+    // Power text label below LED in Montserrat Italic
+    g.setColour (TEXT_LABEL);
+    g.setFont (montserratItalic (9.0f));
+    g.drawText ("power", static_cast<int> (ledX - 25.0f), static_cast<int> (ledY + 8.0f), 50, 14, juce::Justification::centred);
+
+    // 4. Footer Telemetry & Status
+    const int footerY = getHeight() - 22;
     const double bpm = audioProcessor.getCurrentHostBpm();
     const bool isPlaying = audioProcessor.isTransportRunning();
 
-    juce::String status = "DaMA PulseForge v1.0 | 3 Multi-Timbral Tracks (Ch 1: Bass | Ch 2: Arp | Ch 3: Chords) | Ableton Sync: "
+    juce::String status = "PulseForge v1.0 | 3-Track Generative Engine (Bass / Arp / Chords) | Ableton Live Sync: "
                         + juce::String (bpm, 1) + " BPM (" + (isPlaying ? "RUNNING" : "STOPPED") + ")";
 
-    g.setColour (TEXT_BRIGHT.withAlpha (0.90f));
-    g.setFont (font (10.0f, true, 0.04f));
-    g.drawText (status, 24, footerY, getWidth() - 380, 18, juce::Justification::centredLeft, true);
+    g.setColour (TEXT_LABEL);
+    g.setFont (montserratSemiBold (10.0f, 0.04f));
+    g.drawText (status, 18, footerY, getWidth() - 360, 18, juce::Justification::centredLeft, true);
 
     // Hardware Controller Telemetry Badge
     const bool hwConnected = audioProcessor.hardwareSerial.isConnected();
     const juce::String hwStatus = hwConnected ? ("HW: " + audioProcessor.hardwareSerial.getConnectedPortName()) : "HW: SCANNING";
-    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : juce::Colours::white.withAlpha (0.45f));
-    g.fillEllipse (static_cast<float> (getWidth() - 355), static_cast<float> (footerY + 5), 7.0f, 7.0f);
-    g.setColour (hwConnected ? juce::Colour (0xFF10B981) : TEXT_BRIGHT.withAlpha (0.80f));
-    g.setFont (font (9.5f, true, 0.05f));
-    g.drawText (hwStatus, getWidth() - 342, footerY, 115, 18, juce::Justification::centredLeft);
+    g.setColour (hwConnected ? AMBER_LED : juce::Colour (0xFF4A5060));
+    g.fillEllipse (static_cast<float> (getWidth() - 335), static_cast<float> (footerY + 5), 7.0f, 7.0f);
+    g.setColour (hwConnected ? TEXT_DARK : TEXT_MUTED);
+    g.setFont (montserratSemiBold (9.5f, 0.05f));
+    g.drawText (hwStatus, getWidth() - 322, footerY, 115, 18, juce::Justification::centredLeft);
 
     const int lastNote = audioProcessor.getLastTriggeredNote();
-    g.setColour (TEXT_BRIGHT.withAlpha (0.90f));
-    g.setFont (font (10.0f, true, 0.04f));
+    g.setColour (TEXT_LABEL);
+    g.setFont (montserratSemiBold (10.0f, 0.04f));
     g.drawText ("LIVE MIDI: " + PulseForge::getMidiNoteName (lastNote) + " (#" + juce::String (lastNote) + ")",
-                getWidth() - 220, footerY, 195, 18, juce::Justification::centredRight, false);
+                getWidth() - 200, footerY, 180, 18, juce::Justification::centredRight, false);
+
 }
 
 void PulseForgeAudioProcessorEditor::resized()
@@ -193,30 +213,31 @@ void PulseForgeAudioProcessorEditor::resized()
 
     renderCachedShadows (w, h);
 
-    // 1. Global Header Layout
-    const int headY = 26;
-    const int headH = 28;
+    // 1. Global Header Layout (Slender height = 23px)
+    const int headY = 29;
+    const int headH = 23;
 
-    int x = 205;
-    scaleBox.setBounds (x, headY, 160, headH);
-    x += 168;
+    int x = 206;
+    scaleBox.setBounds (x, headY, 150, headH);
+    x += 158;
 
-    rootBox.setBounds (x, headY, 72, headH);
-    x += 80;
+    rootBox.setBounds (x, headY, 68, headH);
+    x += 76;
 
     trioGenBtn.setBounds (x, headY, 140, headH);
     x += 148;
 
-    runBtn.setBounds (x, headY, 84, headH);
-    x += 92;
+    runBtn.setBounds (x, headY, 82, headH);
+    x += 90;
 
-    previewBtn.setBounds (x, headY, 120, headH);
-    x += 128;
+    previewBtn.setBounds (x, headY, 118, headH);
+    x += 126;
 
-    dragMidiBtn.setBounds (x, headY, 100, headH);
+    dragMidiBtn.setBounds (x, headY, 96, headH);
+
 
     // 2. 3 Sequence Strips (Lanes)
-    int curY = 76;
+    int curY = 78;
     for (int i = 0; i < PulseForge::kNumTracks; ++i)
     {
         if (strips[static_cast<size_t>(i)] != nullptr)
@@ -227,6 +248,7 @@ void PulseForgeAudioProcessorEditor::resized()
         }
     }
 }
+
 
 void PulseForgeAudioProcessorEditor::timerCallback()
 {
