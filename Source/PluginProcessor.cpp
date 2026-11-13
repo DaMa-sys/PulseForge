@@ -1719,7 +1719,7 @@ void PulseForgeAudioProcessor::syncTrackHardwareToOled (int trackIdx)
     if (clean.endsWithIgnoreCase (" MIDI")) clean = clean.substring (0, clean.length() - 5).trim();
     if (clean.endsWithIgnoreCase (" USB"))  clean = clean.substring (0, clean.length() - 4).trim();
 
-    juce::String header = "T" + juce::String (trackIdx + 1) + ": " + clean;
+    juce::String header = clean;
     if (header.length() > 16)
         header = header.substring (0, 16);
 

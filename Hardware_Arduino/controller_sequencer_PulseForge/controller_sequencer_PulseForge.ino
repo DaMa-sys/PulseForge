@@ -226,7 +226,7 @@ const char* const RATIO_NAMES[11] = {
 };
 const int STEP_CHOICES[4] = { 4, 8, 16, 32 };
 
-char trackName[3][18]  = { "T1: DAW",        "T2: DAW",        "T3: DAW" };
+char trackName[3][18]  = { "DAW",           "DAW",           "DAW" };
 char trackGenre[3][16] = { "ACID TECHNO",   "MELODIC TECH",  "DEEP HOUSE" };
 char trackRole[3][16]  = { "Mono Bassline", "Rolling Arp",   "Poly 7th Stab" };
 int trackSteps[3]      = { 16, 16, 32 };
@@ -400,34 +400,39 @@ void updateOLED (int t)
         // =====================================================================
         // DASHBOARD RESTING VIEW (A riposo: Spazi Larghi, Grandi e Leggibili)
         // =====================================================================
-        // 1. ZONA GIALLA SUPERIORE (y = 0..15): Nome MIDI Out e Step
+        // 1. INTESTAZIONE SUPERIORE (y = 0..19): Nome Dispositivo grande + Step a destra
         char stpStr[8];
         snprintf (stpStr, sizeof (stpStr), "%dst", trackSteps[t]);
         oled.setFont (u8g2_font_7x14B_tf);
         int sw = oled.getStrWidth (stpStr);
-        int maxNameW = 128 - sw - 4; // Limite pixel a destra per non sovrapporsi allo step
+        int maxNameW = 128 - sw - 5; // Limite pixel a destra per non sovrapporsi allo step
 
-        // Se il nome è lungo, adotta font 6x12 più compatto; altrimenti grassetto 7x14B
+        // Scala automaticamente dal font più grande e leggibile a quelli più compatti se il nome è lungo
+        oled.setFont (u8g2_font_helvB14_tf);
+        if (oled.getStrWidth (trackName[t]) > maxNameW)
+            oled.setFont (u8g2_font_9x15B_tf);
+        if (oled.getStrWidth (trackName[t]) > maxNameW)
+            oled.setFont (u8g2_font_7x14B_tf);
         if (oled.getStrWidth (trackName[t]) > maxNameW)
             oled.setFont (u8g2_font_6x12_tf);
 
-        oled.drawStr (0, 12, trackName[t]);
+        oled.drawStr (0, 16, trackName[t]);
 
         // Disegna sempre lo step a destra in grassetto 7x14B
         oled.setFont (u8g2_font_7x14B_tf);
-        oled.drawStr (128 - sw, 12, stpStr);
-        oled.drawHLine (0, 15, 128); // Divisione netta tra giallo e blu
+        oled.drawStr (128 - sw, 14, stpStr);
+        oled.drawHLine (0, 19, 128); // Divisione netta sotto l'intestazione
 
-        // 2. ZONA BLU INFERIORE (y = 16..63): 
-        // Riga 1: GENERE centrato e largo (y = 35)
+        // 2. ZONA INFERIORE (y = 20..63):
+        // Riga 1: GENERE centrato e largo (y = 38)
         oled.setFont (u8g2_font_8x13B_tf);
         int gw = oled.getStrWidth (trackGenre[t]);
-        oled.drawStr ((128 - gw) / 2, 35, trackGenre[t]);
+        oled.drawStr ((128 - gw) / 2, 38, trackGenre[t]);
 
-        // Riga 2: RUOLO STRUMENTO centrato (y = 53)
+        // Riga 2: RUOLO STRUMENTO centrato (y = 56)
         oled.setFont (u8g2_font_7x14B_tf);
         int rw = oled.getStrWidth (trackRole[t]);
-        oled.drawStr ((128 - rw) / 2, 53, trackRole[t]);
+        oled.drawStr ((128 - rw) / 2, 56, trackRole[t]);
 
         // Linea minimale sul fondo
         oled.drawHLine (0, 62, 128);
