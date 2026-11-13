@@ -140,6 +140,29 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
             }
         });
     };
+    hardwareSerial.onProcessorConnectionStatusChanged = [this](bool connected, const juce::String&)
+    {
+        if (connected)
+        {
+            juce::MessageManager::callAsync ([this]()
+            {
+                syncAllTracksToHardware();
+            });
+        }
+    };
+
+    // Register APVTS Listeners for true Bi-Directional GUI <-> Hardware Sync
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        const juce::String pfx = "t" + juce::String (t) + "_";
+        apvts.addParameterListener (pfx + "density", this);
+        apvts.addParameterListener (pfx + "swing", this);
+        apvts.addParameterListener (pfx + "baseOctave", this);
+        apvts.addParameterListener (pfx + "genre", this);
+        apvts.addParameterListener (pfx + "role", this);
+        apvts.addParameterListener (pfx + "numSteps", this);
+    }
+
     hardwareSerial.startAutoConnect();
 
     updatePlaybackSnapshot();
@@ -216,13 +239,33 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
             dst.tempoRatioIdx = static_cast<int> (p->load());
         else
             dst.tempoRatioIdx = src.tempoRatioIdx;
+
+        dst.genre = src.genre;
+        dst.density = src.density;
     }
+
+    if (auto* p = apvts.getRawParameterValue ("harmonicContext"))
+        snap.harmonicContextEnabled = (p->load() > 0.5f);
+    else
+        snap.harmonicContextEnabled = true;
+
+    snap.progressionIndex = globalProgressionIndex.load();
 
     activeSnapshotIndex.store (nextIdx, std::memory_order_release);
 }
 
 PulseForgeAudioProcessor::~PulseForgeAudioProcessor()
 {
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        const juce::String pfx = "t" + juce::String (t) + "_";
+        apvts.removeParameterListener (pfx + "density", this);
+        apvts.removeParameterListener (pfx + "swing", this);
+        apvts.removeParameterListener (pfx + "baseOctave", this);
+        apvts.removeParameterListener (pfx + "genre", this);
+        apvts.removeParameterListener (pfx + "role", this);
+        apvts.removeParameterListener (pfx + "numSteps", this);
+    }
     hardwareSerial.stopAutoConnect();
     const juce::ScopedLock sl (midiOutLock);
     activeHardwareOuts.clear();
@@ -288,6 +331,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
 
     params.push_back (std::make_unique<juce::AudioParameterBool> ("autoPlay", "Free Run (Audition)", false));
     params.push_back (std::make_unique<juce::AudioParameterBool> ("previewSynth", "Internal Analog Preview", false));
+    params.push_back (std::make_unique<juce::AudioParameterBool> ("harmonicContext", "Harmonic Context Master", true));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("ccNumber", "MIDI CC #", 1, 119, 74));
 
     // 2. Per-Track Dedicated Parameters (3 Tracks: SEQ 1, SEQ 2, SEQ 3)
@@ -382,12 +426,9 @@ void PulseForgeAudioProcessor::prepareToPlay (double sampleRate, int)
     previewSynth.prepare (currentSampleRate);
     updatePlaybackSnapshot();
 
-    // If running as Standalone .exe, enable Free Run automatically so it plays immediately
-    if (wrapperType == wrapperType_Standalone)
-    {
-        if (auto* pRun = apvts.getParameter ("autoPlay"))
-            pRun->setValueNotifyingHost (1.0f);
-    }
+    // Standalone .exe: start stopped and silent by default
+    if (auto* pRun = apvts.getParameter ("autoPlay"))
+        pRun->setValueNotifyingHost (0.0f);
 }
 
 void PulseForgeAudioProcessor::releaseResources()
@@ -535,6 +576,10 @@ void PulseForgeAudioProcessor::triggerGenerateTrio()
     const juce::ScopedLock sl (patternLock);
     const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (apvts.getRawParameterValue ("scale")->load()));
 
+    // Trio Harmonize allinea anche la progressione armonica globale per una perfetta sintonia delle 3 parti
+    const int newProg = static_cast<int> (juce::Random::getSystemRandom().nextInt (8));
+    globalProgressionIndex.store (newProg);
+
     for (int t = 0; t < PulseForge::kNumTracks; ++t)
     {
         const juce::String prefix = "t" + juce::String (t) + "_";
@@ -574,6 +619,15 @@ void PulseForgeAudioProcessor::triggerGenerateTrio()
         PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(t)].pattern, gp, newSeed);
     }
 
+    updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerNewProgression()
+{
+    const juce::ScopedLock sl (patternLock);
+    const int cur = globalProgressionIndex.load();
+    const int next = (cur + 1) % 8;
+    globalProgressionIndex.store (next);
     updatePlaybackSnapshot();
 }
 
@@ -831,6 +885,98 @@ int PulseForgeAudioProcessor::computeStepMidiNote (int stepIdx, const PulseForge
     return juce::jlimit (12, 115, note);
 }
 
+int PulseForgeAudioProcessor::computeHarmonicStepMidiNote (int trackIdx, int stepIdx, const PulseForge::StepData& step,
+                                                          int rootMidi, PulseForge::ScaleType scale,
+                                                          int globalBar, int progIdx, PulseForge::GenreStyle genre,
+                                                          PulseForge::InstrumentRole role, bool harmonicContextOn) const
+{
+    // Se HARMONIC CONTEXT è disattivato: comportamento identico originale (golden standard)
+    if (!harmonicContextOn)
+        return computeStepMidiNote (stepIdx, step, rootMidi, scale);
+
+    // Con HARMONIC CONTEXT ATTIVO:
+    // 1. Calcola la radice armonica dell'accordo della battuta corrente dal profilo di genere
+    const int chordRootSemiRaw = PulseForge::getGenreProgressionSemitone (genre, progIdx, globalBar);
+    const int chordRootSemi    = PulseForge::quantizeSemitoneToScale (chordRootSemiRaw, scale);
+
+    // Intervalli della scala selezionata
+    const auto& scaleInts = PulseForge::getScaleIntervals (scale);
+    auto quantizeScale = [&scaleInts] (int s) -> int
+    {
+        if (scaleInts.empty()) return 0;
+        int oct = (s >= 0) ? (s / 12) : ((s - 11) / 12);
+        int rem = s - (oct * 12);
+        int best = scaleInts[0];
+        int bestDiff = 999;
+        for (int sc : scaleInts)
+        {
+            int diff = std::abs (sc - rem);
+            if (diff < bestDiff) { bestDiff = diff; best = sc; }
+        }
+        return oct * 12 + best;
+    };
+
+    int noteOffsetFromScaleRoot = 0;
+
+    switch (step.harmonicFunc)
+    {
+        case PulseForge::HarmonicFunction::Root:
+            noteOffsetFromScaleRoot = chordRootSemi;
+            break;
+
+        case PulseForge::HarmonicFunction::Third:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + 3);
+            break;
+
+        case PulseForge::HarmonicFunction::Fifth:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + 7);
+            break;
+
+        case PulseForge::HarmonicFunction::Seventh:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + 10);
+            break;
+
+        case PulseForge::HarmonicFunction::Ninth:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + 14);
+            break;
+
+        case PulseForge::HarmonicFunction::Eleventh:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + 17);
+            break;
+
+        case PulseForge::HarmonicFunction::OctavePop:
+            noteOffsetFromScaleRoot = chordRootSemi + 12;
+            break;
+
+        case PulseForge::HarmonicFunction::Passing:
+        case PulseForge::HarmonicFunction::Tension:
+        default:
+            noteOffsetFromScaleRoot = quantizeScale (chordRootSemi + step.semitoneOffset);
+            break;
+    }
+
+    // Separazione dei Registri per evitare incroci di voci
+    // BASS: C1 - E2 (24..40)
+    // CHORDS: G2 - B3 (43..59)
+    // LEAD / ARP: C4 - G5 (60..79)
+    int registerBaseOct = 0;
+    if (role == PulseForge::InstrumentRole::MonoBass || role == PulseForge::InstrumentRole::AcidLine)
+    {
+        registerBaseOct = 0; // Registro basso
+    }
+    else if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords)
+    {
+        registerBaseOct = 1; // Registro medio
+    }
+    else // ClassicArp, LeadHook, ModularRatchet
+    {
+        registerBaseOct = 2; // Registro alto
+    }
+
+    const int finalNote = (rootMidi - 12) + (registerBaseOct * 12) + noteOffsetFromScaleRoot + (step.octaveShift * 12) + liveTransposeSemitones;
+    return juce::jlimit (12, 115, finalNote);
+}
+
 void PulseForgeAudioProcessor::sendMidiOut (int trackIdx, const juce::MidiMessage& msg, juce::MidiBuffer& midiOut, int sampleOffset)
 {
     // 1. Always deliver to DAW host output buffer with zero locks or blocking
@@ -1010,7 +1156,10 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
     }
     else
     {
-        const int baseNote = computeStepMidiNote (stepIdx, step, rootMidi, scale);
+        const int curBar = currentTransportBar.load();
+        const int baseNote = computeHarmonicStepMidiNote (trackIdx, stepIdx, step, rootMidi, scale,
+                                                          curBar, snap.progressionIndex, trackSnap.genre,
+                                                          role, snap.harmonicContextEnabled);
         notesToTrigger = PulseForge::buildChordVoicingNotes (baseNote, step, rootMidi, scale, role, liveTransposeSemitones);
     }
 
@@ -1272,6 +1421,13 @@ void PulseForgeAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, j
         }
     }
 
+    // Calcolo della battuta musicale globale (8 battute totali, da 0 a 7) dal transport della DAW
+    // In tempo 4/4 standard, ogni battuta equivale esattamente a 4.0 PPQ (quarti)
+    const int calculatedBar = (blockStartPpq >= 0.0)
+                            ? static_cast<int> (std::floor (blockStartPpq / 4.0)) % 8
+                            : 0;
+    currentTransportBar.store ((calculatedBar + 8) % 8);
+
     // 4. Advance all 3 tracks concurrently locked to PPQ
     for (int t = 0; t < PulseForge::kNumTracks; ++t)
     {
@@ -1380,7 +1536,13 @@ juce::File PulseForgeAudioProcessor::exportActivePatternToTempMidiFile()
         const double swingOffsetTicks = (i % 2 == 1) ? (stepTicks * swingPct) : 0.0;
         const double startTick = i * stepTicks + swingOffsetTicks;
         const int vel = juce::jlimit (1, 127, step.accent ? juce::jmax (step.velocity, 120) : step.velocity);
-        const int baseNote = computeStepMidiNote (i, step, rootMidi, scale);
+        const bool harmOn = (apvts.getRawParameterValue ("harmonicContext") != nullptr)
+                          ? (apvts.getRawParameterValue ("harmonicContext")->load() > 0.5f) : true;
+        const int bar = (i / 16) % 8;
+        const int baseNote = computeHarmonicStepMidiNote (activeTrackIndex.load(), i, step, rootMidi, scale,
+                                                          bar, globalProgressionIndex.load(),
+                                                          tracks[static_cast<size_t>(activeTrackIndex.load())].genre,
+                                                          role, harmOn);
         const std::vector<int> stepNotes = PulseForge::buildChordVoicingNotes (baseNote, step, rootMidi, scale, role, liveTransposeSemitones);
 
         const int ratchets = juce::jlimit (1, 4, step.ratchet);
@@ -1523,6 +1685,136 @@ void PulseForgeAudioProcessor::setTrackTargetHardwareMidi (int trackIdx, const j
     if (devName.isNotEmpty() && devName != "DAW Only" && devName != "DAW (VST3)")
     {
         ensureHardwareMidiOutOpen (devName);
+    }
+    syncTrackHardwareToOled (trackIdx);
+}
+
+void PulseForgeAudioProcessor::syncTrackHardwareToOled (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    juce::String dev;
+    int numSteps = 16;
+    {
+        const juce::ScopedLock sl (patternLock);
+        dev = tracks[static_cast<size_t>(trackIdx)].targetHwDevice;
+        numSteps = tracks[static_cast<size_t>(trackIdx)].numSteps;
+    }
+
+    if (dev.isEmpty() || dev == "DAW Only" || dev == "DAW (VST3)")
+        dev = "DAW";
+    else if (dev == "All USB Synths")
+        dev = "ALL SYNTHS";
+
+    // Clean up unnecessary noisy device substrings
+    juce::String clean = dev;
+    if (clean.endsWithIgnoreCase (" MIDI")) clean = clean.substring (0, clean.length() - 5).trim();
+    if (clean.endsWithIgnoreCase (" USB"))  clean = clean.substring (0, clean.length() - 4).trim();
+
+    juce::String header = "T" + juce::String (trackIdx + 1) + ": " + clean;
+    if (header.length() > 16)
+        header = header.substring (0, 16);
+
+    hardwareSerial.sendTrackName (trackIdx, header);
+    hardwareSerial.sendTrackSteps (trackIdx, numSteps);
+
+    const juce::String pfx = "t" + juce::String (trackIdx) + "_";
+    if (auto* pG = apvts.getRawParameterValue (pfx + "genre"))
+    {
+        int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (pG->load())));
+        const char* gNames[8] = {
+            "ACID TECHNO", "MELODIC TECH", "CLASSIC HOUSE", "ITALO SYNTH",
+            "BERLIN SCHOOL", "DETROIT ELEC", "FUNK BOOGIE", "EUCLIDEAN IDM"
+        };
+        hardwareSerial.sendTrackGenre (trackIdx, gNames[gIdx]);
+    }
+
+    if (auto* pR = apvts.getRawParameterValue (pfx + "role"))
+    {
+        int rIdx = juce::jlimit (0, 6, static_cast<int> (std::round (pR->load())));
+        const char* rNames[7] = {
+            "Mono Bassline", "Acid TB-303", "Classic Arp", "Lead Hook",
+            "Poly 7th Stab", "Harmony Chords", "Modular Ratchet"
+        };
+        hardwareSerial.sendTrackRole (trackIdx, rNames[rIdx]);
+    }
+
+    if (auto* pOct = apvts.getRawParameterValue (pfx + "baseOctave"))
+    {
+        hardwareSerial.sendParameter (trackIdx, "OCT", static_cast<int> (std::round (pOct->load())));
+    }
+
+    if (auto* pRat = apvts.getRawParameterValue (pfx + "tempoRatio"))
+    {
+        int ratIdx = juce::jlimit (0, 10, static_cast<int> (std::round (pRat->load())));
+        hardwareSerial.sendParameter (trackIdx, "RATIDX", ratIdx);
+    }
+}
+
+void PulseForgeAudioProcessor::syncAllTracksToHardware()
+{
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        syncTrackHardwareToOled (t);
+    }
+}
+
+void PulseForgeAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
+{
+    if (!hardwareSerial.isConnected())
+        return;
+
+    for (int t = 0; t < PulseForge::kNumTracks; ++t)
+    {
+        const juce::String pfx = "t" + juce::String (t) + "_";
+        if (parameterID.startsWith (pfx))
+        {
+            auto sub = parameterID.substring (pfx.length());
+            if (sub == "density")
+            {
+                hardwareSerial.sendParameter (t, "DENS", static_cast<int> (std::round (newValue)));
+            }
+            else if (sub == "swing")
+            {
+                hardwareSerial.sendParameter (t, "SWING", static_cast<int> (std::round (newValue)));
+            }
+            else if (sub == "numSteps")
+            {
+                int sIdx = static_cast<int> (std::round (newValue));
+                int st = (sIdx == 0) ? 4 : ((sIdx == 1) ? 8 : ((sIdx == 2) ? 16 : 32));
+                hardwareSerial.sendTrackSteps (t, st);
+            }
+            else if (sub == "baseOctave")
+            {
+                hardwareSerial.sendParameter (t, "BOCT", static_cast<int> (std::round (newValue)));
+            }
+            else if (sub == "arpOctaves")
+            {
+                hardwareSerial.sendParameter (t, "AOCT", static_cast<int> (std::round (newValue)));
+            }
+            else if (sub == "tempoRatio")
+            {
+                hardwareSerial.sendParameter (t, "RATIDX", static_cast<int> (std::round (newValue)));
+            }
+            else if (sub == "genre")
+            {
+                int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (newValue)));
+                const char* gNames[8] = {
+                    "ACID TECHNO", "MELODIC TECH", "CLASSIC HOUSE", "ITALO SYNTH",
+                    "BERLIN SCHOOL", "DETROIT ELEC", "FUNK BOOGIE", "EUCLIDEAN IDM"
+                };
+                hardwareSerial.sendTrackGenre (t, gNames[gIdx]);
+            }
+            else if (sub == "role")
+            {
+                int rIdx = juce::jlimit (0, 6, static_cast<int> (std::round (newValue)));
+                const char* rNames[7] = {
+                    "Mono Bassline", "Acid TB-303", "Classic Arp", "Lead Hook",
+                    "Poly 7th Stab", "Harmony Chords", "Modular Ratchet"
+                };
+                hardwareSerial.sendTrackRole (t, rNames[rIdx]);
+            }
+            break;
+        }
     }
 }
 
@@ -1672,6 +1964,7 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
         }
 
         updatePlaybackSnapshot();
+        syncAllTracksToHardware();
     }
 }
 

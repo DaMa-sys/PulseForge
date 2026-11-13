@@ -33,6 +33,20 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     };
     addAndMakeVisible (trioGenBtn);
 
+    newProgBtn.setLookAndFeel (&customLookAndFeel);
+    newProgBtn.setTooltip ("Advance to Next 8-Bar Chord Progression without regenerating rhythms");
+    newProgBtn.onClick = [this]()
+    {
+        audioProcessor.triggerNewProgression();
+        repaint();
+    };
+    addAndMakeVisible (newProgBtn);
+
+    harmonicContextBtn.setClickingTogglesState (true);
+    harmonicContextBtn.setLookAndFeel (&customLookAndFeel);
+    harmonicContextBtn.setTooltip ("Lock all 3 tracks to a unified 8-bar harmonic progression and voice-leading");
+    addAndMakeVisible (harmonicContextBtn);
+
     runBtn.setClickingTogglesState (true);
     runBtn.setLookAndFeel (&customLookAndFeel);
     addAndMakeVisible (runBtn);
@@ -55,10 +69,11 @@ PulseForgeAudioProcessorEditor::PulseForgeAudioProcessorEditor (PulseForgeAudioP
     addAndMakeVisible (dragMidiBtn);
 
     // 3. Attachments for Global Parameters
-    scaleAttach   = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "scale",        scaleBox);
-    rootAttach    = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "rootNote",     rootBox);
-    runAttach     = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "autoPlay",     runBtn);
-    previewAttach = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "previewSynth", previewBtn);
+    scaleAttach    = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "scale",           scaleBox);
+    rootAttach     = std::make_unique<ComboAttachment>  (audioProcessor.apvts, "rootNote",        rootBox);
+    runAttach      = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "autoPlay",        runBtn);
+    previewAttach  = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "previewSynth",    previewBtn);
+    harmonicAttach = std::make_unique<ButtonAttachment> (audioProcessor.apvts, "harmonicContext", harmonicContextBtn);
 
     // 4. The 3 Dedicated Horizontal Sequence Strips (Orage Evolver Titanium / Dark Graphite bays)
     strips[0] = std::make_unique<SequenceStripComponent> (
@@ -217,23 +232,29 @@ void PulseForgeAudioProcessorEditor::resized()
     const int headY = 29;
     const int headH = 23;
 
-    int x = 206;
-    scaleBox.setBounds (x, headY, 150, headH);
-    x += 158;
+    int x = 180;
+    scaleBox.setBounds (x, headY, 130, headH);
+    x += 136;
 
-    rootBox.setBounds (x, headY, 68, headH);
-    x += 76;
+    rootBox.setBounds (x, headY, 56, headH);
+    x += 62;
 
-    trioGenBtn.setBounds (x, headY, 140, headH);
-    x += 148;
+    trioGenBtn.setBounds (x, headY, 126, headH);
+    x += 132;
 
-    runBtn.setBounds (x, headY, 82, headH);
-    x += 90;
+    newProgBtn.setBounds (x, headY, 134, headH);
+    x += 140;
 
-    previewBtn.setBounds (x, headY, 118, headH);
-    x += 126;
+    harmonicContextBtn.setBounds (x, headY, 138, headH);
+    x += 144;
 
-    dragMidiBtn.setBounds (x, headY, 96, headH);
+    runBtn.setBounds (x, headY, 78, headH);
+    x += 84;
+
+    previewBtn.setBounds (x, headY, 114, headH);
+    x += 120;
+
+    dragMidiBtn.setBounds (x, headY, 90, headH);
 
 
     // 2. 3 Sequence Strips (Lanes)

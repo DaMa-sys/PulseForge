@@ -7,11 +7,14 @@
 #include "HardwareControllerSerial.h"
 #include <atomic>
 
-class PulseForgeAudioProcessor : public juce::AudioProcessor
+class PulseForgeAudioProcessor : public juce::AudioProcessor,
+                                 public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     PulseForgeAudioProcessor();
     ~PulseForgeAudioProcessor() override;
+
+    void parameterChanged (const juce::String& parameterID, float newValue) override;
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -85,6 +88,7 @@ public:
     void triggerClearTrack (int trackIdx);
     void triggerRotateTrack (int trackIdx, int delta);
     void triggerGenerateTrio();
+    void triggerNewProgression();
     void updateTrackComplexity (int trackIdx, float newComplexity);
     bool triggerLoadFromUserSamplesLibrary();
     bool triggerLoadSpecificMidiFile (const juce::File& file);
@@ -111,6 +115,8 @@ public:
     juce::String getTrackTargetHardwareMidi (int trackIdx) const;
     void setTrackTargetHardwareMidi (int trackIdx, const juce::String& devName);
     void ensureHardwareMidiOutOpen (const juce::String& deviceName);
+    void syncTrackHardwareToOled (int trackIdx);
+    void syncAllTracksToHardware();
 
     //==========================================================================
     // UI Telemetry
@@ -129,6 +135,10 @@ public:
 
     int computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
                              int rootMidi, PulseForge::ScaleType scale) const;
+    int computeHarmonicStepMidiNote (int trackIdx, int stepIdx, const PulseForge::StepData& step,
+                                     int rootMidi, PulseForge::ScaleType scale,
+                                     int globalBar, int progIdx, PulseForge::GenreStyle genre,
+                                     PulseForge::InstrumentRole role, bool harmonicContextOn) const;
 
     struct TrackPlaybackSnapshot
     {
@@ -145,11 +155,15 @@ public:
         float swing = 20.0f;
         int tempoRatioIdx = 5;
         float globalGate = 1.0f;
+        PulseForge::GenreStyle genre = PulseForge::GenreStyle::ClassicHouse;
+        float density = 60.0f;
     };
 
     struct PlaybackSnapshot
     {
         std::array<TrackPlaybackSnapshot, PulseForge::kNumTracks> tracks {};
+        bool harmonicContextEnabled = true;
+        int progressionIndex = 0;
     };
 
     void updatePlaybackSnapshot() noexcept;
@@ -196,6 +210,10 @@ private:
 
     PlaybackSnapshot audioSnapshots[2];
     std::atomic<int> activeSnapshotIndex { 0 };
+
+    // Harmonic Context Global State
+    std::atomic<int> globalProgressionIndex { 0 };
+    std::atomic<int> currentTransportBar { 0 };
 
     // Playback & Host Sync timing state
     double currentSampleRate = 44100.0;

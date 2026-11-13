@@ -152,4 +152,122 @@ inline const GenreProfile& getGenreProfile (GenreStyle genre)
     return profiles[idx];
 }
 
+//==============================================================================
+// Dizionario Master delle 8 Progressioni Armoniche (8 Battute) per Genere
+//==============================================================================
+inline int getGenreProgressionSemitone (GenreStyle genre, int progIdx, int bar)
+{
+    progIdx = ((progIdx % 8) + 8) % 8;
+    bar = ((bar % 8) + 8) % 8;
+
+    // 0: Classic House (Chicago / Deep)
+    static const int kHouseProg[8][8] = {
+        {  0,  0,  3,  3,  5,  5,  0,  0 }, // i -> bIII -> iv -> i
+        {  0,  0, 10, 10,  0,  0, 10, 10 }, // i -> b7 -> i -> b7
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  3,  3,  8,  8,  7,  7 }, // i -> bIII -> VI -> v
+        {  0,  0,  0,  0,  5,  5, 10, 10 }, // i -> iv -> b7
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  7,  7,  5,  5,  0,  0 }  // i -> v -> iv -> i
+    };
+
+    // 1: Acid 303 (Trance / Phrygian Ostinato)
+    static const int kAcidProg[8][8] = {
+        {  0,  0,  0,  0,  1,  1,  0,  0 }, // i -> bII -> i (Phrygian)
+        {  0,  0,  0,  0, 10, 10,  0,  0 }, // i -> b7 -> i
+        {  0,  0,  3,  3,  0,  0,  1,  1 }, // i -> b3 -> i -> bII
+        {  0,  0,  0,  0,  0,  0,  7,  7 }, // i pedal -> v
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  0,  0,  8,  8, 10, 10 }, // i -> VI -> VII
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  0,  0,  0,  0,  0,  0 }  // Pure Tonic Drone
+    };
+
+    // 2: Italo Disco / Festival EDM
+    static const int kEdmProg[8][8] = {
+        {  0,  0,  8,  8,  3,  3, 10, 10 }, // i -> VI -> III -> VII
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  5,  5,  8,  8,  7,  7 }, // i -> iv -> VI -> v
+        {  8,  8, 10, 10,  0,  0,  0,  0 }, // VI -> VII -> i -> i
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> VII -> VI -> VII
+        {  0,  0,  3,  3,  5,  5, 10, 10 }, // i -> III -> iv -> VII
+        {  5,  5,  7,  7,  0,  0,  0,  0 }, // IV -> V -> vi -> vi
+        {  0,  0,  0,  0,  8,  8, 10, 10 }  // Tonic Drone -> VI -> VII
+    };
+
+    // 3: Fisher Tech House
+    static const int kFisherProg[8][8] = {
+        {  0,  0, 10, 10,  0,  0, 10, 10 }, // i -> b7 -> i -> b7
+        {  0,  0,  3,  3,  5,  5,  0,  0 }, // i -> bIII -> iv -> i
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  3,  3,  0,  0, -2, -2 }, // i -> bIII -> i -> b7
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  7,  7,  5,  5,  0,  0 }, // i -> v -> iv -> i
+        {  0,  0,  0,  0,  5,  5, 10, 10 }  // i drone -> iv -> b7
+    };
+
+    // 4: Paul Kalkbrenner (Melodic Techno)
+    static const int kKalkProg[8][8] = {
+        {  0,  0,  0,  0,  8,  8, 10, 10 }, // i -> VI -> VII (Berlin Anthem)
+        {  0,  0,  5,  5,  8,  8,  7,  7 }, // i -> iv -> VI -> v (Emotional Journey)
+        {  0,  0,  0,  0,  3,  3,  2,  2 }, // i -> bIII -> ii (Deep Melancholy)
+        {  0,  0,  8,  8,  5,  5,  7,  7 }, // i -> VI -> iv -> v (Classic Afterlife)
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> VII -> VI -> VII (Sky & Sand style)
+        {  0,  0,  0,  0,  0,  0, 10, 10 }, // Tonic Drone with Turnaround
+        {  0,  0,  7,  7,  8,  8,  7,  7 }, // i -> v -> VI -> v (Hypnotic Loop)
+        {  0,  0,  3,  3,  5,  5, 10, 10 }  // i -> bIII -> iv -> VII (Ascending Hope)
+    };
+
+    // 5: Disclosure (UK Garage)
+    static const int kDisclosureProg[8][8] = {
+        {  0,  0,  3,  3,  5,  5,  0,  0 }, // i -> bIII -> iv -> i
+        {  0,  0, 10, 10,  0,  0, 10, 10 }, // i -> b7 -> i -> b7
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  3,  3,  8,  8,  7,  7 }, // i -> bIII -> VI -> v
+        {  0,  0,  0,  0,  5,  5, 10, 10 }, // i -> iv -> b7
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  7,  7,  5,  5,  0,  0 }
+    };
+
+    // 6: Fred again.. (Emotional UK)
+    static const int kFredProg[8][8] = {
+        {  0,  0,  8,  8,  3,  3, 10, 10 }, // i -> VI -> III -> VII
+        {  0,  0,  7,  7,  8,  8,  5,  5 }, // i -> v -> VI -> iv
+        {  8,  8, 10, 10,  0,  0,  0,  0 }, // VI -> VII -> i -> i
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  5,  5,  7,  7,  0,  0,  0,  0 }, // IV -> V -> vi -> vi
+        {  0,  0,  3,  3,  8,  8,  7,  7 }, // i -> III -> VI -> v
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  0,  0,  8,  8, 10, 10 }
+    };
+
+    // 7: Bonobo (Organic Downtempo)
+    static const int kBonoboProg[8][8] = {
+        {  0,  0,  3,  3,  5,  5,  7,  7 }, // i -> bIII -> iv -> v
+        {  0,  0,  8,  8,  5,  5,  7,  7 }, // i -> VI -> iv -> v
+        {  0,  0,  0,  0,  3,  3,  2,  2 }, // i -> bIII -> ii
+        {  0,  0,  5,  5,  3,  3,  0,  0 }, // i -> iv -> bIII -> i
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  7,  7,  8,  8,  7,  7 }, // i -> v -> VI -> v
+        {  0,  0,  2,  2,  5,  5,  0,  0 }, // i -> ii -> iv -> i
+        {  0,  0,  0,  0,  8,  8, 10, 10 }
+    };
+
+    switch (genre)
+    {
+        case GenreStyle::ClassicHouse:   return kHouseProg[progIdx][bar];
+        case GenreStyle::AcidTechno:     return kAcidProg[progIdx][bar];
+        case GenreStyle::ItaloSynthwave: return kEdmProg[progIdx][bar];
+        case GenreStyle::BerlinSchool:   return kFisherProg[progIdx][bar];
+        case GenreStyle::MelodicTechno:  return kKalkProg[progIdx][bar];
+        case GenreStyle::DetroitElectro: return kDisclosureProg[progIdx][bar];
+        case GenreStyle::FunkBoogie:     return kFredProg[progIdx][bar];
+        case GenreStyle::EuclideanIDM:   return kBonoboProg[progIdx][bar];
+        default:                         return kHouseProg[progIdx][bar];
+    }
+}
+
 } // namespace PulseForge

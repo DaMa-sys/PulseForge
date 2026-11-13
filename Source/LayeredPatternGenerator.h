@@ -67,6 +67,7 @@ struct LayeredCandidateEvent
     float accentThreshold = 101.0f; // Se complexity >= accentThreshold -> accent = true
     int accentVelocity = 118;
     float accentGate = 0.70f;
+    HarmonicFunction harmonicFunc = HarmonicFunction::Root;
 };
 
 //==============================================================================
@@ -164,6 +165,10 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
         const int patIdx = static_cast<int> ((barSeed + (isResponse ? 2 : 0) + (isTension ? 4 : 0)) % 8);
         const char* mask = kRoleRhythmsLeadHook[patIdx];
         const int leadPitches[8] = { 0, 3, 5, 7, 10, 12, 14, 15 };
+        const HarmonicFunction leadFuncs[8] = {
+            HarmonicFunction::Root, HarmonicFunction::Third, HarmonicFunction::Fifth, HarmonicFunction::Passing,
+            HarmonicFunction::Seventh, HarmonicFunction::OctavePop, HarmonicFunction::Ninth, HarmonicFunction::Third
+        };
 
         for (int s = 0; s < 16; ++s)
         {
@@ -185,6 +190,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = (s % 4 == 2 || s == 6 || s == 14) ? 45.0f : 78.0f;
                 ev.accentVelocity = 122;
                 ev.accentGate = 0.85f;
+                ev.harmonicFunc = leadFuncs[pIdx];
                 events.push_back (ev);
             }
         }
@@ -194,6 +200,9 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
         const int patIdx = static_cast<int> ((barSeed + (isResponse ? 1 : 0) + (isFillBar ? 3 : 0)) % 8);
         const char* mask = kRoleRhythmsChordStab[patIdx];
         const int chordVoicings[4] = { 0, 3, 7, 10 };
+        const HarmonicFunction chordFuncs[4] = {
+            HarmonicFunction::Root, HarmonicFunction::Third, HarmonicFunction::Fifth, HarmonicFunction::Seventh
+        };
 
         for (int s = 0; s < 16; ++s)
         {
@@ -216,6 +225,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = (s == 6 || s == 14) ? 40.0f : 75.0f;
                 ev.accentVelocity = 118;
                 ev.accentGate = 0.40f;
+                ev.harmonicFunc = chordFuncs[vIdx];
                 events.push_back (ev);
             }
         }
@@ -247,6 +257,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = isRatchet ? 45.0f : 75.0f;
                 ev.accentVelocity = 120;
                 ev.accentGate = 0.40f;
+                ev.harmonicFunc = isRatchet ? HarmonicFunction::OctavePop : ((s % 4 == 2) ? HarmonicFunction::Fifth : HarmonicFunction::Root);
                 events.push_back (ev);
             }
         }
@@ -256,6 +267,10 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
         const int patIdx = static_cast<int> ((barSeed + (isResponse ? 3 : 0)) % 8);
         const char* mask = kRoleRhythmsAcidLine[patIdx];
         const int acidIntervals[8] = { 0, 10, 12, 3, 7, 0, 12, 10 };
+        const HarmonicFunction acidFuncs[8] = {
+            HarmonicFunction::Root, HarmonicFunction::Seventh, HarmonicFunction::OctavePop, HarmonicFunction::Third,
+            HarmonicFunction::Fifth, HarmonicFunction::Root, HarmonicFunction::OctavePop, HarmonicFunction::Seventh
+        };
 
         for (int s = 0; s < 16; ++s)
         {
@@ -280,6 +295,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = (isOctaveJump || isSlideHit) ? 35.0f : 75.0f;
                 ev.accentVelocity = 126;
                 ev.accentGate = 0.85f;
+                ev.harmonicFunc = acidFuncs[aIdx];
                 events.push_back (ev);
             }
         }
@@ -289,6 +305,9 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
         const int patIdx = static_cast<int> ((barSeed + (isResponse ? 1 : 0)) % 8);
         const char* mask = kRoleRhythmsClassicArp[patIdx];
         const int arpIntervals[4] = { 0, 3, 7, 10 };
+        const HarmonicFunction arpFuncs[4] = {
+            HarmonicFunction::Root, HarmonicFunction::Third, HarmonicFunction::Fifth, HarmonicFunction::Seventh
+        };
 
         for (int s = 0; s < 16; ++s)
         {
@@ -309,6 +328,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = (s == 6 || s == 14) ? 38.0f : 80.0f;
                 ev.accentVelocity = 108;
                 ev.accentGate = 0.45f;
+                ev.harmonicFunc = arpFuncs[(s + hashVal (bar + 3)) % 4];
                 events.push_back (ev);
             }
         }
@@ -336,6 +356,7 @@ inline void appendRoleCandidates (std::vector<LayeredCandidateEvent>& events,
                 ev.accentThreshold = 60.0f;
                 ev.accentVelocity = 98;
                 ev.accentGate = 1.10f;
+                ev.harmonicFunc = HarmonicFunction::Root;
                 events.push_back (ev);
             }
         }
@@ -466,6 +487,7 @@ public:
                     ev.accentThreshold = (s == 2) ? 35.0f : 45.0f;
                     ev.accentVelocity = (s == 2) ? 118 : 115;
                     ev.accentGate = 0.65f;
+                    ev.harmonicFunc = HarmonicFunction::Root;
                     events.push_back (ev);
                     continue;
                 }
@@ -491,6 +513,7 @@ public:
                     ev.accentThreshold = (s == 6) ? 55.0f : 65.0f;
                     ev.accentVelocity = 115;
                     ev.accentGate = 0.65f;
+                    ev.harmonicFunc = (s == 14) ? HarmonicFunction::Seventh : HarmonicFunction::Passing;
                     events.push_back (ev);
                     continue;
                 }
@@ -514,6 +537,7 @@ public:
                     ev.isOctavePop = false;
                     ev.ratchet = 1;
                     ev.accentThreshold = 101.0f; // Mai accento su ghost
+                    ev.harmonicFunc = HarmonicFunction::Passing;
                     events.push_back (ev);
                     continue;
                 }
@@ -605,6 +629,7 @@ public:
                     ev.accentThreshold = 0.0f; // Sempre accentata
                     ev.accentVelocity = 125;
                     ev.accentGate = 0.80f;
+                    ev.harmonicFunc = HarmonicFunction::OctavePop;
                     events.push_back (ev);
                     continue;
                 }
@@ -753,6 +778,7 @@ public:
                     }
                     s.slide = ev.slide;
                     s.chordType = ev.chordType;
+                    s.harmonicFunc = ev.harmonicFunc;
                 }
             }
         }

@@ -32,17 +32,19 @@ private:
     juce::ComboBox scaleBox;
     juce::ComboBox rootBox;
 
-    juce::TextButton trioGenBtn    { "TRIO HARMONIZE" };
-    juce::TextButton runBtn        { "FREE RUN" };
-    juce::TextButton previewBtn    { "PREVIEW SYNTH" };
-    juce::TextButton dragMidiBtn   { "DRAG MIDI" };
+    juce::TextButton trioGenBtn         { "TRIO HARMONIZE" };
+    juce::TextButton newProgBtn         { "NEW PROGRESSION" };
+    juce::TextButton harmonicContextBtn { "HARMONIC CONTEXT" };
+    juce::TextButton runBtn             { "FREE RUN" };
+    juce::TextButton previewBtn         { "PREVIEW SYNTH" };
+    juce::TextButton dragMidiBtn        { "DRAG MIDI" };
 
     // Attachments
     using ComboAttachment  = juce::AudioProcessorValueTreeState::ComboBoxAttachment;
     using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
     std::unique_ptr<ComboAttachment> scaleAttach, rootAttach;
-    std::unique_ptr<ButtonAttachment> runAttach, previewAttach;
+    std::unique_ptr<ButtonAttachment> runAttach, previewAttach, harmonicAttach;
 
     // 2. The 3 Horizontal Sequence Strips (Lanes)
     std::array<std::unique_ptr<SequenceStripComponent>, PulseForge::kNumTracks> strips;

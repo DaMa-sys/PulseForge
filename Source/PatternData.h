@@ -100,6 +100,22 @@ inline juce::String getTempoRatioName (int ratioIndex)
     return names[ratioIndex];
 }
 
+//==============================================================================
+// Ruolo Armonico Astratto della Nota (Indipendente dall'Accordo Assoluto)
+//==============================================================================
+enum class HarmonicFunction : int
+{
+    Root = 0,       // Fondamentale dell'accordo corrente
+    Third = 1,      // 3a dell'accordo (minore o maggiore)
+    Fifth = 2,      // 5a giusta
+    Seventh = 3,    // 7a dell'accordo
+    Ninth = 4,      // 9a estesa / colore
+    Eleventh = 5,   // 11a / 4a
+    OctavePop = 6,  // Ottava della fondamentale (+12)
+    Passing = 7,    // Nota di passaggio diatonica
+    Tension = 8     // Nota di tensione o sospensione (es. b6, sus)
+};
+
 struct StepData
 {
     bool active = true;
@@ -114,6 +130,7 @@ struct StepData
     int probability = 100;    // 0..100%
     int ccValue = 64;         // 0..127 step modulation lane (e.g. Filter Cutoff CC74)
     int chordType = 0;        // 0 = Single Note, 1 = Power 5th, 2 = Triad, 3 = 7th, 4 = 9th Stab
+    HarmonicFunction harmonicFunc = HarmonicFunction::Root; // Ruolo armonico contrappuntistico
 };
 
 struct PatternBank

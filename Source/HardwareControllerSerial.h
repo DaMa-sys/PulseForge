@@ -26,6 +26,7 @@ public:
     std::function<void(int track)> onMutateTrigger;
     std::function<void(int track, const juce::String& target, int dir)> onEncoderStep;
     std::function<void(bool isConnected, const juce::String& portName)> onConnectionStatusChanged;
+    std::function<void(bool isConnected, const juce::String& portName)> onProcessorConnectionStatusChanged;
 
     bool isConnected() const noexcept { return connected.load(); }
     juce::String getConnectedPortName() const { return currentPort; }
@@ -62,6 +63,56 @@ public:
         enqueueTx (buf);
     }
 
+    void sendTrackName (int trackIdx, const juce::String& name)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[64];
+        snprintf (buf, sizeof (buf), "OLED:T%d:NAME:%s\n", trackIdx, name.toRawUTF8());
+        enqueueTx (buf);
+    }
+
+    void sendTrackSteps (int trackIdx, int steps)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[32];
+        snprintf (buf, sizeof (buf), "OLED:T%d:STP:%d\n", trackIdx, steps);
+        enqueueTx (buf);
+    }
+
+    void sendTrackGenre (int trackIdx, const juce::String& genre)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[48];
+        snprintf (buf, sizeof (buf), "OLED:T%d:GEN:%s\n", trackIdx, genre.toRawUTF8());
+        enqueueTx (buf);
+    }
+
+    void sendTrackRole (int trackIdx, const juce::String& role)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[48];
+        snprintf (buf, sizeof (buf), "OLED:T%d:ROL:%s\n", trackIdx, role.toRawUTF8());
+        enqueueTx (buf);
+    }
+
+    void sendParameter (int trackIdx, const juce::String& paramKey, int value)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[32];
+        snprintf (buf, sizeof (buf), "OLED:T%d:%s:%d\n", trackIdx, paramKey.toRawUTF8(), value);
+        enqueueTx (buf);
+    }
+
     void sendOledLine (int trackIdx, int lineIdx, const juce::String& text)
     {
         if (!connected.load (std::memory_order_relaxed))
@@ -74,7 +125,7 @@ public:
 
 private:
     struct OutgoingItem {
-        char data[48];
+        char data[64];
         int len = 0;
     };
 
@@ -92,7 +143,7 @@ private:
 
         auto& item = txQueue[w];
         int l = 0;
-        while (str[l] != '\0' && l < 47)
+        while (str[l] != '\0' && l < 63)
         {
             item.data[l] = str[l];
             ++l;
@@ -127,6 +178,14 @@ private:
     HANDLE hComm = INVALID_HANDLE_VALUE;
     juce::String currentPort = "";
 
+    void notifyConnectionStatus (bool isConn, const juce::String& port)
+    {
+        if (onProcessorConnectionStatusChanged)
+            onProcessorConnectionStatusChanged (isConn, port);
+        if (onConnectionStatusChanged)
+            onConnectionStatusChanged (isConn, port);
+    }
+
     void closePort()
     {
         if (hComm != INVALID_HANDLE_VALUE)
@@ -136,8 +195,7 @@ private:
         }
         if (connected.exchange (false))
         {
-            if (onConnectionStatusChanged)
-                onConnectionStatusChanged (false, "");
+            notifyConnectionStatus (false, "");
         }
     }
 
@@ -328,8 +386,7 @@ private:
                         {
                             connected.store (true);
                             currentPort = port;
-                            if (onConnectionStatusChanged)
-                                onConnectionStatusChanged (true, port);
+                            notifyConnectionStatus (true, port);
                             break;
                         }
                         else
