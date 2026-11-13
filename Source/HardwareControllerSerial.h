@@ -156,11 +156,11 @@ private:
 
     void flushOutgoingTx()
     {
-        while (connected.load (std::memory_order_relaxed) && hComm != INVALID_HANDLE_VALUE)
+        if (connected.load (std::memory_order_relaxed) && hComm != INVALID_HANDLE_VALUE)
         {
             const int r = txReadIndex.load (std::memory_order_relaxed);
             if (r == txWriteIndex.load (std::memory_order_acquire))
-                break; // Empty
+                return; // Empty
 
             const auto& item = txQueue[r];
             if (item.len > 0)
@@ -170,6 +170,10 @@ private:
             }
 
             txReadIndex.store ((r + 1) % kTxQueueSize, std::memory_order_release);
+
+            // Pace outgoing bursts (~4 ms per message) so Arduino's 64-byte RX buffer never overflows during OLED I2C transfers
+            if (txReadIndex.load (std::memory_order_relaxed) != txWriteIndex.load (std::memory_order_acquire))
+                std::this_thread::sleep_for (std::chrono::milliseconds (4));
         }
     }
     std::atomic<bool> workerRunning { false };

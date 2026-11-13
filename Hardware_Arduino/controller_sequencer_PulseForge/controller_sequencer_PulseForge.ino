@@ -624,15 +624,15 @@ void scanEncoders()
                 Serial.print (":ENC:"); Serial.print (encNames[e]);
                 Serial.print (":"); Serial.println (stepDir > 0 ? "+1" : "-1");
 
-                // Aggiornamento istantaneo e diretto sulla Home (Zero pop-up, zero cambi pagina!)
+                // Aggiornamento istantaneo e diretto sulla Home (clamping 1:1 con il plugin, niente wrap-around)
                 if (e == 0) // GENRE
                 {
-                    currentGenreIdx[t] = (currentGenreIdx[t] + stepDir + 8) % 8;
+                    currentGenreIdx[t] = constrain (currentGenreIdx[t] + stepDir, 0, 7);
                     strncpy (trackGenre[t], GENRE_NAMES[currentGenreIdx[t]], sizeof (trackGenre[t]));
                 }
                 else if (e == 1) // ROLE
                 {
-                    currentRoleIdx[t] = (currentRoleIdx[t] + stepDir + 7) % 7;
+                    currentRoleIdx[t] = constrain (currentRoleIdx[t] + stepDir, 0, 6);
                     strncpy (trackRole[t], ROLE_NAMES[currentRoleIdx[t]], sizeof (trackRole[t]));
                 }
                 else if (e == 2) // STEPS (solo 4, 8, 16, 32 come nel plugin)
@@ -703,11 +703,27 @@ void handleCommand (const char* cmd)
             {
                 strncpy (trackGenre[t], sub + 4, sizeof (trackGenre[t]) - 1);
                 trackGenre[t][sizeof (trackGenre[t]) - 1] = '\0';
+                for (int k = 0; k < 8; ++k)
+                {
+                    if (strcmp (trackGenre[t], GENRE_NAMES[k]) == 0)
+                    {
+                        currentGenreIdx[t] = k;
+                        break;
+                    }
+                }
             }
             else if (strncmp (sub, "ROL:", 4) == 0)
             {
                 strncpy (trackRole[t], sub + 4, sizeof (trackRole[t]) - 1);
                 trackRole[t][sizeof (trackRole[t]) - 1] = '\0';
+                for (int k = 0; k < 7; ++k)
+                {
+                    if (strcmp (trackRole[t], ROLE_NAMES[k]) == 0)
+                    {
+                        currentRoleIdx[t] = k;
+                        break;
+                    }
+                }
             }
             else if (strncmp (sub, "STP:", 4) == 0)
             {
