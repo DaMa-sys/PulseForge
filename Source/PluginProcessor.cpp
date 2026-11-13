@@ -83,26 +83,31 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
             {
                 if (auto* p = apvts.getParameter (prefix + "density"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+                updateTrackComplexity (track, static_cast<float> (val));
             }
             else if (param == "SWING")
             {
                 if (auto* p = apvts.getParameter (prefix + "swing"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+                updatePlaybackSnapshot();
             }
             else if (param == "BOCT")
             {
                 if (auto* p = apvts.getParameter (prefix + "baseOctave"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+                updatePlaybackSnapshot();
             }
             else if (param == "AOCT")
             {
                 if (auto* p = apvts.getParameter (prefix + "arpOctaves"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+                triggerGenerateTrack (track);
             }
             else if (param == "RATIO")
             {
                 if (auto* p = apvts.getParameter (prefix + "tempoRatio"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
+                updatePlaybackSnapshot();
             }
         });
     };
@@ -117,7 +122,9 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 3, cur + dir);
-                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                    static constexpr int kStepChoices[4] = { 4, 8, 16, 32 };
+                    setTrackNumSteps (track, kStepChoices[next]);
+                    triggerGenerateTrack (track);
                 }
             }
             else if (target == "GENRE")
@@ -126,7 +133,8 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 7, cur + dir);
-                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                    setTrackGenre (track, static_cast<PulseForge::GenreStyle> (next));
+                    triggerGenerateTrack (track);
                 }
             }
             else if (target == "ROLE")
@@ -135,7 +143,8 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 6, cur + dir);
-                    p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (next)));
+                    setTrackRole (track, static_cast<PulseForge::InstrumentRole> (next));
+                    triggerGenerateTrack (track);
                 }
             }
         });
