@@ -1731,8 +1731,8 @@ void PulseForgeAudioProcessor::syncTrackHardwareToOled (int trackIdx)
     {
         int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (pG->load())));
         const char* gNames[8] = {
-            "ACID TECHNO", "MELODIC TECH", "CLASSIC HOUSE", "ITALO SYNTH",
-            "BERLIN SCHOOL", "DETROIT ELEC", "FUNK BOOGIE", "EUCLIDEAN IDM"
+            "CLASSIC HOUSE", "ACID 303", "ITALO DISCO", "FISHER",
+            "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO"
         };
         hardwareSerial.sendTrackGenre (trackIdx, gNames[gIdx]);
     }
@@ -1808,8 +1808,8 @@ void PulseForgeAudioProcessor::parameterChanged (const juce::String& parameterID
             {
                 int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (newValue)));
                 const char* gNames[8] = {
-                    "ACID TECHNO", "MELODIC TECH", "CLASSIC HOUSE", "ITALO SYNTH",
-                    "BERLIN SCHOOL", "DETROIT ELEC", "FUNK BOOGIE", "EUCLIDEAN IDM"
+                    "CLASSIC HOUSE", "ACID 303", "ITALO DISCO", "FISHER",
+                    "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO"
                 };
                 hardwareSerial.sendTrackGenre (t, gNames[gIdx]);
             }

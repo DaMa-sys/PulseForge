@@ -197,14 +197,14 @@ inline void triggerLedFlash (int t, uint8_t level)
 
 // OLED Studio HUD telemetry
 const char* const GENRE_NAMES[8] = {
-    "ACID TECHNO",
-    "MELODIC TECH",
     "CLASSIC HOUSE",
-    "ITALO SYNTH",
-    "BERLIN SCHOOL",
-    "DETROIT ELEC",
-    "FUNK BOOGIE",
-    "EUCLIDEAN IDM"
+    "ACID 303",
+    "ITALO DISCO",
+    "FISHER",
+    "P. KALKBRENNER",
+    "UK GARAGE",
+    "FRED AGAIN..",
+    "BONOBO"
 };
 int currentGenreIdx[3] = { 0, 1, 2 };
 
@@ -227,7 +227,7 @@ const char* const RATIO_NAMES[11] = {
 const int STEP_CHOICES[4] = { 4, 8, 16, 32 };
 
 char trackName[3][18]  = { "DAW",           "DAW",           "DAW" };
-char trackGenre[3][16] = { "ACID TECHNO",   "MELODIC TECH",  "DEEP HOUSE" };
+char trackGenre[3][16] = { "CLASSIC HOUSE", "ACID 303",      "CLASSIC HOUSE" };
 char trackRole[3][16]  = { "Mono Bassline", "Rolling Arp",   "Poly 7th Stab" };
 int trackSteps[3]      = { 16, 16, 32 };
 int trackBaseOct[3]    = { 1, 2, 3 };    // C1, C2, C3
