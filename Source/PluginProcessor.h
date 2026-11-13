@@ -135,11 +135,13 @@ public:
     juce::String getLastLoadedMidiName() const;
 
     int computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
-                             int rootMidi, PulseForge::ScaleType scale) const;
+                             int rootMidi, PulseForge::ScaleType scale,
+                             int maxOctaveSpan = 4) const;
     int computeHarmonicStepMidiNote (int trackIdx, int stepIdx, const PulseForge::StepData& step,
                                      int rootMidi, PulseForge::ScaleType scale,
                                      int globalBar, int progIdx, PulseForge::GenreStyle genre,
-                                     PulseForge::InstrumentRole role, bool harmonicContextOn) const;
+                                     PulseForge::InstrumentRole role, bool harmonicContextOn,
+                                     int maxOctaveSpan = 4) const;
 
     struct TrackPlaybackSnapshot
     {

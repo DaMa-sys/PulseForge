@@ -529,7 +529,7 @@ private:
 
         s.onDragEnd = [this, &s]()
         {
-            if (&s == &densitySlider || &s == &arpOctSlider)
+            if (&s == &densitySlider)
                 processor.triggerGenerateTrack (trackIndex);
             else
                 processor.updatePlaybackSnapshot();
@@ -692,7 +692,14 @@ private:
 
         const auto scale = static_cast<PulseForge::ScaleType> (static_cast<int> (processor.apvts.getRawParameterValue ("scale")->load()));
         const int rootKey = static_cast<int> (processor.apvts.getRawParameterValue ("rootNote")->load());
-        const int rootMidi = (track.baseOctave + 1) * 12 + rootKey;
+        const juce::String pfx = "t" + juce::String (trackIndex) + "_";
+        const int curBaseOct = (processor.apvts.getRawParameterValue (pfx + "baseOctave") != nullptr)
+                                 ? static_cast<int> (std::round (processor.apvts.getRawParameterValue (pfx + "baseOctave")->load()))
+                                 : track.baseOctave;
+        const int curArpOct  = (processor.apvts.getRawParameterValue (pfx + "arpOctaves") != nullptr)
+                                 ? static_cast<int> (std::round (processor.apvts.getRawParameterValue (pfx + "arpOctaves")->load()))
+                                 : track.arpOctaves;
+        const int rootMidi = (curBaseOct + 1) * 12 + rootKey;
         const int nSteps = juce::jlimit (4, 32, getNumSteps());
 
         for (int i = 0; i < nSteps; ++i)
@@ -731,7 +738,7 @@ private:
                 }
                 else
                 {
-                    const int noteNum = processor.computeStepMidiNote (i, step, rootMidi, scale);
+                    const int noteNum = processor.computeStepMidiNote (i, step, rootMidi, scale, curArpOct);
                     noteName = PulseForge::getMidiNoteName (noteNum);
                 }
 

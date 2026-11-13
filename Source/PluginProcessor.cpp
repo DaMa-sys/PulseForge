@@ -101,7 +101,7 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
             {
                 if (auto* p = apvts.getParameter (prefix + "arpOctaves"))
                     p->setValueNotifyingHost (p->convertTo0to1 (static_cast<float> (val)));
-                triggerGenerateTrack (track);
+                updatePlaybackSnapshot();
             }
             else if (param == "RATIO")
             {
@@ -239,12 +239,18 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
             dst.role = src.role;
 
         if (auto* p = apvts.getRawParameterValue (prefix + "baseOctave"))
+        {
             dst.baseOctave = static_cast<int> (p->load());
+            tracks[static_cast<size_t>(t)].baseOctave = dst.baseOctave;
+        }
         else
             dst.baseOctave = src.baseOctave;
 
         if (auto* p = apvts.getRawParameterValue (prefix + "arpOctaves"))
+        {
             dst.arpOctaves = static_cast<int> (p->load());
+            tracks[static_cast<size_t>(t)].arpOctaves = dst.arpOctaves;
+        }
         else
             dst.arpOctaves = src.arpOctaves;
 
@@ -896,22 +902,26 @@ void PulseForgeAudioProcessor::triggerClearPattern()
 }
 
 int PulseForgeAudioProcessor::computeStepMidiNote (int stepIdx, const PulseForge::StepData& step,
-                                                   int rootMidi, PulseForge::ScaleType scale) const
+                                                   int rootMidi, PulseForge::ScaleType scale,
+                                                   int maxOctaveSpan) const
 {
     juce::ignoreUnused (stepIdx);
     const int quantSemi = PulseForge::quantizeSemitoneToScale (step.semitoneOffset, scale);
-    const int note = rootMidi + quantSemi + (step.octaveShift * 12) + liveTransposeSemitones;
+    const int maxOctJump = juce::jmax (0, maxOctaveSpan - 1);
+    const int clampedOct = juce::jlimit (-maxOctJump, maxOctJump, step.octaveShift);
+    const int note = rootMidi + quantSemi + (clampedOct * 12) + liveTransposeSemitones;
     return juce::jlimit (12, 115, note);
 }
 
 int PulseForgeAudioProcessor::computeHarmonicStepMidiNote (int trackIdx, int stepIdx, const PulseForge::StepData& step,
                                                           int rootMidi, PulseForge::ScaleType scale,
                                                           int globalBar, int progIdx, PulseForge::GenreStyle genre,
-                                                          PulseForge::InstrumentRole role, bool harmonicContextOn) const
+                                                          PulseForge::InstrumentRole role, bool harmonicContextOn,
+                                                          int maxOctaveSpan) const
 {
     // Se HARMONIC CONTEXT è disattivato: comportamento identico originale (golden standard)
     if (!harmonicContextOn)
-        return computeStepMidiNote (stepIdx, step, rootMidi, scale);
+        return computeStepMidiNote (stepIdx, step, rootMidi, scale, maxOctaveSpan);
 
     // Con HARMONIC CONTEXT ATTIVO:
     // 1. Calcola la radice armonica dell'accordo della battuta corrente dal profilo di genere
@@ -964,7 +974,7 @@ int PulseForgeAudioProcessor::computeHarmonicStepMidiNote (int trackIdx, int ste
             break;
 
         case PulseForge::HarmonicFunction::OctavePop:
-            noteOffsetFromScaleRoot = chordRootSemi + 12;
+            noteOffsetFromScaleRoot = chordRootSemi + ((maxOctaveSpan > 1) ? 12 : 0);
             break;
 
         case PulseForge::HarmonicFunction::Passing:
@@ -974,25 +984,10 @@ int PulseForgeAudioProcessor::computeHarmonicStepMidiNote (int trackIdx, int ste
             break;
     }
 
-    // Separazione dei Registri per evitare incroci di voci
-    // BASS: C1 - E2 (24..40)
-    // CHORDS: G2 - B3 (43..59)
-    // LEAD / ARP: C4 - G5 (60..79)
-    int registerBaseOct = 0;
-    if (role == PulseForge::InstrumentRole::MonoBass || role == PulseForge::InstrumentRole::AcidLine)
-    {
-        registerBaseOct = 0; // Registro basso
-    }
-    else if (role == PulseForge::InstrumentRole::PolyChordStab || role == PulseForge::InstrumentRole::HarmonyChords)
-    {
-        registerBaseOct = 1; // Registro medio
-    }
-    else // ClassicArp, LeadHook, ModularRatchet
-    {
-        registerBaseOct = 2; // Registro alto
-    }
-
-    const int finalNote = (rootMidi - 12) + (registerBaseOct * 12) + noteOffsetFromScaleRoot + (step.octaveShift * 12) + liveTransposeSemitones;
+    // baseOctave imposta direttamente l'ottava base (rootMidi); arpOctaves delimita il massimo salto di ottave
+    const int maxOctJump = juce::jmax (0, maxOctaveSpan - 1);
+    const int clampedOct = juce::jlimit (-maxOctJump, maxOctJump, step.octaveShift);
+    const int finalNote = rootMidi + noteOffsetFromScaleRoot + (clampedOct * 12) + liveTransposeSemitones;
     return juce::jlimit (12, 115, finalNote);
 }
 
@@ -1113,10 +1108,13 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
 
         std::vector<int> expandedPool;
         expandedPool.reserve (16);
+        const int maxOctJump = juce::jmax (0, arpOctaves - 1);
+        const int clampedStepOct = juce::jlimit (-maxOctJump, maxOctJump, step.octaveShift);
         for (int oct = 0; oct < arpOctaves; ++oct)
         {
+            const int totalOct = juce::jlimit (0, maxOctJump, oct + clampedStepOct);
             for (int n : basePool)
-                expandedPool.push_back (juce::jlimit (12, 115, n + oct * 12 + step.octaveShift * 12));
+                expandedPool.push_back (juce::jlimit (12, 115, n + totalOct * 12));
         }
 
         if (expandedPool.empty())
@@ -1178,7 +1176,7 @@ void PulseForgeAudioProcessor::triggerStepEventsForTrack (int trackIdx, int step
         const int curBar = currentTransportBar.load();
         const int baseNote = computeHarmonicStepMidiNote (trackIdx, stepIdx, step, rootMidi, scale,
                                                           curBar, snap.progressionIndex, trackSnap.genre,
-                                                          role, snap.harmonicContextEnabled);
+                                                          role, snap.harmonicContextEnabled, arpOctaves);
         notesToTrigger = PulseForge::buildChordVoicingNotes (baseNote, step, rootMidi, scale, role, liveTransposeSemitones);
     }
 
