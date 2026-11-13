@@ -261,6 +261,7 @@ void PulseForgeAudioProcessor::updatePlaybackSnapshot() noexcept
     snap.progressionIndex = globalProgressionIndex.load();
 
     activeSnapshotIndex.store (nextIdx, std::memory_order_release);
+    patternRevision.fetch_add (1, std::memory_order_relaxed);
 }
 
 PulseForgeAudioProcessor::~PulseForgeAudioProcessor()

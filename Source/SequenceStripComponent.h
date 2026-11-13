@@ -238,10 +238,12 @@ public:
     void updatePlayheadAndState()
     {
         const int curStep = processor.getTrackPlayStep (trackIndex);
-        if (curStep != lastDrawnStep || processor.isTransportRunning() != wasPlaying)
+        const uint32_t curRev = processor.getPatternRevision();
+        if (curStep != lastDrawnStep || processor.isTransportRunning() != wasPlaying || curRev != lastDrawnRevision)
         {
             lastDrawnStep = curStep;
             wasPlaying = processor.isTransportRunning();
+            lastDrawnRevision = curRev;
             repaint();
         }
     }
@@ -496,6 +498,7 @@ private:
     int draggedVelStepIndex = -1;
     int dragStartVelY = 0;
     int initialDragVel = 100;
+    uint32_t lastDrawnRevision = 0;
 
     // Custom Module Blue Hue
     juce::Colour customCardTop;

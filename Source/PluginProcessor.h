@@ -117,6 +117,7 @@ public:
     void ensureHardwareMidiOutOpen (const juce::String& deviceName);
     void syncTrackHardwareToOled (int trackIdx);
     void syncAllTracksToHardware();
+    uint32_t getPatternRevision() const noexcept { return patternRevision.load (std::memory_order_relaxed); }
 
     //==========================================================================
     // UI Telemetry
@@ -210,6 +211,7 @@ private:
 
     PlaybackSnapshot audioSnapshots[2];
     std::atomic<int> activeSnapshotIndex { 0 };
+    std::atomic<uint32_t> patternRevision { 0 };
 
     // Harmonic Context Global State
     std::atomic<int> globalProgressionIndex { 0 };
