@@ -122,9 +122,12 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 3, cur + dir);
-                    static constexpr int kStepChoices[4] = { 4, 8, 16, 32 };
-                    setTrackNumSteps (track, kStepChoices[next]);
-                    triggerGenerateTrack (track);
+                    if (next != cur)
+                    {
+                        static constexpr int kStepChoices[4] = { 4, 8, 16, 32 };
+                        setTrackNumSteps (track, kStepChoices[next]);
+                        triggerGenerateTrack (track);
+                    }
                 }
             }
             else if (target == "GENRE")
@@ -133,8 +136,11 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 7, cur + dir);
-                    setTrackGenre (track, static_cast<PulseForge::GenreStyle> (next));
-                    triggerGenerateTrack (track);
+                    if (next != cur)
+                    {
+                        setTrackGenre (track, static_cast<PulseForge::GenreStyle> (next));
+                        triggerGenerateTrack (track);
+                    }
                 }
             }
             else if (target == "ROLE")
@@ -143,8 +149,11 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
                     int next = juce::jlimit (0, 6, cur + dir);
-                    setTrackRole (track, static_cast<PulseForge::InstrumentRole> (next));
-                    triggerGenerateTrack (track);
+                    if (next != cur)
+                    {
+                        setTrackRole (track, static_cast<PulseForge::InstrumentRole> (next));
+                        triggerGenerateTrack (track);
+                    }
                 }
             }
         });
