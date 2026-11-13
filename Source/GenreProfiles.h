@@ -143,6 +143,42 @@ inline const GenreProfile& getGenreProfile (GenreStyle genre)
             0.60f, 0.15f, 0.40f, 0.30f,
             3, 5,
             0.65f, 0.80f, 0.45f, 0.88f
+        },
+        // 8. Hypnotic Pulse (Kiasmos): Minimalist neo-classical, 16esimi continui ed eleganti
+        {
+            "Hypnotic Pulse (Kiasmos)",
+            0.04f,
+            {             0.90f, 0.75f, 0.85f, 0.80f, 0.90f, 0.75f, 0.85f, 0.80f, 0.90f, 0.75f, 0.85f, 0.80f, 0.90f, 0.75f, 0.85f, 0.85f },
+            0.65f, 0.15f, 0.45f, 0.35f,
+            3, 6,
+            0.75f, 0.85f, 0.30f, 0.75f
+        },
+        // 9. Melodic Drive (Stephan Bodzin): Moog techno pulsante, salti d'ottava, accenti punchy
+        {
+            "Melodic Drive (Bodzin)",
+            0.02f,
+            {             0.95f, 0.85f, 0.90f, 0.85f, 0.95f, 0.85f, 0.90f, 0.85f, 0.95f, 0.85f, 0.90f, 0.85f, 0.95f, 0.85f, 0.90f, 0.90f },
+            0.90f, 0.35f, 1.10f, 0.25f,
+            3, 6,
+            0.80f, 0.75f, 0.28f, 0.82f
+        },
+        // 10. Shuffled Garage (Burial): 2-step swung, ghost notes scure, accordi minori
+        {
+            "Burial Garage (Untrue)",
+            0.32f,
+            {             0.92f, 0.15f, 0.75f, 0.35f, 0.25f, 0.20f, 0.85f, 0.45f, 0.30f, 0.15f, 0.88f, 0.35f, 0.25f, 0.85f, 0.20f, 0.70f },
+            0.80f, 0.25f, 0.50f, 0.65f,
+            3, 5,
+            0.70f, 0.78f, 0.42f, 0.80f
+        },
+        // 11. Emotive Modular (Laoum): Sequenze modulari cinematiche, arpeggi evolutivi
+        {
+            "Emotive Modular (Laoum)",
+            0.08f,
+            {             0.90f, 0.65f, 0.85f, 0.70f, 0.85f, 0.70f, 0.90f, 0.60f, 0.90f, 0.65f, 0.85f, 0.70f, 0.85f, 0.75f, 0.90f, 0.80f },
+            0.75f, 0.25f, 0.70f, 0.40f,
+            3, 6,
+            0.72f, 0.82f, 0.36f, 0.80f
         }
     };
 
@@ -256,6 +292,54 @@ inline int getGenreProgressionSemitone (GenreStyle genre, int progIdx, int bar)
         {  0,  0,  0,  0,  8,  8, 10, 10 }
     };
 
+    // 8: Kiasmos (Hypnotic Pulse / Minimalist Neo-Classical)
+    static const int kKiasmosProg[8][8] = {
+        {  0,  0,  8,  8,  3,  3, 10, 10 }, // i -> VI -> III -> VII
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  3,  3,  8,  8, 10, 10 }, // i -> bIII -> VI -> VII
+        {  0,  0,  8,  8,  5,  5,  7,  7 }, // i -> VI -> iv -> v
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  2,  2,  5,  5,  0,  0 }, // i -> ii -> iv -> i
+        {  0,  0,  3,  3,  5,  5,  7,  7 }, // i -> bIII -> iv -> v
+        {  0,  0,  0,  0,  8,  8, 10, 10 }
+    };
+
+    // 9: Stephan Bodzin (Melodic Drive / Moog Techno)
+    static const int kBodzinProg[8][8] = {
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  5,  5,  8,  8,  7,  7 }, // i -> iv -> VI -> v
+        {  0,  0,  0,  0,  8,  8, 10, 10 }, // i -> VI -> VII
+        {  0,  0,  3,  3,  5,  5,  7,  7 }, // i -> bIII -> iv -> v
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> VII -> VI -> VII
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  3,  3,  5,  5, 10, 10 }, // i -> bIII -> iv -> VII
+        {  0,  0,  0,  0,  0,  0, 10, 10 }
+    };
+
+    // 10: Burial (Burial Garage / Untrue)
+    static const int kBurialProg[8][8] = {
+        {  0,  0,  3,  3,  5,  5,  0,  0 }, // i -> bIII -> iv -> i
+        {  0,  0, 10, 10,  8,  8, 10, 10 }, // i -> b7 -> b6 -> b7
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  5,  5,  7,  7,  0,  0 }, // i -> iv -> v -> i
+        {  0,  0,  3,  3,  8,  8,  7,  7 }, // i -> bIII -> VI -> v
+        {  0,  0, 10, 10,  0,  0, 10, 10 }, // i -> b7 -> i -> b7
+        {  0,  0,  0,  0,  5,  5, 10, 10 }, // i -> iv -> b7
+        {  0,  0,  7,  7,  5,  5,  0,  0 }
+    };
+
+    // 11: Laoum (Emotive Modular / Luca Fiorillo)
+    static const int kLaoumProg[8][8] = {
+        {  0,  0,  8,  8,  5,  5,  7,  7 }, // i -> VI -> iv -> v
+        {  0,  0,  5,  5,  3,  3,  0,  0 }, // i -> iv -> bIII -> i
+        {  0,  0, 10, 10,  8,  8,  7,  7 }, // i -> b7 -> VI -> v
+        {  0,  0,  3,  3,  5,  5,  7,  7 }, // i -> bIII -> iv -> v
+        {  0,  0,  2,  2,  5,  5,  0,  0 }, // i -> ii -> iv -> i
+        {  0,  0,  8,  8, 10, 10,  0,  0 }, // i -> VI -> VII -> i
+        {  0,  0,  3,  3,  2,  2,  0,  0 }, // i -> bIII -> ii -> i
+        {  0,  0,  0,  0,  5,  5,  7,  7 }
+    };
+
     switch (genre)
     {
         case GenreStyle::ClassicHouse:   return kHouseProg[progIdx][bar];
@@ -266,6 +350,10 @@ inline int getGenreProgressionSemitone (GenreStyle genre, int progIdx, int bar)
         case GenreStyle::DetroitElectro: return kDisclosureProg[progIdx][bar];
         case GenreStyle::FunkBoogie:     return kFredProg[progIdx][bar];
         case GenreStyle::EuclideanIDM:   return kBonoboProg[progIdx][bar];
+        case GenreStyle::KiasmosPulse:   return kKiasmosProg[progIdx][bar];
+        case GenreStyle::BodzinDrive:    return kBodzinProg[progIdx][bar];
+        case GenreStyle::BurialGarage:   return kBurialProg[progIdx][bar];
+        case GenreStyle::LaoumEmotive:   return kLaoumProg[progIdx][bar];
         default:                         return kHouseProg[progIdx][bar];
     }
 }

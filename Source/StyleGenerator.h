@@ -8,6 +8,7 @@
 #include "DisclosureBricks.h"
 #include "BonoboBricks.h"
 #include "HouseEdmBricks.h"
+#include "PLFArtistBricks.h"
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <random>
 
@@ -78,6 +79,22 @@ public:
             case GenreStyle::EuclideanIDM: // Bonobo
                 outScale = ScaleType::Dorian;
                 outSwing = 0.12f; // Organic humanized ~53%
+                break;
+            case GenreStyle::KiasmosPulse: // Kiasmos
+                outScale = ScaleType::Dorian;
+                outSwing = 0.04f;
+                break;
+            case GenreStyle::BodzinDrive: // Stephan Bodzin
+                outScale = ScaleType::MinorNatural;
+                outSwing = 0.02f;
+                break;
+            case GenreStyle::BurialGarage: // Burial
+                outScale = ScaleType::Dorian;
+                outSwing = 0.32f;
+                break;
+            case GenreStyle::LaoumEmotive: // Laoum
+                outScale = ScaleType::Dorian;
+                outSwing = 0.08f;
                 break;
             default:
                 outScale = ScaleType::MinorNatural;
@@ -661,6 +678,22 @@ public:
 
                 case GenreStyle::ItaloSynthwave: // ITALO DISCO / FESTIVAL EDM
                     candidates = LayeredItaloEdmGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::KiasmosPulse: // KIASMOS (Hypnotic Pulse)
+                    candidates = LayeredKiasmosGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::BodzinDrive: // STEPHAN BODZIN (Melodic Drive)
+                    candidates = LayeredBodzinGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::BurialGarage: // BURIAL (Shuffled Garage)
+                    candidates = LayeredBurialGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
+                    break;
+
+                case GenreStyle::LaoumEmotive: // LAOUM (Emotive Modular)
+                    candidates = LayeredLaoumGenerator::buildCandidateEvents (effSeed, p.role, p.scale);
                     break;
 
                 default:

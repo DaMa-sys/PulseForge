@@ -77,7 +77,11 @@ public:
             "Paul Kalkbrenner (Melodic Techno)",
             "UK Garage / Detroit (Disclosure)",
             "Fred again.. (Emotional UK)",
-            "Bonobo (Organic Downtempo)"
+            "Bonobo (Organic Downtempo)",
+            "Kiasmos (Hypnotic Pulse)",
+            "Stephan Bodzin (Melodic Drive)",
+            "Burial (Untrue Garage)",
+            "Laoum (Emotive Modular)"
         };
         genreBox.addItemList (genres, 1);
         genreBox.setLookAndFeel (&customLnF);

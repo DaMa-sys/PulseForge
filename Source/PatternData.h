@@ -27,6 +27,10 @@ enum class GenreStyle : int
     DetroitElectro,       // Kraftwerk / Drexciya / Bass House syncopation
     FunkBoogie,           // Funky House / Minimoog slap-funk & pentatonic walkdowns
     EuclideanIDM,         // Aphex / Buchla algorithmic polyrhythms & modal leaps
+    KiasmosPulse,         // Kiasmos (Hypnotic Pulse / Minimalist Neo-Classical)
+    BodzinDrive,          // Stephan Bodzin (Melodic Drive / Moog Techno)
+    BurialGarage,         // Burial (Untrue / Shuffled Garage)
+    LaoumEmotive,         // Laoum (Emotive Modular / Luca Fiorillo)
     Count
 };
 
@@ -455,6 +459,14 @@ inline juce::String getGenreDescription (GenreStyle genre)
             return "Fred again.. (Emotional UK): Motivo intimo di 3-4 note ripetuto, micro-variazioni di dinamica e sospensioni.";
         case GenreStyle::EuclideanIDM:
             return "Bonobo (Organic Downtempo): Accordi estesi, timing umano, dinamica ampia e pause ampie.";
+        case GenreStyle::KiasmosPulse:
+            return "Kiasmos (Hypnotic Pulse): Ostinato ipnotico a semicrome, dinamiche ondulatorie neo-classiche ed eleganza minimalista.";
+        case GenreStyle::BodzinDrive:
+            return "Stephan Bodzin (Melodic Drive): Sintesi Moog pulsante, salti d'ottava epici, accenti punchy e glide melodici.";
+        case GenreStyle::BurialGarage:
+            return "Burial (Untrue Garage): Shuffle sincopato 2-step, ghost notes scure, accordi minori 9th/7th e malinconia urbana.";
+        case GenreStyle::LaoumEmotive:
+            return "Laoum (Emotive Modular): Sequenze modulari cinematiche, arpeggi evolutivi ipnotici e aperture armoniche profonde.";
         default:
             return "";
     }

@@ -308,7 +308,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout PulseForgeAudioProcessor::cr
         "Paul Kalkbrenner (Melodic Techno)",
         "UK Garage / Detroit (Disclosure)",
         "Fred again.. (Emotional UK)",
-        "Bonobo (Organic Downtempo)"
+        "Bonobo (Organic Downtempo)",
+        "Kiasmos (Hypnotic Pulse)",
+        "Stephan Bodzin (Melodic Drive)",
+        "Burial (Untrue Garage)",
+        "Laoum (Emotive Modular)"
     };
 
     const juce::StringArray roles {
@@ -1737,10 +1741,11 @@ void PulseForgeAudioProcessor::syncTrackHardwareToOled (int trackIdx)
     const juce::String pfx = "t" + juce::String (trackIdx) + "_";
     if (auto* pG = apvts.getRawParameterValue (pfx + "genre"))
     {
-        int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (pG->load())));
-        const char* gNames[8] = {
+        int gIdx = juce::jlimit (0, 11, static_cast<int> (std::round (pG->load())));
+        const char* gNames[12] = {
             "CLASSIC HOUSE", "ACID 303", "ITALO DISCO", "FISHER",
-            "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO"
+            "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO",
+            "KIASMOS", "BODZIN", "BURIAL", "LAOUM"
         };
         hardwareSerial.sendTrackGenre (trackIdx, gNames[gIdx]);
     }
@@ -1814,10 +1819,11 @@ void PulseForgeAudioProcessor::parameterChanged (const juce::String& parameterID
             }
             else if (sub == "genre")
             {
-                int gIdx = juce::jlimit (0, 7, static_cast<int> (std::round (newValue)));
-                const char* gNames[8] = {
+                int gIdx = juce::jlimit (0, 11, static_cast<int> (std::round (newValue)));
+                const char* gNames[12] = {
                     "CLASSIC HOUSE", "ACID 303", "ITALO DISCO", "FISHER",
-                    "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO"
+                    "P. KALKBRENNER", "UK GARAGE", "FRED AGAIN..", "BONOBO",
+                    "KIASMOS", "BODZIN", "BURIAL", "LAOUM"
                 };
                 hardwareSerial.sendTrackGenre (t, gNames[gIdx]);
             }

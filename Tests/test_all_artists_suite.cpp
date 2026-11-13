@@ -13,6 +13,7 @@
 #include "../Source/DisclosureBricks.h"
 #include "../Source/BonoboBricks.h"
 #include "../Source/HouseEdmBricks.h"
+#include "../Source/PLFArtistBricks.h"
 #include "../Source/StyleGenerator.h"
 
 // Calcola somiglianza tra due pattern (0..1)
@@ -69,7 +70,11 @@ int main()
         { "Bonobo (Organic Downtempo Arp)",   PulseForge::GenreStyle::EuclideanIDM,   PulseForge::InstrumentRole::ClassicArp,  PulseForge::ScaleType::Dorian },
         { "Bonobo (Organic Downtempo Bass)",  PulseForge::GenreStyle::EuclideanIDM,   PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::Dorian },
         { "Classic House (Chicago Bass)",     PulseForge::GenreStyle::ClassicHouse,   PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::Dorian },
-        { "Italo / EDM (Moroder Bass)",       PulseForge::GenreStyle::ItaloSynthwave, PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::MinorNatural }
+        { "Italo / EDM (Moroder Bass)",       PulseForge::GenreStyle::ItaloSynthwave, PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::MinorNatural },
+        { "Kiasmos (Hypnotic Pulse Arp)",     PulseForge::GenreStyle::KiasmosPulse,   PulseForge::InstrumentRole::ClassicArp,  PulseForge::ScaleType::Dorian },
+        { "Stephan Bodzin (Melodic Drive)",   PulseForge::GenreStyle::BodzinDrive,    PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::MinorNatural },
+        { "Burial (Shuffled Garage Bass)",    PulseForge::GenreStyle::BurialGarage,   PulseForge::InstrumentRole::MonoBass,    PulseForge::ScaleType::Dorian },
+        { "Laoum (Emotive Modular Arp)",      PulseForge::GenreStyle::LaoumEmotive,   PulseForge::InstrumentRole::ClassicArp,  PulseForge::ScaleType::Dorian }
     };
 
     bool allPassed = true;
@@ -109,6 +114,18 @@ int main()
                     break;
                 case PulseForge::GenreStyle::ItaloSynthwave:
                     cand = PulseForge::LayeredItaloEdmGenerator::buildCandidateEvents (seed, art.role, art.scale);
+                    break;
+                case PulseForge::GenreStyle::KiasmosPulse:
+                    cand = PulseForge::LayeredKiasmosGenerator::buildCandidateEvents (seed, art.role, art.scale);
+                    break;
+                case PulseForge::GenreStyle::BodzinDrive:
+                    cand = PulseForge::LayeredBodzinGenerator::buildCandidateEvents (seed, art.role, art.scale);
+                    break;
+                case PulseForge::GenreStyle::BurialGarage:
+                    cand = PulseForge::LayeredBurialGenerator::buildCandidateEvents (seed, art.role, art.scale);
+                    break;
+                case PulseForge::GenreStyle::LaoumEmotive:
+                    cand = PulseForge::LayeredLaoumGenerator::buildCandidateEvents (seed, art.role, art.scale);
                     break;
                 default:
                     break;
