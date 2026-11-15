@@ -86,9 +86,9 @@ const uint8_t POT_PINS[3][5] = {
     { A0,  A1,  A2,  A3,  A4  }   // Track 3 (Chords): Density, Swing, BaseOct, ArpOct, Ratio
 };
 
-// 6 Tactile Buttons (INPUT_PULLUP)
-const uint8_t BTN_GEN[3] = { 6, 4, 2 };
-const uint8_t BTN_MUT[3] = { 7, 5, 3 };
+// 6 Tactile Buttons (INPUT_PULLUP - ordine specchiato dal retro: SX = Generate {7,5,3}, DX = Save/Recall {6,4,2})
+const uint8_t BTN_GEN[3] = { 7, 5, 3 };
+const uint8_t BTN_MUT[3] = { 6, 4, 2 };
 
 // 3 Beat / Step Indicator LEDs
 const uint8_t LED_PINS[3] = { 10, 9, 8 };
@@ -134,7 +134,8 @@ unsigned long lastPotReadTime = 0;
 // Button debounce & Snapshot timing
 bool lastBtnGenState[3] = { HIGH, HIGH, HIGH };
 bool lastBtnMutState[3] = { HIGH, HIGH, HIGH };
-unsigned long lastBtnDebounceTime[3] = { 0, 0, 0 };
+unsigned long lastBtnGenDebounceTime[3] = { 0, 0, 0 };
+unsigned long lastBtnMutDebounceTime[3] = { 0, 0, 0 };
 unsigned long btnMutPressStart[3] = { 0, 0, 0 };
 bool btnMutLongTriggered[3] = { false, false, false };
 bool trackHasSaved[3] = { false, false, false };
@@ -199,7 +200,7 @@ inline void triggerLedFlash (int t, uint8_t level)
 }
 
 // OLED Studio HUD telemetry
-const char* const GENRE_NAMES[8] = {
+const char* const GENRE_NAMES[12] = {
     "CLASSIC HOUSE",
     "ACID 303",
     "ITALO DISCO",
@@ -207,7 +208,11 @@ const char* const GENRE_NAMES[8] = {
     "P. KALKBRENNER",
     "UK GARAGE",
     "FRED AGAIN..",
-    "BONOBO"
+    "BONOBO",
+    "KIASMOS",
+    "BODZIN",
+    "BURIAL",
+    "LAOUM"
 };
 int currentGenreIdx[3] = { 0, 1, 2 };
 
@@ -475,9 +480,9 @@ void scanButtons()
         if (CONNECTED_BUTTONS_GEN[t])
         {
             int gVal = digitalRead (BTN_GEN[t]);
-            if (gVal != lastBtnGenState[t] && (now - lastBtnDebounceTime[t] > 50))
+            if (gVal != lastBtnGenState[t] && (now - lastBtnGenDebounceTime[t] > 45))
             {
-                lastBtnDebounceTime[t] = now;
+                lastBtnGenDebounceTime[t] = now;
                 lastBtnGenState[t] = gVal;
                 if (gVal == LOW) // Pressed
                 {
@@ -493,9 +498,9 @@ void scanButtons()
         if (CONNECTED_BUTTONS_MUT[t])
         {
             int mVal = digitalRead (BTN_MUT[t]);
-            if (mVal != lastBtnMutState[t] && (now - lastBtnDebounceTime[t] > 40))
+            if (mVal != lastBtnMutState[t] && (now - lastBtnMutDebounceTime[t] > 40))
             {
-                lastBtnDebounceTime[t] = now;
+                lastBtnMutDebounceTime[t] = now;
                 lastBtnMutState[t] = mVal;
                 if (mVal == LOW) // Appena premuto verso il basso
                 {
@@ -526,7 +531,7 @@ void scanButtons()
             }
 
             // Pressione prolungata per 1 secondo (1000 ms): SAVE / OVERWRITE!
-            if (mVal == LOW && !btnMutLongTriggered[t] && (now - btnMutPressStart[t] >= 1000))
+            if (lastBtnMutState[t] == LOW && !btnMutLongTriggered[t] && (now - btnMutPressStart[t] >= 1000))
             {
                 btnMutLongTriggered[t] = true;
                 trackHasSaved[t] = true;
@@ -680,7 +685,7 @@ void scanEncoders()
                 // Aggiornamento istantaneo e diretto sulla Home (clamping 1:1 con il plugin, niente wrap-around)
                 if (e == 0) // GENRE
                 {
-                    currentGenreIdx[t] = constrain (currentGenreIdx[t] + stepDir, 0, 7);
+                    currentGenreIdx[t] = constrain (currentGenreIdx[t] + stepDir, 0, 11);
                     strncpy (trackGenre[t], GENRE_NAMES[currentGenreIdx[t]], sizeof (trackGenre[t]));
                 }
                 else if (e == 1) // ROLE
@@ -756,7 +761,7 @@ void handleCommand (const char* cmd)
             {
                 strncpy (trackGenre[t], sub + 4, sizeof (trackGenre[t]) - 1);
                 trackGenre[t][sizeof (trackGenre[t]) - 1] = '\0';
-                for (int k = 0; k < 8; ++k)
+                for (int k = 0; k < 12; ++k)
                 {
                     if (strcmp (trackGenre[t], GENRE_NAMES[k]) == 0)
                     {

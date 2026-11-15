@@ -143,7 +143,7 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
                 if (auto* p = apvts.getParameter (prefix + "genre"))
                 {
                     int cur = static_cast<int> (std::round (p->convertFrom0to1 (p->getValue())));
-                    int next = juce::jlimit (0, 7, cur + dir);
+                    int next = juce::jlimit (0, 11, cur + dir);
                     if (next != cur)
                     {
                         setTrackGenre (track, static_cast<PulseForge::GenreStyle> (next));
