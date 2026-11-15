@@ -23,6 +23,8 @@ public:
     // Callbacks from Hardware
     std::function<void(int track, const juce::String& param, int value)> onParameterChange;
     std::function<void(int track)> onGenerateTrigger;
+    std::function<void(int track)> onSaveTrigger;
+    std::function<void(int track)> onRecallTrigger;
     std::function<void(int track)> onMutateTrigger;
     std::function<void(int track, const juce::String& target, int dir)> onEncoderStep;
     std::function<void(bool isConnected, const juce::String& portName)> onConnectionStatusChanged;
@@ -120,6 +122,26 @@ public:
 
         char buf[64];
         snprintf (buf, sizeof (buf), "OLED:T%d:L%d:%s\n", trackIdx, lineIdx, text.toRawUTF8());
+        enqueueTx (buf);
+    }
+
+    void sendTrackSavedStatus (int trackIdx, bool hasSaved)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[32];
+        snprintf (buf, sizeof (buf), "OLED:T%d:SAVED:%d\n", trackIdx, hasSaved ? 1 : 0);
+        enqueueTx (buf);
+    }
+
+    void sendOledPopup (int trackIdx, const juce::String& title, const juce::String& value, int percent)
+    {
+        if (!connected.load (std::memory_order_relaxed))
+            return;
+
+        char buf[64];
+        snprintf (buf, sizeof (buf), "OLED:T%d:POPUP:%s:%s:%d\n", trackIdx, title.toRawUTF8(), value.toRawUTF8(), percent);
         enqueueTx (buf);
     }
 
@@ -470,9 +492,14 @@ private:
             {
                 if (onGenerateTrigger) onGenerateTrigger (track);
             }
-            else if (rest == "MUT")
+            else if (rest == "SAVE")
             {
-                if (onMutateTrigger) onMutateTrigger (track);
+                if (onSaveTrigger) onSaveTrigger (track);
+            }
+            else if (rest == "RECALL" || rest == "RCL" || rest == "MUT")
+            {
+                if (onRecallTrigger) onRecallTrigger (track);
+                else if (onMutateTrigger) onMutateTrigger (track);
             }
             else if (rest.startsWith ("ENC:"))
             {

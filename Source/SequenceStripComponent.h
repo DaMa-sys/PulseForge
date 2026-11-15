@@ -13,6 +13,78 @@ class SequenceStripComponent : public juce::Component,
                                public juce::SettableTooltipClient
 {
 public:
+    class SnapshotButton : public juce::TextButton, private juce::Timer
+    {
+    public:
+        std::function<void()> onTriggerSave;
+        std::function<void()> onTriggerRecall;
+        std::function<bool()> checkHasSnapshot;
+
+        SnapshotButton()
+        {
+            setTooltip ("Click: Recall saved sequence (or Save if empty)\nHold 1 sec / Shift+Click / Right-Click: Save / Overwrite memory snapshot");
+        }
+
+        ~SnapshotButton() override
+        {
+            stopTimer();
+        }
+
+        void mouseDown (const juce::MouseEvent& e) override
+        {
+            pressTime = juce::Time::getMillisecondCounter();
+            heldTriggered = false;
+            juce::TextButton::mouseDown (e);
+            startTimer (60);
+        }
+
+        void mouseUp (const juce::MouseEvent& e) override
+        {
+            stopTimer();
+            juce::TextButton::mouseUp (e);
+
+            if (heldTriggered)
+                return;
+
+            if (e.mods.isShiftDown() || e.mods.isRightButtonDown() || e.mods.isAltDown())
+            {
+                if (onTriggerSave) onTriggerSave();
+            }
+            else
+            {
+                if (checkHasSnapshot && checkHasSnapshot())
+                {
+                    if (onTriggerRecall) onTriggerRecall();
+                }
+                else
+                {
+                    if (onTriggerSave) onTriggerSave();
+                }
+            }
+        }
+
+    private:
+        void timerCallback() override
+        {
+            if (isMouseButtonDown() && !heldTriggered)
+            {
+                if (juce::Time::getMillisecondCounter() - pressTime >= 850)
+                {
+                    heldTriggered = true;
+                    stopTimer();
+                    if (onTriggerSave) onTriggerSave();
+                }
+            }
+            else
+            {
+                stopTimer();
+            }
+        }
+
+        uint32_t pressTime = 0;
+        bool heldTriggered = false;
+    };
+
     SequenceStripComponent (PulseForgeAudioProcessor& proc, int tIndex,
                             juce::Colour trackAccent, const juce::String& defaultName,
                             OrageLookAndFeel& lookAndFeel,
@@ -45,12 +117,23 @@ public:
         };
         addAndMakeVisible (genBtn);
 
-        mutBtn.setButtonText ("MUTATE");
+        mutBtn.setButtonText (processor.hasTrackSnapshot (trackIndex) ? "RECALL [S]" : "SAVE");
         mutBtn.setLookAndFeel (&customLnF);
-        mutBtn.onClick = [this]()
+        mutBtn.onTriggerSave = [this]()
         {
-            processor.triggerMutateTrack (trackIndex);
+            processor.triggerSaveTrackSnapshot (trackIndex);
+            updateSnapshotButtonState();
             repaint();
+        };
+        mutBtn.onTriggerRecall = [this]()
+        {
+            processor.triggerRecallTrackSnapshot (trackIndex);
+            updateSnapshotButtonState();
+            repaint();
+        };
+        mutBtn.checkHasSnapshot = [this]()
+        {
+            return processor.hasTrackSnapshot (trackIndex);
         };
         addAndMakeVisible (mutBtn);
 
@@ -250,6 +333,19 @@ public:
             lastDrawnRevision = curRev;
             repaint();
         }
+        updateSnapshotButtonState();
+    }
+
+    void updateSnapshotButtonState()
+    {
+        const bool hasSnap = processor.hasTrackSnapshot (trackIndex);
+        const juce::String desiredText = hasSnap ? "RECALL [S]" : "SAVE";
+        if (mutBtn.getButtonText() != desiredText)
+        {
+            mutBtn.setButtonText (desiredText);
+            mutBtn.getProperties().set ("hasSnapshot", hasSnap);
+            mutBtn.repaint();
+        }
     }
 
     void paint (juce::Graphics& g) override
@@ -393,8 +489,8 @@ public:
         genBtn.setBounds (x, topY, 82, btnH);
         x += 87;
 
-        mutBtn.setBounds (x, topY, 66, btnH);
-        x += 71;
+        mutBtn.setBounds (x, topY, 78, btnH);
+        x += 83;
 
         expandBtn.setBounds (w - 88, topY, 72, btnH);
 
@@ -511,7 +607,7 @@ private:
     // UI Controls
     juce::TextButton muteBtn;
     juce::TextButton genBtn;
-    juce::TextButton mutBtn;
+    SnapshotButton   mutBtn;
     juce::TextButton expandBtn;
     juce::ComboBox   genreBox;
     juce::ComboBox   roleBox;

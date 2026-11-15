@@ -42,16 +42,18 @@ PulseForge features a custom **Soft-UI claymorphism / tactile membrane** interfa
 - **Ratchet**: High-speed rhythmic note bursts ($1\text{x}, 2\text{x}, 3\text{x}, 4\text{x}$ sub-divisions per step).
 - **Modulation Lane**: Multi-mode bottom automation lane switchable between **Velocity**, **Gate Length**, **Filter CC**, and **Probability**.
 
-### 2. Algorithmic Composition Generator
-- **Multi-Genre Styles**: Techno (Driving / Hypnotic), Melodic House, Acid 303, Cyberpunk, Neo-Soul, Lo-Fi Chill, and Ambient Glitch.
-- **Instrument Roles**: Basslines, Leads, Arpeggiated Plucks, Chords, and Texture Pads.
-- **Algorithmic Density & Syncopation**: Control note density, rhythmic syncopation, octave jump probability, and acid spice.
-- **Scale Re-Quantization**: Change key or scale in real-time while preserving harmonic coherence.
+### 2. Algorithmic Composition Generator & 15 Artist Profiles
+- **Multi-Genre Styles & Artist Profiles**: Bicep, Jon Hopkins, Stephan Bodzin, Nils Frahm, Bonobo, Floating Points, Moderat, Kiasmos, Four Tet, Tale Of Us, Ben Böhmer, Boards Of Canada, Max Cooper, deadmau5, Tycho, plus authentic Acid 303, Techno, and Ambient.
+- **Instrument Roles**: Basslines, Leads, Arpeggiated Plucks, Chords, Countermelodies, and Texture Pads.
+- **Shared Harmonic Context**: Global 8-bar harmonic progression engine coordinating Bass, Arp, and Chord tracks with intelligent voice-leading, register separation, and clash prevention.
+- **Track Snapshot Memory (Save / Recall)**: Hold button for 1 second (or right-click) to save the current sequence into memory; click once to recall and restore the saved pattern anytime. Full OLED `[S]` indicator integration and DAW state persistence.
+- **Algorithmic Density & Syncopation**: Control note density, rhythmic syncopation, octave jump probability, and musical accents.
+- **Scale Re-Quantization**: Change key or scale in real-time while preserving harmonic coherence across all active sequencers.
 
-### 3. DAW Synchronization & Hardware Out
+### 3. DAW Synchronization & Dedicated Hardware Console
 - **DAW Host Tempo Sync**: Locks perfectly to project BPM with fractional tempo multipliers/dividers ($1/4$, $1/8$, $1/16$, Triplets, Dotted).
+- **Dedicated Arduino Console**: Full physical desktop controller support (Arduino Mega 2560 + 3x SSD1306 OLEDs via TCA9548A multiplexer) with zero-configuration USB auto-discovery.
 - **Drag MIDI to DAW**: One-click button to drag the generated sequence directly into any MIDI track in your DAW.
-- **4 Live Pattern Slots (A / B / C / D)**: Instant pattern switching with seamless transition for live performance.
 - **Direct Hardware MIDI Out**: Route output directly to external hardware synthesizers (DIN MIDI / USB MIDI) without DAW latency.
 - **Internal Synth Preview**: Audition sequences immediately with the built-in polyphonic subtractive synthesis engine.
 

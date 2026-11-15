@@ -131,10 +131,13 @@ int lastSentPotVal[3][5] = {
 };
 unsigned long lastPotReadTime = 0;
 
-// Button debounce
+// Button debounce & Snapshot timing
 bool lastBtnGenState[3] = { HIGH, HIGH, HIGH };
 bool lastBtnMutState[3] = { HIGH, HIGH, HIGH };
 unsigned long lastBtnDebounceTime[3] = { 0, 0, 0 };
+unsigned long btnMutPressStart[3] = { 0, 0, 0 };
+bool btnMutLongTriggered[3] = { false, false, false };
+bool trackHasSaved[3] = { false, false, false };
 
 // Encoder quadrature state machine (1kHz Timer3 ISR with direct port reads: zero missed steps!)
 volatile uint8_t* encPortCLK[3][3];
@@ -400,12 +403,16 @@ void updateOLED (int t)
         // =====================================================================
         // DASHBOARD RESTING VIEW (A riposo: Spazi Larghi, Grandi e Leggibili)
         // =====================================================================
-        // 1. INTESTAZIONE SUPERIORE (y = 0..19): Nome Dispositivo grande + Step a destra
+        // 1. INTESTAZIONE SUPERIORE (y = 0..19): Nome Dispositivo grande + Step a destra (+ Badge [S] se salvato)
         char stpStr[8];
         snprintf (stpStr, sizeof (stpStr), "%dst", trackSteps[t]);
         oled.setFont (u8g2_font_7x14B_tf);
         int sw = oled.getStrWidth (stpStr);
-        int maxNameW = 128 - sw - 5; // Limite pixel a destra per non sovrapporsi allo step
+        int reservedRightW = sw + 5;
+        if (trackHasSaved[t])
+            reservedRightW += 20; // Spazio per il badge [S]
+
+        int maxNameW = 128 - reservedRightW; // Limite pixel a destra per non sovrapporsi
 
         // Scala automaticamente dal font più grande e leggibile a quelli più compatti se il nome è lungo
         oled.setFont (u8g2_font_helvB14_tf);
@@ -417,6 +424,15 @@ void updateOLED (int t)
             oled.setFont (u8g2_font_6x12_tf);
 
         oled.drawStr (0, 16, trackName[t]);
+
+        // Se la traccia ha una sequenza in memoria pronta, disegna il badge [S] in evidenza
+        if (trackHasSaved[t])
+        {
+            const int badgeX = 128 - sw - 19;
+            oled.drawRFrame (badgeX, 3, 16, 12, 2);
+            oled.setFont (u8g2_font_6x12_tf);
+            oled.drawStr (badgeX + 5, 13, "S");
+        }
 
         // Disegna sempre lo step a destra in grassetto 7x14B
         oled.setFont (u8g2_font_7x14B_tf);
@@ -471,19 +487,56 @@ void scanButtons()
             }
         }
 
-        // 2. MUTATE Button
+        // 2. SAVE / RECALL (SNAPSHOT) Button
+        // Pressione breve (< 1 sec) = RECALL sequenza memorizzata
+        // Pressione prolungata (>= 1 sec) = SAVE / OVERWRITE sequenza attuale
         if (CONNECTED_BUTTONS_MUT[t])
         {
             int mVal = digitalRead (BTN_MUT[t]);
-            if (mVal != lastBtnMutState[t] && (now - lastBtnDebounceTime[t] > 50))
+            if (mVal != lastBtnMutState[t] && (now - lastBtnDebounceTime[t] > 40))
             {
                 lastBtnDebounceTime[t] = now;
                 lastBtnMutState[t] = mVal;
-                if (mVal == LOW) // Pressed
+                if (mVal == LOW) // Appena premuto verso il basso
                 {
-                    Serial.print ("T"); Serial.print (t); Serial.println (":MUT");
-                    triggerLedFlash (t, 90);
+                    btnMutPressStart[t] = now;
+                    btnMutLongTriggered[t] = false;
                 }
+                else // Rilasciato prima del long-press: CLICK BREVE = RECALL!
+                {
+                    if (!btnMutLongTriggered[t])
+                    {
+                        Serial.print ("T"); Serial.print (t); Serial.println (":RECALL");
+                        triggerLedFlash (t, 90);
+                        popupUntil[t] = now + 1200;
+                        strncpy (popupTitle[t], "SNAPSHOT", sizeof (popupTitle[t]));
+                        if (trackHasSaved[t])
+                        {
+                            strncpy (popupVal[t], "RECALLED!", sizeof (popupVal[t]));
+                            popupPercent[t] = 100;
+                        }
+                        else
+                        {
+                            strncpy (popupVal[t], "EMPTY (HOLD)", sizeof (popupVal[t]));
+                            popupPercent[t] = 0;
+                        }
+                        oledDirty[t] = true;
+                    }
+                }
+            }
+
+            // Pressione prolungata per 1 secondo (1000 ms): SAVE / OVERWRITE!
+            if (mVal == LOW && !btnMutLongTriggered[t] && (now - btnMutPressStart[t] >= 1000))
+            {
+                btnMutLongTriggered[t] = true;
+                trackHasSaved[t] = true;
+                Serial.print ("T"); Serial.print (t); Serial.println (":SAVE");
+                triggerLedFlash (t, 250); // Flash lungo di conferma salvataggio
+                popupUntil[t] = now + 1400;
+                strncpy (popupTitle[t], "SNAPSHOT", sizeof (popupTitle[t]));
+                strncpy (popupVal[t], "SAVED!", sizeof (popupVal[t]));
+                popupPercent[t] = 100;
+                oledDirty[t] = true;
             }
         }
     }
@@ -787,6 +840,28 @@ void handleCommand (const char* cmd)
                 strncpy (popupTitle[t], "SWING", sizeof (popupTitle[t]));
                 snprintf (popupVal[t], sizeof (popupVal[t]), "%d %%", val);
                 popupPercent[t] = (val * 100) / 75;
+            }
+            else if (strncmp (sub, "SAVED:", 6) == 0)
+            {
+                trackHasSaved[t] = (sub[6] == '1');
+            }
+            else if (strncmp (sub, "POPUP:", 6) == 0)
+            {
+                char popBuf[64];
+                strncpy (popBuf, sub + 6, sizeof (popBuf) - 1);
+                popBuf[sizeof (popBuf) - 1] = '\0';
+                char* pTitle = strtok (popBuf, ":");
+                char* pVal   = strtok (NULL, ":");
+                char* pPct   = strtok (NULL, ":");
+                if (pTitle && pVal)
+                {
+                    popupUntil[t] = millis() + 1300;
+                    strncpy (popupTitle[t], pTitle, sizeof (popupTitle[t]) - 1);
+                    popupTitle[t][sizeof (popupTitle[t]) - 1] = '\0';
+                    strncpy (popupVal[t], pVal, sizeof (popupVal[t]) - 1);
+                    popupVal[t][sizeof (popupVal[t]) - 1] = '\0';
+                    popupPercent[t] = pPct ? atoi (pPct) : 100;
+                }
             }
 
             oledDirty[t] = true; // Ridipinge all'istante lo schermino per qualsiasi comando ricevuto dal PC!

@@ -28,7 +28,7 @@ Offre il controllo tattile istantaneo a zero latenza sulle 3 tracce del sequence
 | **Cavo USB Type-B** | 1 | Per alimentazione e trasferimento dati seriali dal PC. |
 | **Potenziometri Lineari 10kΩ (B10K)** | 15 | 5 per canale (Density, Swing, Base Oct, Arp Oct, Ratio). Con alberino zigrinato o a D. |
 | **Manopole per Potenziometri (Knobs)** | 15 | Diametro 15–20mm, con indicatore di posizione bianco o luminescente. |
-| **Pulsanti Tattili Momentanei** | 6 | 2 per canale: `GENERATE` e `MUTATE` (tipo SPST normal-open, arcade o soft-touch). |
+| **Pulsanti Tattili Momentanei** | 6 | 2 per canale: `GENERATE` e `SAVE / RECALL` (tipo SPST normal-open, arcade o soft-touch). Pressione lunga 1s = Salva snapshot; Click breve = Richiama snapshot salvato. |
 | **Rotary Encoders con Push-Button (EC11)** | 9 | 3 per canale: `GENRE`, `ROLE`, `STEPS`. Con clic rotativo e switch integrato. |
 | **LED 5mm (o 3mm)** | 3 | Indicatori Step/Beat/Accent per ciascuna traccia (es. Ciano, Ambra, Blu/Verde). |
 | **Resistenze 220Ω - 330Ω** | 3 | Resistenze di limitazione corrente per i 3 LED. |
@@ -53,7 +53,7 @@ Tutti i pin sono già configurati nel firmware ufficiale in:
 | **Arp Octave** | Potenziometro B10K | **A3** | `T0:AOCT:1..4` |
 | **Tempo Ratio** | Potenziometro B10K | **A4** | `T0:RATIO:0..10` |
 | **Generate** | Pulsante (GND) | **Pin 2** (Pullup) | `T0:GEN` |
-| **Mutate** | Pulsante (GND) | **Pin 3** (Pullup) | `T0:MUT` |
+| **Save / Recall** | Pulsante (GND) | **Pin 3** (Pullup) | Long-press 1s: `T0:SAVE` / Click: `T0:RECALL` |
 | **Step Beat LED** | LED (+ Res. 220Ω) | **Pin 8** | Feedback da `STEP:T0:x` |
 | **Genre Encoder** | CLK / DT / SW | **22 / 23 / 24** | `T0:ENC:GENRE:+1/-1`, `T0:CLICK:GENRE` |
 | **Role Encoder** | CLK / DT / SW | **25 / 26 / 27** | `T0:ENC:ROLE:+1/-1`, `T0:CLICK:ROLE` |
@@ -71,7 +71,7 @@ Tutti i pin sono già configurati nel firmware ufficiale in:
 | **Arp Octave** | Potenziometro B10K | **A8** | `T1:AOCT:1..4` |
 | **Tempo Ratio** | Potenziometro B10K | **A9** | `T1:RATIO:0..10` |
 | **Generate** | Pulsante (GND) | **Pin 4** (Pullup) | `T1:GEN` |
-| **Mutate** | Pulsante (GND) | **Pin 5** (Pullup) | `T1:MUT` |
+| **Save / Recall** | Pulsante (GND) | **Pin 5** (Pullup) | Long-press 1s: `T1:SAVE` / Click: `T1:RECALL` |
 | **Step Beat LED** | LED (+ Res. 220Ω) | **Pin 9** | Feedback da `STEP:T1:x` |
 | **Genre Encoder** | CLK / DT / SW | **31 / 32 / 33** | `T1:ENC:GENRE:+1/-1`, `T1:CLICK:GENRE` |
 | **Role Encoder** | CLK / DT / SW | **34 / 35 / 36** | `T1:ENC:ROLE:+1/-1`, `T1:CLICK:ROLE` |
@@ -89,7 +89,7 @@ Tutti i pin sono già configurati nel firmware ufficiale in:
 | **Arp Octave** | Potenziometro B10K | **A13** | `T2:AOCT:1..4` |
 | **Tempo Ratio** | Potenziometro B10K | **A14** | `T2:RATIO:0..10` |
 | **Generate** | Pulsante (GND) | **Pin 6** (Pullup) | `T2:GEN` |
-| **Mutate** | Pulsante (GND) | **Pin 7** (Pullup) | `T2:MUT` |
+| **Save / Recall** | Pulsante (GND) | **Pin 7** (Pullup) | Long-press 1s: `T2:SAVE` / Click: `T2:RECALL` |
 | **Step Beat LED** | LED (+ Res. 220Ω) | **Pin 10** | Feedback da `STEP:T2:x` |
 | **Genre Encoder** | CLK / DT / SW | **40 / 41 / 42** | `T2:ENC:GENRE:+1/-1`, `T2:CLICK:GENRE` |
 | **Role Encoder** | CLK / DT / SW | **43 / 44 / 45** | `T2:ENC:ROLE:+1/-1`, `T2:CLICK:ROLE` |
@@ -183,4 +183,8 @@ const bool CONNECTED_LEDS[3] = { false, false, false };
    - I LED dell'Arduino lampeggeranno una volta per confermare il collegamento avvenuto.
    - Nella barra di stato o nella GUI di PulseForge comparirà l'indicazione del controller connesso.
 4. Quando avvii il sequencer (Play su Ableton o barra spazio nella Standalone), i LED dell'Arduino lampeggeranno a tempo con gli step e con gli accenti!
-5. Girando i potenziometri o premendo i tasti `GENERATE` / `MUTATE`, i pattern e i valori si aggiorneranno in tempo reale a schermo con zero latenza percettibile.
+5. Girando i potenziometri o premendo i tasti `GENERATE` / `SAVE-RECALL`, i pattern e i valori si aggiorneranno in tempo reale a schermo con zero latenza percettibile.
+6. **Funzione Snapshot Memory (Save / Recall)**:
+   - **Salvataggio (Hold 1s)**: Tenendo premuto per 1 secondo il tasto `SAVE`, la sequenza corrente della traccia viene memorizzata nello slot snapshot. Lo schermo OLED mostrerà il popup `"SNAPSHOT SAVED!"` e l'icona badge `[S]` in alto a destra ad indicare che uno snapshot è pronto.
+   - **Richiamo (Click Breve)**: Premendo brevemente lo stesso tasto, la sequenza salvata viene istantaneamente ricaricata ed eseguita in battuta, anche se nel frattempo avevi generato nuovi pattern.
+   - Lo stato dello snapshot salvato viene preservato automaticamente anche salvando e riaprendo il progetto nella DAW!

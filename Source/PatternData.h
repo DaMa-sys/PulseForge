@@ -184,6 +184,8 @@ struct TrackData
     int numSteps = 16;
     uint32_t seed = 101;
     bool isExpanded = false;
+    bool hasSavedPattern = false;
+    PatternBank savedPattern;
     juce::String targetHwDevice = "DAW Only";
     juce::String name = "SEQ 1";
 };

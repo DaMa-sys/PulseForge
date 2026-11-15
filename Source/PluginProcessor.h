@@ -84,6 +84,9 @@ public:
 
     void triggerGeneratePattern (bool applyRecommendedScaleAndSwing = true);
     void triggerGenerateTrack (int trackIdx);
+    void triggerSaveTrackSnapshot (int trackIdx);
+    void triggerRecallTrackSnapshot (int trackIdx);
+    bool hasTrackSnapshot (int trackIdx) const;
     void triggerMutateTrack (int trackIdx);
     void triggerClearTrack (int trackIdx);
     void triggerRotateTrack (int trackIdx, int delta);

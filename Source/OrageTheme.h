@@ -555,17 +555,27 @@ public:
         }
         else
         {
+            const bool hasSnapshot = static_cast<bool> (button.getProperties().getWithDefault ("hasSnapshot", false));
+
             // Standard Pushbutton: Slender dark slate/titanium button, very light and elegant
-            const juce::Colour topCol = isHighlighted ? juce::Colour (0xFF333742) : juce::Colour (0xFF262932);
-            const juce::Colour botCol = isHighlighted ? juce::Colour (0xFF20232B) : juce::Colour (0xFF17191F);
+            const juce::Colour topCol = isHighlighted ? juce::Colour (0xFF333742) : (hasSnapshot ? juce::Colour (0xFF232B2F) : juce::Colour (0xFF262932));
+            const juce::Colour botCol = isHighlighted ? juce::Colour (0xFF20232B) : (hasSnapshot ? juce::Colour (0xFF141A1E) : juce::Colour (0xFF17191F));
             juce::ColourGradient grad (topCol, btnArea.getX(), btnArea.getY(),
                                        botCol, btnArea.getX(), btnArea.getBottom(), false);
             g.setGradientFill (grad);
             g.fillRoundedRectangle (btnArea, corner);
 
-            // Thin satin metallic border
-            g.setColour (juce::Colour (0xFF4A5162).withAlpha (isHighlighted ? 0.65f : 0.40f));
-            g.drawRoundedRectangle (btnArea, corner, 0.85f);
+            // Thin satin metallic border or cyan memory highlight when a snapshot is stored
+            if (hasSnapshot)
+            {
+                g.setColour (juce::Colour (0xFF4EC9B0).withAlpha (isHighlighted ? 0.95f : 0.70f));
+                g.drawRoundedRectangle (btnArea, corner, 1.0f);
+            }
+            else
+            {
+                g.setColour (juce::Colour (0xFF4A5162).withAlpha (isHighlighted ? 0.65f : 0.40f));
+                g.drawRoundedRectangle (btnArea, corner, 0.85f);
+            }
 
             // Top specular hairline
             g.setColour (juce::Colours::white.withAlpha (0.22f));

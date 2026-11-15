@@ -70,9 +70,17 @@ PulseForgeAudioProcessor::PulseForgeAudioProcessor()
     {
         juce::MessageManager::callAsync ([this, track] { triggerGenerateTrack (track); });
     };
+    hardwareSerial.onSaveTrigger     = [this](int track)
+    {
+        juce::MessageManager::callAsync ([this, track] { triggerSaveTrackSnapshot (track); });
+    };
+    hardwareSerial.onRecallTrigger   = [this](int track)
+    {
+        juce::MessageManager::callAsync ([this, track] { triggerRecallTrackSnapshot (track); });
+    };
     hardwareSerial.onMutateTrigger   = [this](int track)
     {
-        juce::MessageManager::callAsync ([this, track] { triggerMutateTrack (track); });
+        juce::MessageManager::callAsync ([this, track] { triggerRecallTrackSnapshot (track); });
     };
     hardwareSerial.onParameterChange = [this](int track, const juce::String& param, int val)
     {
@@ -714,6 +722,51 @@ void PulseForgeAudioProcessor::triggerGenerateTrack (int trackIdx)
 
     PulseForge::StyleGenerator::generatePattern (tracks[static_cast<size_t>(trackIdx)].pattern, gp, newSeed);
     updatePlaybackSnapshot();
+}
+
+void PulseForgeAudioProcessor::triggerSaveTrackSnapshot (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    {
+        const juce::ScopedLock sl (patternLock);
+        auto& trk = tracks[static_cast<size_t>(trackIdx)];
+        trk.savedPattern = trk.pattern;
+        trk.hasSavedPattern = true;
+    }
+    hardwareSerial.sendTrackSavedStatus (trackIdx, true);
+    hardwareSerial.sendOledPopup (trackIdx, "SNAPSHOT", "SAVED!", 100);
+}
+
+void PulseForgeAudioProcessor::triggerRecallTrackSnapshot (int trackIdx)
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    bool recalled = false;
+    {
+        const juce::ScopedLock sl (patternLock);
+        auto& trk = tracks[static_cast<size_t>(trackIdx)];
+        if (trk.hasSavedPattern)
+        {
+            trk.pattern = trk.savedPattern;
+            recalled = true;
+        }
+    }
+    if (recalled)
+    {
+        updatePlaybackSnapshot();
+        hardwareSerial.sendTrackSavedStatus (trackIdx, true);
+        hardwareSerial.sendOledPopup (trackIdx, "SNAPSHOT", "RECALLED!", 100);
+    }
+    else
+    {
+        hardwareSerial.sendOledPopup (trackIdx, "SNAPSHOT", "EMPTY (HOLD)", 0);
+    }
+}
+
+bool PulseForgeAudioProcessor::hasTrackSnapshot (int trackIdx) const
+{
+    trackIdx = juce::jlimit (0, PulseForge::kNumTracks - 1, trackIdx);
+    const juce::ScopedLock sl (patternLock);
+    return tracks[static_cast<size_t>(trackIdx)].hasSavedPattern;
 }
 
 void PulseForgeAudioProcessor::triggerMutateTrack (int trackIdx)
@@ -1770,6 +1823,8 @@ void PulseForgeAudioProcessor::syncTrackHardwareToOled (int trackIdx)
         int ratIdx = juce::jlimit (0, 10, static_cast<int> (std::round (pRat->load())));
         hardwareSerial.sendParameter (trackIdx, "RATIDX", ratIdx);
     }
+
+    hardwareSerial.sendTrackSavedStatus (trackIdx, tracks[static_cast<size_t>(trackIdx)].hasSavedPattern);
 }
 
 void PulseForgeAudioProcessor::syncAllTracksToHardware()
@@ -1895,6 +1950,30 @@ void PulseForgeAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
         trackXml->setAttribute ("ratio", trk.tempoRatioIdx);
         trackXml->setAttribute ("expanded", trk.isExpanded);
         trackXml->setAttribute ("hwOut", trk.targetHwDevice);
+        trackXml->setAttribute ("hasSavedPattern", trk.hasSavedPattern);
+
+        if (trk.hasSavedPattern)
+        {
+            auto* savedXml = trackXml->createNewChildElement ("SavedPattern");
+            savedXml->setAttribute ("numSteps", trk.savedPattern.numSteps);
+            for (int i = 0; i < PulseForge::kMaxSteps; ++i)
+            {
+                const auto& st = trk.savedPattern.steps[static_cast<size_t>(i)];
+                auto* stepXml = savedXml->createNewChildElement ("SavedStep");
+                stepXml->setAttribute ("idx", i);
+                stepXml->setAttribute ("active", st.active);
+                stepXml->setAttribute ("semi", st.semitoneOffset);
+                stepXml->setAttribute ("oct", st.octaveShift);
+                stepXml->setAttribute ("vel", st.velocity);
+                stepXml->setAttribute ("gate", static_cast<double> (st.gate));
+                stepXml->setAttribute ("accent", st.accent);
+                stepXml->setAttribute ("slide", st.slide);
+                stepXml->setAttribute ("ratchet", st.ratchet);
+                stepXml->setAttribute ("prob", st.probability);
+                stepXml->setAttribute ("cc", st.ccValue);
+                stepXml->setAttribute ("chord", st.chordType);
+            }
+        }
 
         for (int i = 0; i < PulseForge::kMaxSteps; ++i)
         {
@@ -1982,6 +2061,31 @@ void PulseForgeAudioProcessor::setStateInformation (const void* data, int sizeIn
                     st.probability    = stepXml->getIntAttribute ("prob", 100);
                     st.ccValue        = stepXml->getIntAttribute ("cc", 64);
                     st.chordType      = stepXml->getIntAttribute ("chord", 0);
+                }
+            }
+
+            trk.hasSavedPattern = trackXml->getBoolAttribute ("hasSavedPattern", false);
+            if (auto* savedXml = trackXml->getChildByName ("SavedPattern"))
+            {
+                trk.savedPattern.numSteps = savedXml->getIntAttribute ("numSteps", 16);
+                for (auto* stepXml : savedXml->getChildWithTagNameIterator ("SavedStep"))
+                {
+                    const int idx = stepXml->getIntAttribute ("idx", -1);
+                    if (idx >= 0 && idx < PulseForge::kMaxSteps)
+                    {
+                        auto& st = trk.savedPattern.steps[static_cast<size_t>(idx)];
+                        st.active         = stepXml->getBoolAttribute ("active", true);
+                        st.semitoneOffset = stepXml->getIntAttribute ("semi", 0);
+                        st.octaveShift    = stepXml->getIntAttribute ("oct", 0);
+                        st.velocity       = stepXml->getIntAttribute ("vel", 100);
+                        st.gate           = static_cast<float> (stepXml->getDoubleAttribute ("gate", 0.75));
+                        st.accent         = stepXml->getBoolAttribute ("accent", false);
+                        st.slide          = stepXml->getBoolAttribute ("slide", false);
+                        st.ratchet        = stepXml->getIntAttribute ("ratchet", 1);
+                        st.probability    = stepXml->getIntAttribute ("prob", 100);
+                        st.ccValue        = stepXml->getIntAttribute ("cc", 64);
+                        st.chordType      = stepXml->getIntAttribute ("chord", 0);
+                    }
                 }
             }
         }
