@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Hallmark · v2.0.0 */
-    /* critique: Orage Evolver Hardware Design System with anodized aluminum headers, OLED telemetry bays, scroll spine and Emil Kowalski choreographed reveals */
+    /* critique: Orage Evolver Hardware Design System with 3D perspective scroll-scrubbed chassis boot, OLED clip-path reveals and Emil Kowalski choreography */
     :root {
       /* Studio Rack & Anodized Aluminum Tokens */
       --bg-studio: #090A0D;
@@ -74,6 +74,7 @@
 
       /* Emil Kowalski Motion Tokens */
       --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
       --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 
       /* Layout Tokens (Strict 4px Scale) */
@@ -140,7 +141,7 @@
       position: fixed;
       inset-block: 0;
       left: 16px;
-      width: 2px;
+      width: 4px;
       background-color: var(--line-subtle);
       z-index: 90;
       pointer-events: none;
@@ -338,6 +339,7 @@
     .hero-section {
       padding: 40px 0 56px;
       border-bottom: 1px solid var(--line-subtle);
+      perspective: 1400px;
     }
 
     /* Brushed Aluminum Hardware Header Strip */
@@ -568,7 +570,6 @@
       aspect-ratio: 16 / 9.2;
     }
 
-    /* Without JS or at rest, active slide is visible; inactive slides hidden via .js-enabled */
     .stage-slide {
       display: flex;
       align-items: center;
@@ -586,14 +587,14 @@
       position: absolute;
       inset: 0;
       opacity: 0;
-      transform: scale(0.985);
+      transform: scale(0.96) translateY(8px);
       pointer-events: none;
-      transition: opacity 220ms var(--ease-out-strong), transform 220ms var(--ease-out-strong);
+      transition: opacity 280ms var(--ease-out-expo), transform 280ms var(--ease-out-expo);
     }
 
     .js-enabled .stage-slide[data-active="true"] {
       opacity: 1;
-      transform: scale(1);
+      transform: scale(1) translateY(0);
       pointer-events: auto;
       position: relative;
     }
@@ -650,6 +651,7 @@
     .signal-console-section {
       padding: 64px 0;
       border-bottom: 1px solid var(--line-subtle);
+      perspective: 1400px;
     }
 
     .section-head {
@@ -700,12 +702,12 @@
       justify-content: space-between;
       gap: 16px;
       text-decoration: none;
-      transition: transform 180ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong);
+      transition: transform 220ms var(--ease-out-expo), border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong);
     }
 
     @media (hover: hover) and (pointer: fine) {
       .chain-node:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
         border-color: var(--line-amber);
         background-color: var(--bg-rack-hover);
       }
@@ -767,6 +769,12 @@
     .instrument-section {
       padding: 72px 0;
       border-bottom: 1px solid var(--line-subtle);
+      perspective: 1400px;
+    }
+
+    /* 3D Hardware Unit Wrapper for Scroll Scrub & Power-On Tilt */
+    .hardware-unit-3d {
+      transform-origin: center top;
     }
 
     /* Authentic Evolver Brushed Aluminum Section Banner */
@@ -859,13 +867,13 @@
       border-radius: var(--radius-rack);
       padding: 8px;
       overflow: hidden;
-      transition: border-color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+      transition: border-color 180ms var(--ease-out-strong), transform 220ms var(--ease-out-expo);
     }
 
     @media (hover: hover) and (pointer: fine) {
       .gui-display-bay:hover {
         border-color: var(--line-amber);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
       }
     }
 
@@ -963,7 +971,7 @@
       height: 1px;
       background-color: var(--line-machined);
       transform-origin: center;
-      transition: transform 520ms var(--ease-out-strong);
+      transition: transform 640ms var(--ease-out-expo);
     }
 
     .silkscreen-divider span {
@@ -987,12 +995,13 @@
       border: 1px solid var(--line-subtle);
       border-radius: var(--radius-rack);
       padding: 16px;
-      transition: border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
+      transition: transform 220ms var(--ease-out-expo), border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
     }
 
     @media (hover: hover) and (pointer: fine) {
       .ctrl-cell:hover {
-        border-color: var(--line-machined);
+        transform: translateY(-4px);
+        border-color: var(--line-amber);
         background-color: var(--bg-rack-hover);
       }
     }
@@ -1098,6 +1107,7 @@
     /* INSTALLER & SQLITE CACHE CLEANER SECTION */
     .installer-section {
       padding: 72px 0 32px;
+      perspective: 1400px;
     }
 
     .installer-rack {
@@ -1162,94 +1172,185 @@
     }
 
     /*
-      SCROLL CHOREOGRAPHY & HARDWARE POWER-ON REVEAL (Emil Kowalski choreograph skill)
+      CINEMATIC HARDWARE POWER-ON SCROLL CHOREOGRAPHY
+      (Emil Kowalski choreograph + Impeccable animate.md clip-path/3D depth)
       - Base CSS is 100% visible without JS.
-      - Under .js-enabled, sections reveal as a coordinated wave:
-        1. Lead (Faceplate & GUI Display Bay): 0ms, 480ms, translateY(16px)
-        2. Support (Copy & OLED Telemetry): 70ms, 420ms, translateY(10px)
-        3. Silkscreen Divider lines: 110ms, scaleX(0.25 -> 1)
-        4. Controls Matrix / Chain Nodes: non-uniform shrinking stagger (120ms, 165ms, 200ms, 225ms, 245ms, 260ms)
+      - Hero entrance on load: staggered wave (Faceplate -> Title -> Stage 3D tilt).
+      - On scroll, each 19" Hardware Unit tilts up in 3D perspective (rotateX(11deg) -> 0deg, translateY(64px) -> 0, scale(0.94) -> 1).
+      - The GUI Display Bay powers on like an OLED monitor using clip-path shutter + scale.
+      - The 6 Control Cells and 4 Signal Nodes cascade in with high-contrast 3D lift + shrinking organic stagger.
     */
-    .js-enabled [data-reveal="pending"] {
-      opacity: 0;
-      transform: translateY(16px);
+    .js-enabled .evolver-faceplate-bar {
+      animation: hero-bar-in 680ms var(--ease-out-expo) both;
     }
 
-    .js-enabled [data-reveal="visible"] {
+    .js-enabled .hero-copy {
+      animation: hero-copy-in 760ms var(--ease-out-expo) 90ms both;
+    }
+
+    .js-enabled .hero-rack-stage {
+      animation: hero-stage-in 860ms var(--ease-out-expo) 170ms both;
+      transform-origin: center top;
+    }
+
+    @keyframes hero-bar-in {
+      from {
+        opacity: 0;
+        transform: translateY(-24px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes hero-copy-in {
+      from {
+        opacity: 0;
+        transform: translateY(36px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes hero-stage-in {
+      from {
+        opacity: 0;
+        transform: translateY(48px) rotateX(10deg) scale(0.93);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg) scale(1);
+      }
+    }
+
+    /* Scroll-triggered Sections: Marked dramatic 3D Hardware Rack Mount + OLED Shutter */
+    .js-enabled [data-reveal="pending"] .hardware-unit-3d,
+    .js-enabled [data-reveal="pending"] .signal-chain-rack,
+    .js-enabled [data-reveal="pending"] .installer-rack {
+      opacity: 0;
+      transform: translateY(68px) rotateX(11deg) scale(0.94);
+    }
+
+    .js-enabled [data-reveal="visible"] .hardware-unit-3d,
+    .js-enabled [data-reveal="visible"] .signal-chain-rack,
+    .js-enabled [data-reveal="visible"] .installer-rack {
+      opacity: 1;
+      transform: translateY(0) rotateX(0deg) scale(1);
+      transition: opacity 780ms var(--ease-out-expo), transform 780ms var(--ease-out-expo);
+    }
+
+    /* Section Header Lead-in */
+    .js-enabled [data-reveal="pending"] .section-head {
+      opacity: 0;
+      transform: translateY(36px);
+    }
+
+    .js-enabled [data-reveal="visible"] .section-head {
       opacity: 1;
       transform: translateY(0);
-      transition: opacity 460ms var(--ease-out-strong), transform 460ms var(--ease-out-strong);
+      transition: opacity 640ms var(--ease-out-expo), transform 640ms var(--ease-out-expo);
     }
 
+    /* GUI Display Bay: OLED Shutter Clip-Path + Zoom Settle */
     .js-enabled [data-reveal="pending"] .gui-display-bay {
       opacity: 0;
-      transform: translateY(16px) scale(0.985);
+      clip-path: inset(12% 8% 12% 8% round 8px);
+      transform: translateY(36px) scale(0.92);
     }
 
     .js-enabled [data-reveal="visible"] .gui-display-bay {
       opacity: 1;
+      clip-path: inset(0% 0% 0% 0% round 8px);
       transform: translateY(0) scale(1);
-      transition: opacity 480ms var(--ease-out-strong), transform 480ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong);
+      transition: opacity 760ms var(--ease-out-expo) 90ms, clip-path 760ms var(--ease-out-expo) 90ms, transform 760ms var(--ease-out-expo) 90ms, border-color 180ms var(--ease-out-strong);
     }
 
+    /* Supporting Explanation & OLED Telemetry Box */
     .js-enabled [data-reveal="pending"] .why-it-exists {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateX(32px);
     }
 
-    .js-enabled [data-reveal="visible"] .why-it-exists {
+    .js-enabled [data-reveal="pending"] .workbench-top.reverse .why-it-exists {
+      transform: translateX(-32px);
+    }
+
+    .js-enabled [data-reveal="visible"] .why-it-exists,
+    .js-enabled [data-reveal="visible"] .workbench-top.reverse .why-it-exists {
       opacity: 1;
-      transform: translateY(0);
-      transition: opacity 440ms var(--ease-out-strong) 70ms, transform 440ms var(--ease-out-strong) 70ms;
+      transform: translateX(0);
+      transition: opacity 720ms var(--ease-out-expo) 180ms, transform 720ms var(--ease-out-expo) 180ms;
     }
 
+    /* Silkscreen Divider Draw-Out from Center */
     .js-enabled [data-reveal="pending"] .silkscreen-divider::before,
     .js-enabled [data-reveal="pending"] .silkscreen-divider::after {
-      transform: scaleX(0.2);
+      transform: scaleX(0);
     }
 
     .js-enabled [data-reveal="visible"] .silkscreen-divider::before,
     .js-enabled [data-reveal="visible"] .silkscreen-divider::after {
       transform: scaleX(1);
-      transition: transform 520ms var(--ease-out-strong) 100ms;
+      transition: transform 820ms var(--ease-out-expo) 220ms;
     }
 
+    /* Controls Matrix & Signal Chain Nodes: Dramatic 3D Pop-Up Wave */
     .js-enabled [data-reveal="pending"] .ctrl-cell,
     .js-enabled [data-reveal="pending"] .chain-node {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(44px) scale(0.92);
     }
 
     .js-enabled [data-reveal="visible"] .ctrl-cell,
     .js-enabled [data-reveal="visible"] .chain-node {
       opacity: 1;
-      transform: translateY(0);
-      transition: opacity 380ms var(--ease-out-strong), transform 380ms var(--ease-out-strong), border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
+      transform: translateY(0) scale(1);
+      transition: opacity 640ms var(--ease-out-expo), transform 640ms var(--ease-out-expo), border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
     }
 
-    /* Non-uniform organic stagger (shrinking intervals: +45ms, +35ms, +25ms, +20ms, +15ms) */
+    /* Non-uniform organic wave stagger (shrinking intervals: +70ms, +55ms, +45ms, +35ms, +25ms) */
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(1),
     .js-enabled [data-reveal="visible"] .chain-node:nth-child(1) {
-      transition-delay: 90ms, 90ms, 0ms, 0ms;
+      transition-delay: 140ms, 140ms, 0ms, 0ms;
     }
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(2),
     .js-enabled [data-reveal="visible"] .chain-node:nth-child(2) {
-      transition-delay: 135ms, 135ms, 0ms, 0ms;
+      transition-delay: 210ms, 210ms, 0ms, 0ms;
     }
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(3),
     .js-enabled [data-reveal="visible"] .chain-node:nth-child(3) {
-      transition-delay: 170ms, 170ms, 0ms, 0ms;
+      transition-delay: 265ms, 265ms, 0ms, 0ms;
     }
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(4),
     .js-enabled [data-reveal="visible"] .chain-node:nth-child(4) {
-      transition-delay: 195ms, 195ms, 0ms, 0ms;
+      transition-delay: 310ms, 310ms, 0ms, 0ms;
     }
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(5) {
-      transition-delay: 215ms, 215ms, 0ms, 0ms;
+      transition-delay: 345ms, 345ms, 0ms, 0ms;
     }
     .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(6) {
-      transition-delay: 230ms, 230ms, 0ms, 0ms;
+      transition-delay: 370ms, 370ms, 0ms, 0ms;
     }
+
+    /* Terminal Lines Sequential Boot Reveal */
+    .js-enabled [data-reveal="pending"] .terminal-line {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    .js-enabled [data-reveal="visible"] .terminal-line {
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity 520ms var(--ease-out-expo), transform 520ms var(--ease-out-expo);
+    }
+
+    .js-enabled [data-reveal="visible"] .terminal-line:nth-child(1) { transition-delay: 160ms; }
+    .js-enabled [data-reveal="visible"] .terminal-line:nth-child(2) { transition-delay: 250ms; }
+    .js-enabled [data-reveal="visible"] .terminal-line:nth-child(3) { transition-delay: 320ms; }
+    .js-enabled [data-reveal="visible"] .terminal-line:nth-child(4) { transition-delay: 375ms; }
 
     /* Footer */
     .studio-footer {
@@ -1337,13 +1438,18 @@
         transition-delay: 0ms !important;
         scroll-behavior: auto !important;
       }
-      .js-enabled [data-reveal="pending"],
+      .js-enabled [data-reveal="pending"] .hardware-unit-3d,
+      .js-enabled [data-reveal="pending"] .signal-chain-rack,
+      .js-enabled [data-reveal="pending"] .installer-rack,
+      .js-enabled [data-reveal="pending"] .section-head,
       .js-enabled [data-reveal="pending"] .gui-display-bay,
       .js-enabled [data-reveal="pending"] .why-it-exists,
       .js-enabled [data-reveal="pending"] .ctrl-cell,
-      .js-enabled [data-reveal="pending"] .chain-node {
+      .js-enabled [data-reveal="pending"] .chain-node,
+      .js-enabled [data-reveal="pending"] .terminal-line {
         opacity: 1 !important;
         transform: none !important;
+        clip-path: none !important;
       }
       .js-enabled [data-reveal="pending"] .silkscreen-divider::before,
       .js-enabled [data-reveal="pending"] .silkscreen-divider::after {
@@ -1552,120 +1658,122 @@
 
     <!-- INSTRUMENT 1: ORAGE 2D-VOX -->
     <section id="vox2d" class="instrument-section" data-reveal>
-      <div class="instrument-faceplate">
-        <div class="instrument-id">
-          <span class="rack-screw" aria-hidden="true"></span>
-          <span class="jewel-led" aria-hidden="true"></span>
-          <span class="instrument-brand">Orage</span>
-          <h2 class="instrument-name">2D-VOX (Vox2D)</h2>
-          <span class="instrument-tagline">Gorillaz Vocal Rig &amp; Zero-Latency Cyborg Processor</span>
-        </div>
-        <div class="instrument-specs">
-          <span class="spec-pill">YIN Time-Domain Pitch</span>
-          <span class="spec-pill">0.0 ms Latency</span>
-          <span class="spec-pill">Resizable GUI</span>
-          <span class="rack-screw" aria-hidden="true"></span>
-        </div>
-      </div>
-
-      <div class="instrument-chassis">
-        <div class="workbench-top">
-          <div class="gui-display-bay">
-            <img src="vox2d_preview.png" alt="Pannello Orage 2D-VOX con curva Megafono OLED e 6 manopole Evolver">
+      <div class="hardware-unit-3d">
+        <div class="instrument-faceplate">
+          <div class="instrument-id">
+            <span class="rack-screw" aria-hidden="true"></span>
+            <span class="jewel-led" aria-hidden="true"></span>
+            <span class="instrument-brand">Orage</span>
+            <h2 class="instrument-name">2D-VOX (Vox2D)</h2>
+            <span class="instrument-tagline">Gorillaz Vocal Rig &amp; Zero-Latency Cyborg Processor</span>
           </div>
+          <div class="instrument-specs">
+            <span class="spec-pill">YIN Time-Domain Pitch</span>
+            <span class="spec-pill">0.0 ms Latency</span>
+            <span class="spec-pill">Resizable GUI</span>
+            <span class="rack-screw" aria-hidden="true"></span>
+          </div>
+        </div>
 
-          <div class="why-it-exists">
-            <h3>Canta in cuffia con il timbro di Damon Albarn senza il ritardo dei pitch-shifter FFT.</h3>
-            <p>
-              I normali plugin di intonazione e formant shifting lavorano nel dominio della frequenza (FFT) e aggiungono 35 o 50 ms di latenza: quando canti dal vivo senti la tua voce sdoppiata in cuffia e perdi il timing. <strong>Orage 2D-VOX</strong> usa un rilevatore monofonico nel dominio del tempo accoppiato a un motore Dual-Grain a finestra ultra-corta per rispondere all’istante.
-            </p>
-            <p>
-              In un’unica schermata unisce la voce telefonica sporca di <em>Feel Good Inc.</em> (filtro conico a 1.85 kHz + saturazione valvolare asimmetrica) e l’apertura corale da ritornello tramite la macro <strong>2-D Morph</strong>.
-            </p>
+        <div class="instrument-chassis">
+          <div class="workbench-top">
+            <div class="gui-display-bay">
+              <img src="vox2d_preview.png" alt="Pannello Orage 2D-VOX con curva Megafono OLED e 6 manopole Evolver">
+            </div>
 
-            <div class="oled-telemetry-box">
-              <div class="oled-header">
-                <span>Simulatore Macro: 2-D Morph (Strofa / Ritornello)</span>
-                <span id="morph-state-badge">Stato: Strofa Lo-Fi</span>
+            <div class="why-it-exists">
+              <h3>Canta in cuffia con il timbro di Damon Albarn senza il ritardo dei pitch-shifter FFT.</h3>
+              <p>
+                I normali plugin di intonazione e formant shifting lavorano nel dominio della frequenza (FFT) e aggiungono 35 o 50 ms di latenza: quando canti dal vivo senti la tua voce sdoppiata in cuffia e perdi il timing. <strong>Orage 2D-VOX</strong> usa un rilevatore monofonico nel dominio del tempo accoppiato a un motore Dual-Grain a finestra ultra-corta per rispondere all’istante.
+              </p>
+              <p>
+                In un’unica schermata unisce la voce telefonica sporca di <em>Feel Good Inc.</em> (filtro conico a 1.85 kHz + saturazione valvolare asimmetrica) e l’apertura corale da ritornello tramite la macro <strong>2-D Morph</strong>.
+              </p>
+
+              <div class="oled-telemetry-box">
+                <div class="oled-header">
+                  <span>Simulatore Macro: 2-D Morph (Strofa / Ritornello)</span>
+                  <span id="morph-state-badge">Stato: Strofa Lo-Fi</span>
+                </div>
+                <ul class="scenario-list" id="morph-details">
+                  <li><strong>Megafono &amp; Tube Dirt:</strong> Banda ristretta 320 Hz / 3.4 kHz con risonanza a 1.85 kHz e saturazione triodo al 52% per bucare il mix al centro.</li>
+                  <li><strong>Immagine Stereo:</strong> Voce mono compatta (31%) in primo piano sopra basso e batteria.</li>
+                </ul>
+                <div class="interactive-oled-bar">
+                  <button type="button" class="morph-toggle-btn" id="btn-2d-morph" aria-pressed="false">
+                    <span class="jewel-led" aria-hidden="true"></span>
+                    2-D Morph: Verse / Chorus
+                  </button>
+                  <span class="morph-readout" id="morph-readout-val">Megafono: 76% | Coro: 10% | Stereo: 32%</span>
+                </div>
               </div>
-              <ul class="scenario-list" id="morph-details">
-                <li><strong>Megafono &amp; Tube Dirt:</strong> Banda ristretta 320 Hz / 3.4 kHz con risonanza a 1.85 kHz e saturazione triodo al 52% per bucare il mix al centro.</li>
-                <li><strong>Immagine Stereo:</strong> Voce mono compatta (31%) in primo piano sopra basso e batteria.</li>
-              </ul>
-              <div class="interactive-oled-bar">
-                <button type="button" class="morph-toggle-btn" id="btn-2d-morph" aria-pressed="false">
-                  <span class="jewel-led" aria-hidden="true"></span>
-                  2-D Morph: Verse / Chorus
-                </button>
-                <span class="morph-readout" id="morph-readout-val">Megafono: 76% | Coro: 10% | Stereo: 32%</span>
+            </div>
+          </div>
+
+          <div class="silkscreen-divider">
+            <span>Catena Vocale 2-D: Tune, Formant, Megafono, Tube Dirt, Armonie &amp; Stereo</span>
+          </div>
+
+          <div class="controls-matrix">
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Tune &amp; Robot</strong>
+                <span class="ctrl-range">0 .. 100%</span>
               </div>
+              <p class="ctrl-body">
+                Aggancia l’intonazione alla scala impostata (<code>Minor</code>, <code>Major</code>, <code>Dorian Gorillaz</code> o note <code>MIDI Lock</code>). Tra 30% e 55% corregge in modo trasparente; a 80% dà l’Hard-Tune istantaneo; a 100% blocca la fase in sintesi vocale robotica.
+              </p>
             </div>
-          </div>
-        </div>
 
-        <div class="silkscreen-divider">
-          <span>Catena Vocale 2-D: Tune, Formant, Megafono, Tube Dirt, Armonie &amp; Stereo</span>
-        </div>
-
-        <div class="controls-matrix">
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Tune &amp; Robot</strong>
-              <span class="ctrl-range">0 .. 100%</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>2-D Formant</strong>
+                <span class="ctrl-range">-100% .. +100%</span>
+              </div>
+              <p class="ctrl-body">
+                Trasla le risonanze della gola lasciando intatta la nota cantata. Ruotando a sinistra ottieni un timbro scuro e cavernoso stile <em>Murdoc / Demon</em>; a destra una voce nasale e tagliente stile <em>2-D / Cyborg Noodle</em>.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Aggancia l’intonazione alla scala impostata (<code>Minor</code>, <code>Major</code>, <code>Dorian Gorillaz</code> o note <code>MIDI Lock</code>). Tra 30% e 55% corregge in modo trasparente; a 80% dà l’Hard-Tune istantaneo; a 100% blocca la fase in sintesi vocale robotica.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>2-D Formant</strong>
-              <span class="ctrl-range">-100% .. +100%</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Megaphone</strong>
+                <span class="ctrl-range">1.85 kHz Horn</span>
+              </div>
+              <p class="ctrl-body">
+                Taglia gli estremi di banda ed enfatizza il cono medio-alto tipico dei megafoni da palco e delle radio walkie-talkie. Puoi anche trascinare direttamente il cursore ambra sul grafico OLED per scolpire curva e drive con un gesto.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Trasla le risonanze della gola lasciando intatta la nota cantata. Ruotando a sinistra ottieni un timbro scuro e cavernoso stile <em>Murdoc / Demon</em>; a destra una voce nasale e tagliente stile <em>2-D / Cyborg Noodle</em>.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Megaphone</strong>
-              <span class="ctrl-range">1.85 kHz Horn</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Tube Dirt</strong>
+                <span class="ctrl-range">Auto-Gain Triode</span>
+              </div>
+              <p class="ctrl-body">
+                Saturazione analogica a doppio stadio (compressione a nastro + clipping asimmetrico a valvola) con compensazione automatica del volume d’uscita: ingrossa e graffia la voce senza mai mandare in rosso il canale di Ableton.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Taglia gli estremi di banda ed enfatizza il cono medio-alto tipico dei megafoni da palco e delle radio walkie-talkie. Puoi anche trascinare direttamente il cursore ambra sul grafico OLED per scolpire curva e drive con un gesto.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Tube Dirt</strong>
-              <span class="ctrl-range">Auto-Gain Triode</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Harmonies &amp; Voicing</strong>
+                <span class="ctrl-range">5 Modalità Coro</span>
+              </div>
+              <p class="ctrl-body">
+                Genera fino a 3 voci armoniche intelligenti: <code>2-D Duet (+3rd)</code>, <code>Gorillaz Choir (3rd+5th)</code>, <code>Demon Sub (-Oct+5th)</code>, <code>Octave Stack</code> o accordi pilotati via MIDI dalla tastiera.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Saturazione analogica a doppio stadio (compressione a nastro + clipping asimmetrico a valvola) con compensazione automatica del volume d’uscita: ingrossa e graffia la voce senza mai mandare in rosso il canale di Ableton.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Harmonies &amp; Voicing</strong>
-              <span class="ctrl-range">5 Modalità Coro</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Stereo Space &amp; Morph</strong>
+                <span class="ctrl-range">Doubler + Slapback</span>
+              </div>
+              <p class="ctrl-body">
+                Allarga la voce nel panorama stereo combinando un micro-pitch doubler L/R con un eco <em>Tape Slapback</em> corto. Il tasto <code>2-D Morph</code> automatizza il passaggio dalla strofa intima al ritornello corale.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Genera fino a 3 voci armoniche intelligenti: <code>2-D Duet (+3rd)</code>, <code>Gorillaz Choir (3rd+5th)</code>, <code>Demon Sub (-Oct+5th)</code>, <code>Octave Stack</code> o accordi pilotati via MIDI dalla tastiera.
-            </p>
-          </div>
-
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Stereo Space &amp; Morph</strong>
-              <span class="ctrl-range">Doubler + Slapback</span>
-            </div>
-            <p class="ctrl-body">
-              Allarga la voce nel panorama stereo combinando un micro-pitch doubler L/R con un eco <em>Tape Slapback</em> corto. Il tasto <code>2-D Morph</code> automatizza il passaggio dalla strofa intima al ritornello corale.
-            </p>
           </div>
         </div>
       </div>
@@ -1673,113 +1781,115 @@
 
     <!-- INSTRUMENT 2: ORAGE PULSEFORGE -->
     <section id="pulseforge" class="instrument-section" data-reveal>
-      <div class="instrument-faceplate">
-        <div class="instrument-id">
-          <span class="rack-screw" aria-hidden="true"></span>
-          <span class="jewel-led" aria-hidden="true"></span>
-          <span class="instrument-brand">Orage</span>
-          <h2 class="instrument-name">PulseForge v1.0</h2>
-          <span class="instrument-tagline">3-Track Generative MIDI Sequencer &amp; Hardware Synth Driver</span>
+      <div class="hardware-unit-3d">
+        <div class="instrument-faceplate">
+          <div class="instrument-id">
+            <span class="rack-screw" aria-hidden="true"></span>
+            <span class="jewel-led" aria-hidden="true"></span>
+            <span class="instrument-brand">Orage</span>
+            <h2 class="instrument-name">PulseForge v1.0</h2>
+            <span class="instrument-tagline">3-Track Generative MIDI Sequencer &amp; Hardware Synth Driver</span>
+          </div>
+          <div class="instrument-specs">
+            <span class="spec-pill">Bass / Arp / Chords</span>
+            <span class="spec-pill">Direct USB &amp; DIN MIDI</span>
+            <span class="spec-pill">Drag &amp; Drop MIDI</span>
+            <span class="rack-screw" aria-hidden="true"></span>
+          </div>
         </div>
-        <div class="instrument-specs">
-          <span class="spec-pill">Bass / Arp / Chords</span>
-          <span class="spec-pill">Direct USB &amp; DIN MIDI</span>
-          <span class="spec-pill">Drag &amp; Drop MIDI</span>
-          <span class="rack-screw" aria-hidden="true"></span>
-        </div>
-      </div>
 
-      <div class="instrument-chassis">
-        <div class="workbench-top reverse">
-          <div class="why-it-exists">
-            <h3>Tre sequencer che dialogano nella stessa scala per pilotare qualsiasi synth hardware o VST.</h3>
-            <p>
-              Quando improvvisi con sintetizzatori esterni o plugin, cambiare tonalità o creare una variazione coerente tra basso, arpeggio e accordi richiede di fermare la musica o disegnare note nel piano roll. <strong>PulseForge</strong> racchiude tre corsie generative indipendenti (<strong>Seq 1: Bass</strong>, <strong>Seq 2: Arp</strong>, <strong>Seq 3: Chords</strong>) vincolate a un motore armonico centrale.
-            </p>
-            <p>
-              Premi <strong>Trio Harmonize</strong> e le tre macchine costruiscono all’istante un groove complementare: il basso lascia spazio agli accenti dell’arpeggio e gli accordi seguono il giro armonico scelto, inviando il MIDI direttamente alle porte USB/DIN dei tuoi synth fisici o alle tracce di Ableton.
-            </p>
+        <div class="instrument-chassis">
+          <div class="workbench-top reverse">
+            <div class="why-it-exists">
+              <h3>Tre sequencer che dialogano nella stessa scala per pilotare qualsiasi synth hardware o VST.</h3>
+              <p>
+                Quando improvvisi con sintetizzatori esterni o plugin, cambiare tonalità o creare una variazione coerente tra basso, arpeggio e accordi richiede di fermare la musica o disegnare note nel piano roll. <strong>PulseForge</strong> racchiude tre corsie generative indipendenti (<strong>Seq 1: Bass</strong>, <strong>Seq 2: Arp</strong>, <strong>Seq 3: Chords</strong>) vincolate a un motore armonico centrale.
+              </p>
+              <p>
+                Premi <strong>Trio Harmonize</strong> e le tre macchine costruiscono all’istante un groove complementare: il basso lascia spazio agli accenti dell’arpeggio e gli accordi seguono il giro armonico scelto, inviando il MIDI direttamente alle porte USB/DIN dei tuoi synth fisici o alle tracce di Ableton.
+              </p>
 
-            <div class="oled-telemetry-box">
-              <div class="oled-header">
-                <span>Routing Flessibile per Qualsiasi Setup</span>
-                <span>Sync: Ableton Host</span>
+              <div class="oled-telemetry-box">
+                <div class="oled-header">
+                  <span>Routing Flessibile per Qualsiasi Setup</span>
+                  <span>Sync: Ableton Host</span>
+                </div>
+                <ul class="scenario-list">
+                  <li><strong>Corsia 1 (Mono Bass / Acid 303):</strong> Ideale per pilotare synth monofonici analogici o bassline VST su Canale 1 con Slide, Accent e Sub-Octave.</li>
+                  <li><strong>Corsie 2 &amp; 3 (Arp + Chord Stabs):</strong> Pilotano in parallelo qualsiasi polisinth hardware o virtuale su Canali 2 e 3, con synth polifonico di anteprima integrato.</li>
+                </ul>
               </div>
-              <ul class="scenario-list">
-                <li><strong>Corsia 1 (Mono Bass / Acid 303):</strong> Ideale per pilotare synth monofonici analogici o bassline VST su Canale 1 con Slide, Accent e Sub-Octave.</li>
-                <li><strong>Corsie 2 &amp; 3 (Arp + Chord Stabs):</strong> Pilotano in parallelo qualsiasi polisinth hardware o virtuale su Canali 2 e 3, con synth polifonico di anteprima integrato.</li>
-              </ul>
+            </div>
+
+            <div class="gui-display-bay">
+              <img src="pulseforge_preview.png" alt="Pannello Orage PulseForge con 3 corsie sequencer Bass, Arp e Chords">
             </div>
           </div>
 
-          <div class="gui-display-bay">
-            <img src="pulseforge_preview.png" alt="Pannello Orage PulseForge con 3 corsie sequencer Bass, Arp e Chords">
-          </div>
-        </div>
-
-        <div class="silkscreen-divider">
-          <span>Architettura Sequencer: Armonia Globale, 6 Manopole Evolver &amp; Matrice 16 Step</span>
-        </div>
-
-        <div class="controls-matrix">
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Scale, Root &amp; Trio Harmonize</strong>
-              <span class="ctrl-range">Master Harmony</span>
-            </div>
-            <p class="ctrl-body">
-              Imposta tonalità e scala (<code>Dorian House/Funk</code>, <code>Phrygian Acid</code>, <code>Minor Natural</code>, <code>Lydian Berlin</code>). Cambiando la nota <code>Root</code>, tutte e tre le linee si traspongono all’istante senza mai generare dissonanze.
-            </p>
+          <div class="silkscreen-divider">
+            <span>Architettura Sequencer: Armonia Globale, 6 Manopole Evolver &amp; Matrice 16 Step</span>
           </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Genre Style &amp; Role</strong>
-              <span class="ctrl-range">Algoritmi Dedicati</span>
+          <div class="controls-matrix">
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Scale, Root &amp; Trio Harmonize</strong>
+                <span class="ctrl-range">Master Harmony</span>
+              </div>
+              <p class="ctrl-body">
+                Imposta tonalità e scala (<code>Dorian House/Funk</code>, <code>Phrygian Acid</code>, <code>Minor Natural</code>, <code>Lydian Berlin</code>). Cambiando la nota <code>Root</code>, tutte e tre le linee si traspongono all’istante senza mai generare dissonanze.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Ogni corsia modella il fraseggio sul genere (<code>Classic House 90s</code>, <code>Acid Techno</code>, <code>Berlin School</code>, <code>Synthwave</code>, <code>Ambient</code>) e sul ruolo: <code>Mono Bass</code>, <code>Rolling Sub</code>, <code>Classic Arp</code>, <code>Chord Stabs</code> o <code>Poly Pad</code>.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Generate, Mutate &amp; Snapshot</strong>
-              <span class="ctrl-range">Performance Live</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Genre Style &amp; Role</strong>
+                <span class="ctrl-range">Algoritmi Dedicati</span>
+              </div>
+              <p class="ctrl-body">
+                Ogni corsia modella il fraseggio sul genere (<code>Classic House 90s</code>, <code>Acid Techno</code>, <code>Berlin School</code>, <code>Synthwave</code>, <code>Ambient</code>) e sul ruolo: <code>Mono Bass</code>, <code>Rolling Sub</code>, <code>Classic Arp</code>, <code>Chord Stabs</code> o <code>Poly Pad</code>.
+              </p>
             </div>
-            <p class="ctrl-body">
-              <code>Generate</code> scrive un nuovo pattern; <code>Mutate</code> introduce piccole variazioni melodiche per non rendere monotono il loop; <code>Snapshot</code> salva il tuo groove principale per richiamarlo come ritornello con un click.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>6 Manopole Evolver</strong>
-              <span class="ctrl-range">Controllo Tattile</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Generate, Mutate &amp; Snapshot</strong>
+                <span class="ctrl-range">Performance Live</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Generate</code> scrive un nuovo pattern; <code>Mutate</code> introduce piccole variazioni melodiche per non rendere monotono il loop; <code>Snapshot</code> salva il tuo groove principale per richiamarlo come ritornello con un click.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Modifica al volo densità ritmica (<code>Complexity</code>), groove (<code>Swing</code>), registro (<code>Base Oct</code>), escursione dell’arpeggio (<code>Arp Oct</code>), canale MIDI (<code>MIDI Ch</code>) e divisione temporale (<code>Ratio</code>) per poliritmie.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Matrice Step &amp; Exp +</strong>
-              <span class="ctrl-range">Slide, Ratchet, Accent</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>6 Manopole Evolver</strong>
+                <span class="ctrl-range">Controllo Tattile</span>
+              </div>
+              <p class="ctrl-body">
+                Modifica al volo densità ritmica (<code>Complexity</code>), groove (<code>Swing</code>), registro (<code>Base Oct</code>), escursione dell’arpeggio (<code>Arp Oct</code>), canale MIDI (<code>MIDI Ch</code>) e divisione temporale (<code>Ratio</code>) per poliritmie.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Clicca sui 16 pad per accendere o spegnere gli step, trascina verticalmente per cambiare nota nella scala ed espandi <code>Exp +</code> per programmare legati, ribattuti (Ratchet) e glide in stile TB-303.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Preview Synth &amp; Drag MIDI</strong>
-              <span class="ctrl-range">Export Istantaneo</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Matrice Step &amp; Exp +</strong>
+                <span class="ctrl-range">Slide, Ratchet, Accent</span>
+              </div>
+              <p class="ctrl-body">
+                Clicca sui 16 pad per accendere o spegnere gli step, trascina verticalmente per cambiare nota nella scala ed espandi <code>Exp +</code> per programmare legati, ribattuti (Ratchet) e glide in stile TB-303.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Attiva <code>Preview Synth</code> per ascoltare subito le 3 tracce anche senza synth collegati, e trascina il pulsante <code>Drag MIDI</code> direttamente dentro una clip di Ableton Live per esportare le note generate.
-            </p>
+
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Preview Synth &amp; Drag MIDI</strong>
+                <span class="ctrl-range">Export Istantaneo</span>
+              </div>
+              <p class="ctrl-body">
+                Attiva <code>Preview Synth</code> per ascoltare subito le 3 tracce anche senza synth collegati, e trascina il pulsante <code>Drag MIDI</code> direttamente dentro una clip di Ableton Live per esportare le note generate.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1787,113 +1897,115 @@
 
     <!-- INSTRUMENT 3: ORAGE LEVELGUARD -->
     <section id="levelguard" class="instrument-section" data-reveal>
-      <div class="instrument-faceplate">
-        <div class="instrument-id">
-          <span class="rack-screw" aria-hidden="true"></span>
-          <span class="jewel-led cobalt" aria-hidden="true"></span>
-          <span class="instrument-brand">Orage</span>
-          <h2 class="instrument-name">LevelGuard v1.0</h2>
-          <span class="instrument-tagline">Perceived Loudness Ceiling &amp; Resonant Filter Tamer</span>
-        </div>
-        <div class="instrument-specs">
-          <span class="spec-pill">Fletcher-Munson LUFS</span>
-          <span class="spec-pill">Poly, Mono &amp; Bus Profiles</span>
-          <span class="spec-pill">1-Click Auto-Lock</span>
-          <span class="rack-screw" aria-hidden="true"></span>
-        </div>
-      </div>
-
-      <div class="instrument-chassis">
-        <div class="workbench-top">
-          <div class="gui-display-bay">
-            <img src="levelguard_preview.png" alt="Pannello Orage LevelGuard con grafico OLED della soglia percepita e blocco dB">
+      <div class="hardware-unit-3d">
+        <div class="instrument-faceplate">
+          <div class="instrument-id">
+            <span class="rack-screw" aria-hidden="true"></span>
+            <span class="jewel-led cobalt" aria-hidden="true"></span>
+            <span class="instrument-brand">Orage</span>
+            <h2 class="instrument-name">LevelGuard v1.0</h2>
+            <span class="instrument-tagline">Perceived Loudness Ceiling &amp; Resonant Filter Tamer</span>
           </div>
+          <div class="instrument-specs">
+            <span class="spec-pill">Fletcher-Munson LUFS</span>
+            <span class="spec-pill">Poly, Mono &amp; Bus Profiles</span>
+            <span class="spec-pill">1-Click Auto-Lock</span>
+            <span class="rack-screw" aria-hidden="true"></span>
+          </div>
+        </div>
 
-          <div class="why-it-exists">
-            <h3>Spalanca il cutoff e la risonanza di qualsiasi synth: il volume percepito non esplode mai.</h3>
-            <p>
-              Un normale limiter guarda solo i picchi elettrici in dBFS. Quando apri un filtro risonante (Ladder 24 dB, State-Variable o Steiner-Parker) su qualsiasi sintetizzatore analogico o virtuale, l’energia si concentra tra <strong>1 kHz e 5 kHz</strong>, la zona in cui l’orecchio umano è fino a 15 dB più sensibile: anche se il meter della DAW sale di poco, nelle casse il synth copre tutto il resto del mix.
-            </p>
-            <p>
-              <strong>LevelGuard</strong> pesa il segnale secondo le curve psicoacustiche dell’orecchio e applica un <strong>tetto puramente unidirezionale</strong>: sotto la soglia il guadagno è esattamente <code>0.0 dB</code> (puoi suonare pianissimo o chiudere il filtro a zero senza che alcun compressore tiri su il fruscio), ma appena superi il tetto inchioda l’esplosione.
-            </p>
+        <div class="instrument-chassis">
+          <div class="workbench-top">
+            <div class="gui-display-bay">
+              <img src="levelguard_preview.png" alt="Pannello Orage LevelGuard con grafico OLED della soglia percepita e blocco dB">
+            </div>
 
-            <div class="oled-telemetry-box">
-              <div class="oled-header cobalt">
-                <span>Come Usarlo in 3 Secondi su Qualsiasi Synth</span>
-                <span>Sotto Soglia: 0.0 dB</span>
+            <div class="why-it-exists">
+              <h3>Spalanca il cutoff e la risonanza di qualsiasi synth: il volume percepito non esplode mai.</h3>
+              <p>
+                Un normale limiter guarda solo i picchi elettrici in dBFS. Quando apri un filtro risonante (Ladder 24 dB, State-Variable o Steiner-Parker) su qualsiasi sintetizzatore analogico o virtuale, l’energia si concentra tra <strong>1 kHz e 5 kHz</strong>, la zona in cui l’orecchio umano è fino a 15 dB più sensibile: anche se il meter della DAW sale di poco, nelle casse il synth copre tutto il resto del mix.
+              </p>
+              <p>
+                <strong>LevelGuard</strong> pesa il segnale secondo le curve psicoacustiche dell’orecchio e applica un <strong>tetto puramente unidirezionale</strong>: sotto la soglia il guadagno è esattamente <code>0.0 dB</code> (puoi suonare pianissimo o chiudere il filtro a zero senza che alcun compressore tiri su il fruscio), ma appena superi il tetto inchioda l’esplosione.
+              </p>
+
+              <div class="oled-telemetry-box">
+                <div class="oled-header cobalt">
+                  <span>Come Usarlo in 3 Secondi su Qualsiasi Synth</span>
+                  <span>Sotto Soglia: 0.0 dB</span>
+                </div>
+                <ul class="scenario-list">
+                  <li><strong>1. Suona il synth al volume giusto nel mix:</strong> LevelGuard tiene in memoria una finestra continua degli ultimi 2,5 secondi di audio.</li>
+                  <li><strong>2. Premi “Fissa Volume Ora (Lock)”:</strong> Anche se hai già tolto le mani dalla tastiera per prendere il mouse, il plugin legge il livello appena suonato e posiziona il tetto massimo esattamente lì.</li>
+                </ul>
               </div>
-              <ul class="scenario-list">
-                <li><strong>1. Suona il synth al volume giusto nel mix:</strong> LevelGuard tiene in memoria una finestra continua degli ultimi 2,5 secondi di audio.</li>
-                <li><strong>2. Premi “Fissa Volume Ora (Lock)”:</strong> Anche se hai già tolto le mani dalla tastiera per prendere il mouse, il plugin legge il livello appena suonato e posiziona il tetto massimo esattamente lì.</li>
-              </ul>
             </div>
           </div>
-        </div>
 
-        <div class="silkscreen-divider">
-          <span>Controlli Soglia Percepita &amp; Domatore di Risonanza</span>
-        </div>
-
-        <div class="controls-matrix">
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Synth Profile</strong>
-              <span class="ctrl-range cobalt">4 Tarature</span>
-            </div>
-            <p class="ctrl-body">
-              Adatta la curva di pesatura psicoacustica e i tempi di risposta al tipo di strumento: <code>Poly Synth (Chords &amp; Filter)</code>, <code>Mono Analog (Ladder 24dB)</code>, <code>Preset Guard (Fast Jam)</code> per chi cambia patch dal vivo, o <code>Synth Bus</code>.
-            </p>
+          <div class="silkscreen-divider">
+            <span>Controlli Soglia Percepita &amp; Domatore di Risonanza</span>
           </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Fissa Volume Ora (Lock)</strong>
-              <span class="ctrl-range cobalt">Buffer 2.5 Secondi</span>
+          <div class="controls-matrix">
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Synth Profile</strong>
+                <span class="ctrl-range cobalt">4 Tarature</span>
+              </div>
+              <p class="ctrl-body">
+                Adatta la curva di pesatura psicoacustica e i tempi di risposta al tipo di strumento: <code>Poly Synth (Chords &amp; Filter)</code>, <code>Mono Analog (Ladder 24dB)</code>, <code>Preset Guard (Fast Jam)</code> per chi cambia patch dal vivo, o <code>Synth Bus</code>.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Cattura la loudness percepita della frase musicale appena eseguita e allinea automaticamente <code>Soglia Max</code>. Elimina qualsiasi calcolo manuale di decibel mentre stai componendo.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Soglia Max (Ceiling)</strong>
-              <span class="ctrl-range cobalt">-36.0 .. 0.0 dB</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Fissa Volume Ora (Lock)</strong>
+                <span class="ctrl-range cobalt">Buffer 2.5 Secondi</span>
+              </div>
+              <p class="ctrl-body">
+                Cattura la loudness percepita della frase musicale appena eseguita e allinea automaticamente <code>Soglia Max</code>. Elimina qualsiasi calcolo manuale di decibel mentre stai componendo.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Il limite invalicabile di volume percepito. Puoi regolarlo con la manopola dedicata oppure trascinando verticalmente col mouse la linea ambra direttamente sull’oscilloscopio OLED.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Filter Tamer</strong>
-              <span class="ctrl-range cobalt">De-Harsher Dinamico</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Soglia Max (Ceiling)</strong>
+                <span class="ctrl-range cobalt">-36.0 .. 0.0 dB</span>
+              </div>
+              <p class="ctrl-body">
+                Il limite invalicabile di volume percepito. Puoi regolarlo con la manopola dedicata oppure trascinando verticalmente col mouse la linea ambra direttamente sull’oscilloscopio OLED.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Agisce prima del rider di volume: quando avverte un picco acido di risonanza sopra <code>1.1 kHz</code>, smussa solo la fitta sulle medio-alte lasciando intatti i bassi fondamentali del sintetizzatore.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Clamp Speed</strong>
-              <span class="ctrl-range cobalt">0 .. 100%</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Filter Tamer</strong>
+                <span class="ctrl-range cobalt">De-Harsher Dinamico</span>
+              </div>
+              <p class="ctrl-body">
+                Agisce prima del rider di volume: quando avverte un picco acido di risonanza sopra <code>1.1 kHz</code>, smussa solo la fitta sulle medio-alte lasciando intatti i bassi fondamentali del sintetizzatore.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Imposta la velocità di reazione del freno sopra soglia: valori alti bloccano all’istante i salti di volume quando scorri i preset di un synth; valori medi accompagnano in modo morbido le aperture lente del cutoff.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Analog Warmth &amp; Trim</strong>
-              <span class="ctrl-range cobalt">Soft Clip &amp; Uscita</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Clamp Speed</strong>
+                <span class="ctrl-range cobalt">0 .. 100%</span>
+              </div>
+              <p class="ctrl-body">
+                Imposta la velocità di reazione del freno sopra soglia: valori alti bloccano all’istante i salti di volume quando scorri i preset di un synth; valori medi accompagnano in modo morbido le aperture lente del cutoff.
+              </p>
             </div>
-            <p class="ctrl-body">
-              <code>Analog Warmth</code> arrotonda i transienti più spigolosi sulla soglia con una saturazione calda progressiva; <code>Output Trim</code> compensa il livello finale nel canale del mixer.
-            </p>
+
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Analog Warmth &amp; Trim</strong>
+                <span class="ctrl-range cobalt">Soft Clip &amp; Uscita</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Analog Warmth</code> arrotonda i transienti più spigolosi sulla soglia con una saturazione calda progressiva; <code>Output Trim</code> compensa il livello finale nel canale del mixer.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -1901,113 +2013,115 @@
 
     <!-- INSTRUMENT 4: PLF LITTLE COSM -->
     <section id="littlecosm" class="instrument-section" data-reveal>
-      <div class="instrument-faceplate">
-        <div class="instrument-id">
-          <span class="rack-screw" aria-hidden="true"></span>
-          <span class="jewel-led emerald" aria-hidden="true"></span>
-          <span class="instrument-brand">Orage</span>
-          <h2 class="instrument-name">PLF Little Cosm v1.1</h2>
-          <span class="instrument-tagline">4-Module Reorderable Analog Color &amp; Texture Console</span>
+      <div class="hardware-unit-3d">
+        <div class="instrument-faceplate">
+          <div class="instrument-id">
+            <span class="rack-screw" aria-hidden="true"></span>
+            <span class="jewel-led emerald" aria-hidden="true"></span>
+            <span class="instrument-brand">Orage</span>
+            <h2 class="instrument-name">PLF Little Cosm v1.1</h2>
+            <span class="instrument-tagline">4-Module Reorderable Analog Color &amp; Texture Console</span>
+          </div>
+          <div class="instrument-specs">
+            <span class="spec-pill">20 Analog Circuits</span>
+            <span class="spec-pill">Free Module Routing</span>
+            <span class="spec-pill">Capture Drone Looper</span>
+            <span class="rack-screw" aria-hidden="true"></span>
+          </div>
         </div>
-        <div class="instrument-specs">
-          <span class="spec-pill">20 Analog Circuits</span>
-          <span class="spec-pill">Free Module Routing</span>
-          <span class="spec-pill">Capture Drone Looper</span>
-          <span class="rack-screw" aria-hidden="true"></span>
-        </div>
-      </div>
 
-      <div class="instrument-chassis">
-        <div class="workbench-top reverse">
-          <div class="why-it-exists">
-            <h3>Il calore imperfetto dei nastri vintage e delle console multi-effetto da tavolo.</h3>
-            <p>
-              Un sintetizzatore hardware o virtuale registrato diretto nella scheda audio può suonare piatto o troppo sterile. <strong>PLF Little Cosm</strong> mette in fila quattro banchi colore indipendenti: <strong>[A] Character</strong>, <strong>[B] Movement</strong>, <strong>[C] Diffusion</strong> e <strong>[D] Texture</strong>, ciascuno con 5 circuiti dedicati e tre sole manopole ad escursione musicale.
-            </p>
-            <p>
-              Con un click nella barra superiore inverti l’ordine dei quattro moduli senza interruzioni audio: puoi mandare il riverbero cavernoso <em>dentro</em> il fuzz al silicio per creare muri sonori shoegaze, oppure filtrare e comprimere in stile cassetta Type-I a fine catena.
-            </p>
+        <div class="instrument-chassis">
+          <div class="workbench-top reverse">
+            <div class="why-it-exists">
+              <h3>Il calore imperfetto dei nastri vintage e delle console multi-effetto da tavolo.</h3>
+              <p>
+                Un sintetizzatore hardware o virtuale registrato diretto nella scheda audio può suonare piatto o troppo sterile. <strong>PLF Little Cosm</strong> mette in fila quattro banchi colore indipendenti: <strong>[A] Character</strong>, <strong>[B] Movement</strong>, <strong>[C] Diffusion</strong> e <strong>[D] Texture</strong>, ciascuno con 5 circuiti dedicati e tre sole manopole ad escursione musicale.
+              </p>
+              <p>
+                Con un click nella barra superiore inverti l’ordine dei quattro moduli senza interruzioni audio: puoi mandare il riverbero cavernoso <em>dentro</em> il fuzz al silicio per creare muri sonori shoegaze, oppure filtrare e comprimere in stile cassetta Type-I a fine catena.
+              </p>
 
-            <div class="oled-telemetry-box">
-              <div class="oled-header emerald">
-                <span>Funzione Live: Capture Sustainer &amp; Drift</span>
-                <span>24 Preset + XML Export</span>
+              <div class="oled-telemetry-box">
+                <div class="oled-header emerald">
+                  <span>Funzione Live: Capture Sustainer &amp; Drift</span>
+                  <span>24 Preset + XML Export</span>
+                </div>
+                <ul class="scenario-list">
+                  <li><strong>Tasto Capture nella Master Console:</strong> Cattura in crossfade l’accordo che stai suonando e lo trasforma in un tappeto continuo infinito su cui puoi improvvisare un assolo.</li>
+                  <li><strong>Parametri Drift, Wow e Wear:</strong> Introducono fluttuazioni organiche di intonazione ed età del nastro che danno movimento anche a una singola nota tenuta.</li>
+                </ul>
               </div>
-              <ul class="scenario-list">
-                <li><strong>Tasto Capture nella Master Console:</strong> Cattura in crossfade l’accordo che stai suonando e lo trasforma in un tappeto continuo infinito su cui puoi improvvisare un assolo.</li>
-                <li><strong>Parametri Drift, Wow e Wear:</strong> Introducono fluttuazioni organiche di intonazione ed età del nastro che danno movimento anche a una singola nota tenuta.</li>
-              </ul>
+            </div>
+
+            <div class="gui-display-bay">
+              <img src="little_cosm_preview.png" alt="Pannello PLF Little Cosm con i 4 moduli Character, Movement, Diffusion, Texture e Master Console">
             </div>
           </div>
 
-          <div class="gui-display-bay">
-            <img src="little_cosm_preview.png" alt="Pannello PLF Little Cosm con i 4 moduli Character, Movement, Diffusion, Texture e Master Console">
-          </div>
-        </div>
-
-        <div class="silkscreen-divider">
-          <span>I 4 Moduli Riordinabili (20 Circuiti) &amp; Master Console</span>
-        </div>
-
-        <div class="controls-matrix">
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>[A] Character</strong>
-              <span class="ctrl-range emerald">5 Circuiti Drive</span>
-            </div>
-            <p class="ctrl-body">
-              <code>Drive</code> (overdrive asimmetrico a valvole), <code>Sweeten</code> (preamp caldo da console anni ’70), <code>Fuzz</code> (distorsione satura al silicio), <code>Howl</code> (filtro risonante reattivo all’inviluppo) e <code>Swell</code> (attacco lento automatico per violini e pad).
-            </p>
+          <div class="silkscreen-divider">
+            <span>I 4 Moduli Riordinabili (20 Circuiti) &amp; Master Console</span>
           </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>[B] Movement</strong>
-              <span class="ctrl-range emerald">5 Modulazioni</span>
+          <div class="controls-matrix">
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>[A] Character</strong>
+                <span class="ctrl-range emerald">5 Circuiti Drive</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Drive</code> (overdrive asimmetrico a valvole), <code>Sweeten</code> (preamp caldo da console anni ’70), <code>Fuzz</code> (distorsione satura al silicio), <code>Howl</code> (filtro risonante reattivo all’inviluppo) e <code>Swell</code> (attacco lento automatico per violini e pad).
+              </p>
             </div>
-            <p class="ctrl-body">
-              <code>Doubler</code> (chorus e flanger a bobina), <code>Vibrato</code> (oscillazione di pitch meccanica con controllo <code>Drift</code>), <code>Phaser</code> (6 stadi all-pass), <code>Tremolo</code> (pulsazione ottica) e <code>Pitch</code> (shimmer d’ottava).
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>[C] Diffusion</strong>
-              <span class="ctrl-range emerald">5 Spazi &amp; Echi</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>[B] Movement</strong>
+                <span class="ctrl-range emerald">5 Modulazioni</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Doubler</code> (chorus e flanger a bobina), <code>Vibrato</code> (oscillazione di pitch meccanica con controllo <code>Drift</code>), <code>Phaser</code> (6 stadi all-pass), <code>Tremolo</code> (pulsazione ottica) e <code>Pitch</code> (shimmer d’ottava).
+              </p>
             </div>
-            <p class="ctrl-body">
-              <code>Cascade</code> (delay stereo multi-tap), <code>Reels</code> (eco a nastro magnetico con controllo <code>Wow</code>), <code>Space</code> (riverbero plate e caverna profonda), <code>Collage</code> (nuvola granulare) e <code>Reverse</code> (eco riavvolto al contrario).
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>[D] Texture</strong>
-              <span class="ctrl-range emerald">5 Filtri &amp; Lo-Fi</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>[C] Diffusion</strong>
+                <span class="ctrl-range emerald">5 Spazi &amp; Echi</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Cascade</code> (delay stereo multi-tap), <code>Reels</code> (eco a nastro magnetico con controllo <code>Wow</code>), <code>Space</code> (riverbero plate e caverna profonda), <code>Collage</code> (nuvola granulare) e <code>Reverse</code> (eco riavvolto al contrario).
+              </p>
             </div>
-            <p class="ctrl-body">
-              <code>Filter</code> (passa-basso/passa-alto morfabile), <code>Squash</code> (compressore ottico pastoso in stile LA-2A), <code>Cassette</code> (saturazione e compressione nastro Type-I), <code>Broken</code> (drop-out radio) e <code>Interfere</code>.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Routing &amp; Calib</strong>
-              <span class="ctrl-range emerald">Ordine Flessibile</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>[D] Texture</strong>
+                <span class="ctrl-range emerald">5 Filtri &amp; Lo-Fi</span>
+              </div>
+              <p class="ctrl-body">
+                <code>Filter</code> (passa-basso/passa-alto morfabile), <code>Squash</code> (compressore ottico pastoso in stile LA-2A), <code>Cassette</code> (saturazione e compressione nastro Type-I), <code>Broken</code> (drop-out radio) e <code>Interfere</code>.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Scegli al volo il percorso del segnale tra i 4 blocchi (es. <code>Diff &gt; Char &gt; Move &gt; Text</code>) e adatta la sensibilità d’ingresso (<code>Calib: Line / Synth / Hot</code>) per far lavorare i saturatori nel punto ideale.
-            </p>
-          </div>
 
-          <div class="ctrl-cell">
-            <div class="ctrl-head">
-              <strong>Tilt EQ, Mix &amp; Capture</strong>
-              <span class="ctrl-range emerald">Stadio Master</span>
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Routing &amp; Calib</strong>
+                <span class="ctrl-range emerald">Ordine Flessibile</span>
+              </div>
+              <p class="ctrl-body">
+                Scegli al volo il percorso del segnale tra i 4 blocchi (es. <code>Diff &gt; Char &gt; Move &gt; Text</code>) e adatta la sensibilità d’ingresso (<code>Calib: Line / Synth / Hot</code>) per far lavorare i saturatori nel punto ideale.
+              </p>
             </div>
-            <p class="ctrl-body">
-              Bilancia la brillantezza generale con <code>Tilt EQ</code> (Dark / Bright), dosa l’effetto in parallelo con <code>Mix</code> senza perdite di fase e usa <code>Tap</code> o il clock di Ableton per sincronizzare delay e modulazioni.
-            </p>
+
+            <div class="ctrl-cell">
+              <div class="ctrl-head">
+                <strong>Tilt EQ, Mix &amp; Capture</strong>
+                <span class="ctrl-range emerald">Stadio Master</span>
+              </div>
+              <p class="ctrl-body">
+                Bilancia la brillantezza generale con <code>Tilt EQ</code> (Dark / Bright), dosa l’effetto in parallelo con <code>Mix</code> senza perdite di fase e usa <code>Tap</code> o il clock di Ableton per sincronizzare delay e modulazioni.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -2129,7 +2243,7 @@
         });
       }
 
-      // 3. Choreographed Scroll Reveal + Active Rack Nav Highlight
+      // 3. Choreographed 3D Hardware Scroll Reveal + Replay on Re-enter + Active Rack Nav
       const revealEls = document.querySelectorAll('[data-reveal]');
       const navLinks = document.querySelectorAll('.nav-links a[data-section]');
 
@@ -2141,11 +2255,16 @@
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 entry.target.setAttribute('data-reveal', 'visible');
-                revealObserver.unobserve(entry.target);
+              } else {
+                // Re-arm animation when scrolled completely out of view so scrolling back up/down replays the 3D rack mount
+                const rect = entry.boundingClientRect;
+                if (rect.top > window.innerHeight * 0.9 || rect.bottom < 0) {
+                  entry.target.setAttribute('data-reveal', 'pending');
+                }
               }
             });
           },
-          { threshold: 0.1, rootMargin: '0px 0px -32px 0px' }
+          { threshold: 0.12, rootMargin: '0px 0px -48px 0px' }
         );
         revealEls.forEach((el) => revealObserver.observe(el));
 
