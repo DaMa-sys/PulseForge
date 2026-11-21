@@ -6,13 +6,13 @@
   <meta name="page-type" content="software">
   <meta name="site-kind" content="software">
   <title>Orage Audio: Evolver Studio Bundle v1.3 (2D-VOX, PulseForge, LevelGuard, PLF Little Cosm)</title>
-  <meta name="description" content="Quattro strumenti VST3 e Standalone nati per suonare synth analogici e cantare dal vivo su Ableton Live senza latenza, senza salti di volume e senza menu infiniti.">
+  <meta name="description" content="Quattro strumenti VST3 e Standalone nati per suonare sintetizzatori e cantare dal vivo su Ableton Live senza latenza, senza salti di volume e senza menu infiniti.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* Hallmark · v2.0.0 */
-    /* critique: Orage Evolver Hardware Design System with anodized aluminum headers, OLED telemetry bays and Emil Kowalski compositor motion */
+    /* critique: Orage Evolver Hardware Design System with anodized aluminum headers, OLED telemetry bays, scroll spine and Emil Kowalski choreographed reveals */
     :root {
       /* Studio Rack & Anodized Aluminum Tokens */
       --bg-studio: #090A0D;
@@ -135,6 +135,45 @@
       pointer-events: none;
     }
 
+    /* Scroll Choreography Spine (Hallmark scroll-choreography.md § 3) */
+    .scroll-spine {
+      position: fixed;
+      inset-block: 0;
+      left: 16px;
+      width: 2px;
+      background-color: var(--line-subtle);
+      z-index: 90;
+      pointer-events: none;
+    }
+
+    .scroll-spine::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: var(--amber-led);
+      transform-origin: top;
+      transform: scaleY(var(--scroll-progress, 0));
+    }
+
+    @supports (animation-timeline: scroll()) {
+      @media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+        .scroll-spine::after {
+          animation: spine-grow linear both;
+          animation-timeline: scroll(root);
+        }
+        @keyframes spine-grow {
+          from { transform: scaleY(0); }
+          to { transform: scaleY(1); }
+        }
+      }
+    }
+
+    @media (max-width: 82rem) {
+      .scroll-spine {
+        display: none;
+      }
+    }
+
     /* Sticky Studio Rack Navigation Bar */
     .rack-nav-wrap {
       position: sticky;
@@ -199,7 +238,14 @@
       padding: 8px 12px;
       border-radius: var(--radius-ctrl);
       white-space: nowrap;
-      transition: color 150ms var(--ease-out-strong), background-color 150ms var(--ease-out-strong), transform 120ms var(--ease-out-strong);
+      border: 1px solid transparent;
+      transition: color 150ms var(--ease-out-strong), background-color 150ms var(--ease-out-strong), border-color 150ms var(--ease-out-strong), transform 120ms var(--ease-out-strong);
+    }
+
+    .nav-links a[data-current="true"] {
+      color: var(--text-primary);
+      background-color: var(--bg-rack-inset);
+      border-color: var(--line-amber);
     }
 
     @media (hover: hover) and (pointer: fine) {
@@ -916,6 +962,8 @@
       flex: 1;
       height: 1px;
       background-color: var(--line-machined);
+      transform-origin: center;
+      transition: transform 520ms var(--ease-out-strong);
     }
 
     .silkscreen-divider span {
@@ -1113,7 +1161,15 @@
       word-break: break-all;
     }
 
-    /* Scroll Reveal Animations (Visible by default without JS; animated when .js-enabled is present) */
+    /*
+      SCROLL CHOREOGRAPHY & HARDWARE POWER-ON REVEAL (Emil Kowalski choreograph skill)
+      - Base CSS is 100% visible without JS.
+      - Under .js-enabled, sections reveal as a coordinated wave:
+        1. Lead (Faceplate & GUI Display Bay): 0ms, 480ms, translateY(16px)
+        2. Support (Copy & OLED Telemetry): 70ms, 420ms, translateY(10px)
+        3. Silkscreen Divider lines: 110ms, scaleX(0.25 -> 1)
+        4. Controls Matrix / Chain Nodes: non-uniform shrinking stagger (120ms, 165ms, 200ms, 225ms, 245ms, 260ms)
+    */
     .js-enabled [data-reveal="pending"] {
       opacity: 0;
       transform: translateY(16px);
@@ -1122,7 +1178,77 @@
     .js-enabled [data-reveal="visible"] {
       opacity: 1;
       transform: translateY(0);
-      transition: opacity 420ms var(--ease-out-strong), transform 420ms var(--ease-out-strong);
+      transition: opacity 460ms var(--ease-out-strong), transform 460ms var(--ease-out-strong);
+    }
+
+    .js-enabled [data-reveal="pending"] .gui-display-bay {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+
+    .js-enabled [data-reveal="visible"] .gui-display-bay {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 480ms var(--ease-out-strong), transform 480ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong);
+    }
+
+    .js-enabled [data-reveal="pending"] .why-it-exists {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .js-enabled [data-reveal="visible"] .why-it-exists {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 440ms var(--ease-out-strong) 70ms, transform 440ms var(--ease-out-strong) 70ms;
+    }
+
+    .js-enabled [data-reveal="pending"] .silkscreen-divider::before,
+    .js-enabled [data-reveal="pending"] .silkscreen-divider::after {
+      transform: scaleX(0.2);
+    }
+
+    .js-enabled [data-reveal="visible"] .silkscreen-divider::before,
+    .js-enabled [data-reveal="visible"] .silkscreen-divider::after {
+      transform: scaleX(1);
+      transition: transform 520ms var(--ease-out-strong) 100ms;
+    }
+
+    .js-enabled [data-reveal="pending"] .ctrl-cell,
+    .js-enabled [data-reveal="pending"] .chain-node {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .js-enabled [data-reveal="visible"] .ctrl-cell,
+    .js-enabled [data-reveal="visible"] .chain-node {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 380ms var(--ease-out-strong), transform 380ms var(--ease-out-strong), border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
+    }
+
+    /* Non-uniform organic stagger (shrinking intervals: +45ms, +35ms, +25ms, +20ms, +15ms) */
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(1),
+    .js-enabled [data-reveal="visible"] .chain-node:nth-child(1) {
+      transition-delay: 90ms, 90ms, 0ms, 0ms;
+    }
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(2),
+    .js-enabled [data-reveal="visible"] .chain-node:nth-child(2) {
+      transition-delay: 135ms, 135ms, 0ms, 0ms;
+    }
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(3),
+    .js-enabled [data-reveal="visible"] .chain-node:nth-child(3) {
+      transition-delay: 170ms, 170ms, 0ms, 0ms;
+    }
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(4),
+    .js-enabled [data-reveal="visible"] .chain-node:nth-child(4) {
+      transition-delay: 195ms, 195ms, 0ms, 0ms;
+    }
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(5) {
+      transition-delay: 215ms, 215ms, 0ms, 0ms;
+    }
+    .js-enabled [data-reveal="visible"] .ctrl-cell:nth-child(6) {
+      transition-delay: 230ms, 230ms, 0ms, 0ms;
     }
 
     /* Footer */
@@ -1202,22 +1328,34 @@
       }
     }
 
-    /* Reduced Motion Fallback */
+    /* Reduced Motion Fallback (Collapses all delays and movement) */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
         scroll-behavior: auto !important;
       }
-      .js-enabled [data-reveal="pending"] {
+      .js-enabled [data-reveal="pending"],
+      .js-enabled [data-reveal="pending"] .gui-display-bay,
+      .js-enabled [data-reveal="pending"] .why-it-exists,
+      .js-enabled [data-reveal="pending"] .ctrl-cell,
+      .js-enabled [data-reveal="pending"] .chain-node {
         opacity: 1 !important;
         transform: none !important;
+      }
+      .js-enabled [data-reveal="pending"] .silkscreen-divider::before,
+      .js-enabled [data-reveal="pending"] .silkscreen-divider::after {
+        transform: scaleX(1) !important;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- Scroll Progress Spine -->
+  <div class="scroll-spine" aria-hidden="true"></div>
 
   <!-- Sticky Studio Rack Header -->
   <div class="rack-nav-wrap">
@@ -1229,12 +1367,12 @@
       </a>
 
       <nav class="nav-links" aria-label="Strumenti del bundle">
-        <a href="#catena">Catena Live</a>
-        <a href="#vox2d">2D-VOX</a>
-        <a href="#pulseforge">PulseForge</a>
-        <a href="#levelguard">LevelGuard</a>
-        <a href="#littlecosm">PLF Little Cosm</a>
-        <a href="#installer">Setup .EXE</a>
+        <a href="#catena" data-section="catena">Catena Live</a>
+        <a href="#vox2d" data-section="vox2d">2D-VOX</a>
+        <a href="#pulseforge" data-section="pulseforge">PulseForge</a>
+        <a href="#levelguard" data-section="levelguard">LevelGuard</a>
+        <a href="#littlecosm" data-section="littlecosm">PLF Little Cosm</a>
+        <a href="#installer" data-section="installer">Setup .EXE</a>
       </nav>
 
       <a href="download/OrageAudio-Bundle-Installer.exe" class="nav-cta">Installer .EXE</a>
@@ -1266,7 +1404,7 @@
             Quattro macchine VST3 e Standalone a latenza zero per Ableton Live.
           </p>
           <p class="hero-sublead">
-            Progettate attorno a un vero banco hardware con <strong>Korg Minilogue</strong>, <strong>Behringer Crave</strong> e microfono live: sequenze polifoniche che non stonano mai, voce megafono in tempo reale, tetto sul volume percepito quando spalanchi i filtri e quattro stadi di saturazione e nastro.
+            Progettate per chi suona <strong>sintetizzatori hardware, macchine analogiche, synth virtuali</strong> e microfono live: sequenze polifoniche che non stonano mai, voce megafono in tempo reale, tetto sul volume percepito quando spalanchi i filtri risonanti e quattro stadi di saturazione e nastro.
           </p>
 
           <div class="action-row">
@@ -1297,7 +1435,7 @@
               <span class="jewel-led" aria-hidden="true"></span>
               PulseForge
             </button>
-            <button type="button" class="stage-tab" role="tab" aria-selected="false" data-target="slide-levelguard" data-label="Orage LevelGuard: Tetto LUFS unidirezionale e Filter Tamer per Minilogue e Crave" data-link="#levelguard">
+            <button type="button" class="stage-tab" role="tab" aria-selected="false" data-target="slide-levelguard" data-label="Orage LevelGuard: Tetto LUFS unidirezionale e Filter Tamer per qualsiasi synth" data-link="#levelguard">
               <span class="jewel-led cobalt" aria-hidden="true"></span>
               LevelGuard
             </button>
@@ -1336,10 +1474,10 @@
     <section id="catena" class="signal-console-section" data-reveal>
       <div class="section-head">
         <div>
-          <h2>Come lavorano insieme durante una jam su Ableton Live</h2>
+          <h2>Come lavorano insieme durante una jam o una produzione</h2>
         </div>
         <p>
-          Ogni plugin risolve un ostacolo preciso di chi suona hardware dal vivo: dalla generazione armonica iniziale fino al controllo dei picchi di risonanza sul master.
+          Ogni plugin risolve un ostacolo preciso di chi suona sintetizzatori e voce dal vivo: dalla generazione armonica iniziale fino al controllo dei picchi di risonanza sul master.
         </p>
       </div>
 
@@ -1349,11 +1487,11 @@
             <div>
               <div class="node-top">
                 <span class="jewel-led" aria-hidden="true"></span>
-                <span class="node-routing-io">MIDI Out / USB &amp; DIN</span>
+                <span class="node-routing-io">MIDI Out / USB &amp; DAW</span>
               </div>
               <h3 style="margin-top: 12px;">PulseForge</h3>
               <p>
-                Invia in parallelo il basso acido al <strong>Behringer Crave</strong> (Canale 1) e gli arpeggi o accordi al <strong>Korg Minilogue</strong> (Canali 2 e 3), bloccati nella stessa scala.
+                Invia in parallelo linee di basso monofoniche, arpeggi poliritmici e accordi a qualsiasi <strong>synth hardware esterno</strong> o <strong>strumento VST</strong>, mantenendoli bloccati nella stessa scala.
               </p>
             </div>
             <div class="node-problem-solved">
@@ -1385,7 +1523,7 @@
               </div>
               <h3 style="margin-top: 12px;">PLF Little Cosm</h3>
               <p>
-                Colora i synth o la voce combinando saturazione a valvole, wow &amp; flutter a nastro, delay granulare e riverbero cavernoso, con ordine dei moduli invertibile al volo.
+                Colora qualsiasi synth o voce combinando saturazione a valvole, wow &amp; flutter a nastro, delay granulare e riverbero cavernoso, con ordine dei moduli invertibile al volo.
               </p>
             </div>
             <div class="node-problem-solved">
@@ -1401,7 +1539,7 @@
               </div>
               <h3 style="margin-top: 12px;">LevelGuard</h3>
               <p>
-                Posto a fine catena, doma l’esplosione tra 1 e 5 kHz quando apri il filtro Ladder o cambi preset, lasciando intatta la dinamica quando suoni piano.
+                Posto su qualsiasi traccia synth o sul bus, doma l’esplosione tra 1 e 5 kHz quando apri il cutoff e la risonanza o cambi preset, lasciando intatta la dinamica quando suoni piano.
               </p>
             </div>
             <div class="node-problem-solved">
@@ -1554,22 +1692,22 @@
       <div class="instrument-chassis">
         <div class="workbench-top reverse">
           <div class="why-it-exists">
-            <h3>Tre sequencer che dialogano nella stessa scala e pilotano i tuoi synth fisici via USB.</h3>
+            <h3>Tre sequencer che dialogano nella stessa scala per pilotare qualsiasi synth hardware o VST.</h3>
             <p>
-              Quando improvvisi con più sintetizzatori hardware, cambiare tonalità o creare una variazione tra basso e accordi richiede di fermare la musica o disegnare note nel piano roll. <strong>PulseForge</strong> racchiude tre corsie generative indipendenti (<strong>Seq 1: Bass</strong>, <strong>Seq 2: Arp</strong>, <strong>Seq 3: Chords</strong>) vincolate a un motore armonico centrale.
+              Quando improvvisi con sintetizzatori esterni o plugin, cambiare tonalità o creare una variazione coerente tra basso, arpeggio e accordi richiede di fermare la musica o disegnare note nel piano roll. <strong>PulseForge</strong> racchiude tre corsie generative indipendenti (<strong>Seq 1: Bass</strong>, <strong>Seq 2: Arp</strong>, <strong>Seq 3: Chords</strong>) vincolate a un motore armonico centrale.
             </p>
             <p>
-              Premi <strong>Trio Harmonize</strong> e le tre macchine costruiscono all’istante un groove complementare: il basso lascia spazio agli accenti dell’arpeggio e gli accordi seguono il giro armonico scelto, inviando il MIDI direttamente alle porte USB del Crave e del Minilogue.
+              Premi <strong>Trio Harmonize</strong> e le tre macchine costruiscono all’istante un groove complementare: il basso lascia spazio agli accenti dell’arpeggio e gli accordi seguono il giro armonico scelto, inviando il MIDI direttamente alle porte USB/DIN dei tuoi synth fisici o alle tracce di Ableton.
             </p>
 
             <div class="oled-telemetry-box">
               <div class="oled-header">
-                <span>Routing Hardware Tipico in Studio</span>
+                <span>Routing Flessibile per Qualsiasi Setup</span>
                 <span>Sync: Ableton Host</span>
               </div>
               <ul class="scenario-list">
-                <li><strong>Corsia 1 (Mono Bass / Acid 303):</strong> Porta MIDI diretta su <em>Behringer Crave</em> (Ch 1) con Slide, Accent e Sub-Octave.</li>
-                <li><strong>Corsie 2 &amp; 3 (Arp + Chord Stabs):</strong> Porta MIDI su <em>Korg Minilogue</em> (Ch 2) o synth polifonici di Ableton, più synth di anteprima integrato.</li>
+                <li><strong>Corsia 1 (Mono Bass / Acid 303):</strong> Ideale per pilotare synth monofonici analogici o bassline VST su Canale 1 con Slide, Accent e Sub-Octave.</li>
+                <li><strong>Corsie 2 &amp; 3 (Arp + Chord Stabs):</strong> Pilotano in parallelo qualsiasi polisinth hardware o virtuale su Canali 2 e 3, con synth polifonico di anteprima integrato.</li>
               </ul>
             </div>
           </div>
@@ -1659,7 +1797,7 @@
         </div>
         <div class="instrument-specs">
           <span class="spec-pill">Fletcher-Munson LUFS</span>
-          <span class="spec-pill">Minilogue &amp; Crave Profiles</span>
+          <span class="spec-pill">Poly, Mono &amp; Bus Profiles</span>
           <span class="spec-pill">1-Click Auto-Lock</span>
           <span class="rack-screw" aria-hidden="true"></span>
         </div>
@@ -1672,9 +1810,9 @@
           </div>
 
           <div class="why-it-exists">
-            <h3>Spalanca il cutoff e la risonanza del filtro analogico: il volume percepito non esplode mai.</h3>
+            <h3>Spalanca il cutoff e la risonanza di qualsiasi synth: il volume percepito non esplode mai.</h3>
             <p>
-              Un normale limiter guarda solo i picchi elettrici in dBFS. Quando apri il filtro Ladder 24 dB del Crave o la risonanza del Minilogue, l’energia si concentra tra <strong>1 kHz e 5 kHz</strong>, la zona in cui l’orecchio umano è fino a 15 dB più sensibile: anche se il meter di Ableton sale di poco, nelle casse il synth copre tutto il resto del mix.
+              Un normale limiter guarda solo i picchi elettrici in dBFS. Quando apri un filtro risonante (Ladder 24 dB, State-Variable o Steiner-Parker) su qualsiasi sintetizzatore analogico o virtuale, l’energia si concentra tra <strong>1 kHz e 5 kHz</strong>, la zona in cui l’orecchio umano è fino a 15 dB più sensibile: anche se il meter della DAW sale di poco, nelle casse il synth copre tutto il resto del mix.
             </p>
             <p>
               <strong>LevelGuard</strong> pesa il segnale secondo le curve psicoacustiche dell’orecchio e applica un <strong>tetto puramente unidirezionale</strong>: sotto la soglia il guadagno è esattamente <code>0.0 dB</code> (puoi suonare pianissimo o chiudere il filtro a zero senza che alcun compressore tiri su il fruscio), ma appena superi il tetto inchioda l’esplosione.
@@ -1682,7 +1820,7 @@
 
             <div class="oled-telemetry-box">
               <div class="oled-header cobalt">
-                <span>Come Usarlo in 3 Secondi Durante il Soundcheck</span>
+                <span>Come Usarlo in 3 Secondi su Qualsiasi Synth</span>
                 <span>Sotto Soglia: 0.0 dB</span>
               </div>
               <ul class="scenario-list">
@@ -1701,10 +1839,10 @@
           <div class="ctrl-cell">
             <div class="ctrl-head">
               <strong>Synth Profile</strong>
-              <span class="ctrl-range cobalt">4 Tarature Hardware</span>
+              <span class="ctrl-range cobalt">4 Tarature</span>
             </div>
             <p class="ctrl-body">
-              Adatta la curva di pesatura psicoacustica e le costanti di tempo a: <code>1. Korg Minilogue (Poly)</code>, <code>2. Behringer Crave (Mono Ladder)</code>, <code>3. Preset Guard (Fast Jam)</code> per i cambi di patch improvvisi, o <code>4. Synth Bus</code>.
+              Adatta la curva di pesatura psicoacustica e i tempi di risposta al tipo di strumento: <code>Poly Synth (Chords &amp; Filter)</code>, <code>Mono Analog (Ladder 24dB)</code>, <code>Preset Guard (Fast Jam)</code> per chi cambia patch dal vivo, o <code>Synth Bus</code>.
             </p>
           </div>
 
@@ -1744,7 +1882,7 @@
               <span class="ctrl-range cobalt">0 .. 100%</span>
             </div>
             <p class="ctrl-body">
-              Imposta la velocità di reazione del freno sopra soglia: valori alti bloccano all’istante i salti di volume quando scorri i preset del synth; valori medi accompagnano in modo morbido le aperture lente del cutoff.
+              Imposta la velocità di reazione del freno sopra soglia: valori alti bloccano all’istante i salti di volume quando scorri i preset di un synth; valori medi accompagnano in modo morbido le aperture lente del cutoff.
             </p>
           </div>
 
@@ -1784,7 +1922,7 @@
           <div class="why-it-exists">
             <h3>Il calore imperfetto dei nastri vintage e delle console multi-effetto da tavolo.</h3>
             <p>
-              Un synth analogico registrato diretto nella scheda audio può suonare piatto o troppo sterile. <strong>PLF Little Cosm</strong> mette in fila quattro banchi colore indipendenti: <strong>[A] Character</strong>, <strong>[B] Movement</strong>, <strong>[C] Diffusion</strong> e <strong>[D] Texture</strong>, ciascuno con 5 circuiti dedicati e tre sole manopole ad escursione musicale.
+              Un sintetizzatore hardware o virtuale registrato diretto nella scheda audio può suonare piatto o troppo sterile. <strong>PLF Little Cosm</strong> mette in fila quattro banchi colore indipendenti: <strong>[A] Character</strong>, <strong>[B] Movement</strong>, <strong>[C] Diffusion</strong> e <strong>[D] Texture</strong>, ciascuno con 5 circuiti dedicati e tre sole manopole ad escursione musicale.
             </p>
             <p>
               Con un click nella barra superiore inverti l’ordine dei quattro moduli senza interruzioni audio: puoi mandare il riverbero cavernoso <em>dentro</em> il fuzz al silicio per creare muri sonori shoegaze, oppure filtrare e comprimere in stile cassetta Type-I a fine catena.
@@ -1925,7 +2063,7 @@
 
   <footer class="studio-footer">
     <div>
-      <strong>Orage Audio: Evolver Studio Bundle v1.3</strong> | Strumenti VST3 &amp; Standalone per jam hardware e voce dal vivo.
+      <strong>Orage Audio: Evolver Studio Bundle v1.3</strong> | Strumenti VST3 &amp; Standalone per jam con sintetizzatori e voce dal vivo.
     </div>
     <div>
       Codice sorgente e release su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank" rel="noopener">GitHub (DaMa-sys/PulseForge)</a>
@@ -1991,22 +2129,41 @@
         });
       }
 
-      // 3. Scroll Reveal Observer (Compositor-only opacity + translateY)
+      // 3. Choreographed Scroll Reveal + Active Rack Nav Highlight
       const revealEls = document.querySelectorAll('[data-reveal]');
+      const navLinks = document.querySelectorAll('.nav-links a[data-section]');
+
       if ('IntersectionObserver' in window) {
         revealEls.forEach((el) => el.setAttribute('data-reveal', 'pending'));
-        const io = new IntersectionObserver(
+
+        const revealObserver = new IntersectionObserver(
           (entries) => {
             entries.forEach((entry) => {
               if (entry.isIntersecting) {
                 entry.target.setAttribute('data-reveal', 'visible');
-                io.unobserve(entry.target);
+                revealObserver.unobserve(entry.target);
               }
             });
           },
-          { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
+          { threshold: 0.1, rootMargin: '0px 0px -32px 0px' }
         );
-        revealEls.forEach((el) => io.observe(el));
+        revealEls.forEach((el) => revealObserver.observe(el));
+
+        // Active section tracker for top rack navigation
+        const navObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting && entry.target.id) {
+                navLinks.forEach((link) => {
+                  const isMatch = link.getAttribute('data-section') === entry.target.id;
+                  link.setAttribute('data-current', isMatch ? 'true' : 'false');
+                });
+              }
+            });
+          },
+          { threshold: 0.25, rootMargin: '-20% 0px -55% 0px' }
+        );
+        revealEls.forEach((el) => navObserver.observe(el));
       }
     })();
   </script>
