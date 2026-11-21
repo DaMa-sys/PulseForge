@@ -1,976 +1,2014 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-type="software">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orage Audio — Complete Studio Bundle v1.3 (PulseForge, LevelGuard, Little Cosm &amp; 2D-VOX)</title>
-  <meta name="description" content="Orage Audio Complete Studio Bundle v1.3 per Ableton Live: PulseForge (Sequencer Generativo a 3 Tracce) + LevelGuard (Controllo Volume Percepito e Filter Tamer) + PLF Little Cosm (Console Analogica a 4 Moduli) + Orage 2D-VOX (Gorillaz Vocal Processor a Latenza Zero).">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <title>Orage Audio: Evolver Studio Bundle v1.3 (2D-VOX, PulseForge, LevelGuard, PLF Little Cosm)</title>
+  <meta name="description" content="Quattro strumenti VST3 e Standalone nati per suonare synth analogici e cantare dal vivo su Ableton Live senza latenza, senza salti di volume e senza menu infiniti.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fugaz+One&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* Hallmark · v2.0.0 */
+    /* critique: Orage Evolver Hardware Design System with anodized aluminum headers, OLED telemetry bays and Emil Kowalski compositor motion */
     :root {
-      --bg-chassis: #0A0B0E;
-      --bg-card: #12141A;
-      --bg-card-subtle: #171A22;
-      --border-subtle: rgba(255, 255, 255, 0.10);
-      --border-highlight: rgba(255, 172, 32, 0.45);
+      /* Studio Rack & Anodized Aluminum Tokens */
+      --bg-studio: #090A0D;
+      --bg-rack-bay: #111318;
+      --bg-rack-inset: #16181E;
+      --bg-rack-hover: #1C2029;
+      --bg-oled: #07080A;
 
+      --alu-light: #E8EBF0;
+      --alu-base: #D8DCE3;
+      --alu-dark: #C4C9D2;
+      --alu-bevel: #9BA2AE;
+      --alu-text: #0C0D10;
+      --alu-muted: #2B2F37;
+      --alu-specular: #FFFFFF;
+
+      /* Screw & Hardware Bezel Tokens */
+      --screw-hole: #08090B;
+      --screw-rim: #4A505C;
+      --screw-head: #272B33;
+      --screw-shadow: rgba(0, 0, 0, 0.9);
+      --led-bezel: #1B1D22;
+      --pill-border: #2A2E37;
+
+      /* Text & Silkscreen Tokens */
+      --text-primary: #F2F4F8;
+      --text-secondary: #A6AEBC;
+      --text-dim: #6C7382;
+      --text-ink: #0B0C0E;
+
+      /* Border & Hairline Tokens */
+      --line-subtle: rgba(255, 255, 255, 0.08);
+      --line-machined: rgba(255, 255, 255, 0.15);
+      --line-amber: rgba(255, 172, 32, 0.42);
+      --line-cobalt: rgba(30, 107, 255, 0.42);
+      --line-emerald: rgba(16, 185, 129, 0.42);
+      --tab-hover-bg: rgba(255, 255, 255, 0.04);
+
+      /* Jewel LED Tokens */
       --amber-led: #FFAC20;
-      --amber-glow: rgba(255, 172, 32, 0.40);
-      --blue-led: #1E6BFF;
-      --blue-glow: rgba(30, 107, 255, 0.40);
-      --green-led: #10B981;
-      --green-glow: rgba(16, 185, 129, 0.40);
+      --amber-core: #FFD685;
+      --amber-deep: #8C5600;
+      --amber-dim: rgba(255, 172, 32, 0.14);
 
-      --text-main: #E2E6ED;
-      --text-muted: #959CA8;
-      --text-white: #FFFFFF;
-      --code-bg: #0E1015;
+      --cobalt-led: #1E6BFF;
+      --cobalt-core: #85B8FF;
+      --cobalt-deep: #092B75;
+      --cobalt-dim: rgba(30, 107, 255, 0.14);
+
+      --emerald-led: #10B981;
+      --emerald-core: #76F2C5;
+      --emerald-deep: #064E3B;
+      --emerald-dim: rgba(16, 185, 129, 0.14);
+
+      /* Typography Tokens */
+      --font-logo: 'Fugaz One', cursive;
+      --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Emil Kowalski Motion Tokens */
+      --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+
+      /* Layout Tokens (Strict 4px Scale) */
+      --container-max: 1240px;
+      --radius-rack: 8px;
+      --radius-ctrl: 4px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: radial-gradient(circle at 50% 0%, #161820 0%, #08090C 85%);
-      color: var(--text-main);
-      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-      line-height: 1.65;
-      overflow-x: hidden;
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    header {
-      padding: 1.4rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1240px;
+    html, body {
+      overflow-x: clip;
+      background-color: var(--bg-studio);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      scroll-behavior: smooth;
+    }
+
+    h1, h2, h3 {
+      text-wrap: balance;
+    }
+
+    ::selection {
+      background-color: var(--amber-led);
+      color: var(--text-ink);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-studio);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--bg-rack-inset);
+      border: 2px solid var(--bg-studio);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--alu-bevel);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--amber-led);
+      outline-offset: 2px;
+    }
+
+    button:disabled,
+    [aria-disabled="true"] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Sticky Studio Rack Navigation Bar */
+    .rack-nav-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--bg-studio);
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--line-subtle);
+    }
+
+    .rack-nav {
+      max-width: var(--container-max);
       margin: 0 auto;
-      border-bottom: 1px solid var(--border-subtle);
-      flex-wrap: wrap;
-      gap: 14px;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
     }
 
-    .brand {
-      display: flex;
+    .brand-link {
+      display: inline-flex;
       align-items: center;
       gap: 12px;
       text-decoration: none;
-      color: #FFF;
+      color: var(--text-primary);
     }
 
-    .brand-logo {
-      font-family: 'Fugaz One', cursive;
-      font-size: 1.9rem;
-      letter-spacing: 0.5px;
-      color: #FFF;
+    .brand-wordmark {
+      font-family: var(--font-logo);
+      font-size: 1.75rem;
+      letter-spacing: 0.01em;
+      color: var(--text-primary);
+      line-height: 1;
     }
 
-    .brand-badge {
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      background: rgba(255, 172, 32, 0.15);
-      border: 1px solid rgba(255, 172, 32, 0.45);
+    .brand-model {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
       color: var(--amber-led);
-      padding: 3px 9px;
-      border-radius: 4px;
+      background-color: var(--amber-dim);
+      border: 1px solid var(--line-amber);
+      padding: 4px 8px;
+      border-radius: var(--radius-ctrl);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
     }
 
     .nav-links a {
-      color: var(--text-muted);
+      color: var(--text-secondary);
       text-decoration: none;
-      margin-left: 1.4rem;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 600;
-      transition: color 0.2s;
+      padding: 8px 12px;
+      border-radius: var(--radius-ctrl);
+      white-space: nowrap;
+      transition: color 150ms var(--ease-out-strong), background-color 150ms var(--ease-out-strong), transform 120ms var(--ease-out-strong);
     }
-    .nav-links a:hover { color: #FFF; }
 
-    .hero {
-      text-align: center;
-      padding: 4rem 1.5rem 2.5rem;
-      max-width: 1040px;
+    @media (hover: hover) and (pointer: fine) {
+      .nav-links a:hover {
+        color: var(--text-primary);
+        background-color: var(--bg-rack-inset);
+      }
+    }
+
+    .nav-links a:active {
+      transform: scale(0.97);
+    }
+
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-ink);
+      background-color: var(--amber-led);
+      padding: 8px 16px;
+      border-radius: var(--radius-ctrl);
+      text-decoration: none;
+      transition: transform 120ms var(--ease-out-strong), background-color 150ms var(--ease-out-strong);
+      white-space: nowrap;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .nav-cta:hover {
+        background-color: var(--amber-core);
+      }
+    }
+
+    .nav-cta:active {
+      transform: scale(0.97);
+    }
+
+    /* Main Wrapper */
+    .page-shell {
+      max-width: var(--container-max);
       margin: 0 auto;
+      padding: 0 24px 80px;
     }
 
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-subtle);
-      color: #FFF;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      margin-bottom: 1.4rem;
-    }
-
-    .hero-dot {
-      width: 7px;
-      height: 7px;
+    /* Authentic Evolver Jewel Lamp */
+    .jewel-led {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
-      background: var(--amber-led);
-      box-shadow: 0 0 8px var(--amber-led);
+      background: radial-gradient(circle at 35% 35%, var(--amber-core) 0%, var(--amber-led) 55%, var(--amber-deep) 100%);
+      box-shadow: 0 0 0 2px var(--led-bezel), 0 0 12px var(--amber-led);
+      flex-shrink: 0;
     }
 
-    h1 {
-      font-size: 2.85rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      line-height: 1.18;
-      margin-bottom: 1.2rem;
-      color: #FFF;
+    .jewel-led.cobalt {
+      background: radial-gradient(circle at 35% 35%, var(--cobalt-core) 0%, var(--cobalt-led) 55%, var(--cobalt-deep) 100%);
+      box-shadow: 0 0 0 2px var(--led-bezel), 0 0 12px var(--cobalt-led);
     }
 
-    h1 span { color: var(--amber-led); }
-
-    .hero p {
-      font-size: 1.12rem;
-      color: var(--text-muted);
-      max-width: 880px;
-      margin: 0 auto 2.4rem;
-      line-height: 1.7;
+    .jewel-led.emerald {
+      background: radial-gradient(circle at 35% 35%, var(--emerald-core) 0%, var(--emerald-led) 55%, var(--emerald-deep) 100%);
+      box-shadow: 0 0 0 2px var(--led-bezel), 0 0 12px var(--emerald-led);
     }
 
-    .hero-actions {
+    /* 19-inch Rack Slotted Screw Hole */
+    .rack-screw {
+      width: 8px;
+      height: 16px;
+      border-radius: 4px;
+      background-color: var(--screw-hole);
+      border: 1px solid var(--screw-rim);
+      box-shadow: inset 0 2px 4px var(--screw-shadow);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .rack-screw::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background-color: var(--screw-head);
+      border: 1px solid var(--text-ink);
+    }
+
+    /* HERO SECTION */
+    .hero-section {
+      padding: 40px 0 56px;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+
+    /* Brushed Aluminum Hardware Header Strip */
+    .evolver-faceplate-bar {
+      background: linear-gradient(180deg, var(--alu-light) 0%, var(--alu-base) 52%, var(--alu-dark) 100%);
+      color: var(--alu-text);
+      border: 1px solid var(--alu-bevel);
+      border-radius: var(--radius-rack);
+      padding: 12px 16px;
       display: flex;
-      justify-content: center;
+      align-items: center;
+      justify-content: space-between;
       gap: 16px;
+      margin-bottom: 36px;
       flex-wrap: wrap;
-      margin-bottom: 3rem;
+    }
+
+    .faceplate-left, .faceplate-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .faceplate-title {
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--alu-text);
+      letter-spacing: -0.01em;
+    }
+
+    .faceplate-sub {
+      font-family: var(--font-sans);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--alu-muted);
+    }
+
+    .faceplate-telemetry {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background-color: var(--bg-rack-bay);
+      padding: 4px 12px;
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--pill-border);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(2rem, 3.3vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      overflow-wrap: break-word;
+      min-width: 0;
+    }
+
+    .hero-lead {
+      font-size: 1.04rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      max-width: 56ch;
+    }
+
+    .hero-sublead {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      max-width: 58ch;
+    }
+
+    .hero-sublead strong {
+      color: var(--text-primary);
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 14px 28px;
-      border-radius: 6px;
-      font-size: 0.94rem;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-ctrl);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
       font-weight: 700;
       text-decoration: none;
-      transition: all 0.2s ease;
       cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: transform 130ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong), border-color 160ms var(--ease-out-strong);
+      user-select: none;
     }
 
-    .btn-primary {
-      background: linear-gradient(180deg, #FFBA38 0%, #E08E0B 100%);
-      color: #090A0D;
-      border: 1px solid #FFD278;
-      box-shadow: 0 6px 22px rgba(255, 172, 32, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-    .btn-primary:hover {
-      box-shadow: 0 8px 30px var(--amber-glow);
-      transform: translateY(-2px);
+    .btn:active {
+      transform: scale(0.97);
     }
 
-    .btn-secondary {
-      background: linear-gradient(180deg, #252830 0%, #15171C 100%);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 172, 32, 0.45);
-    }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.10);
-      transform: translateY(-2px);
+    .btn-amber {
+      background-color: var(--amber-led);
+      color: var(--text-ink);
+      border-color: var(--amber-core);
     }
 
-    /* Bundle Overview Cards */
-    .bundle-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      max-width: 1240px;
-      margin: 0 auto 4.5rem;
-      padding: 0 1.5rem;
+    @media (hover: hover) and (pointer: fine) {
+      .btn-amber:hover {
+        background-color: var(--amber-core);
+        transform: translateY(-2px);
+      }
     }
 
-    .bundle-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 24px;
+    .btn-outline {
+      background-color: transparent;
+      color: var(--text-primary);
+      border-color: var(--line-machined);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn-outline:hover {
+        border-color: var(--amber-led);
+        background-color: var(--bg-rack-inset);
+        transform: translateY(-2px);
+      }
+    }
+
+    .hero-spec-strip {
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line-subtle);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
     }
 
-    .bundle-card.highlight {
-      border-color: rgba(255, 172, 32, 0.45);
+    .hero-spec-strip span strong {
+      color: var(--text-primary);
     }
 
-    .bundle-card-tag {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 4px;
-      margin-bottom: 12px;
+    /* Interactive Hardware Rack Preview switcher in Hero */
+    .hero-rack-stage {
+      background-color: var(--bg-rack-bay);
+      color: var(--text-primary);
+      border: 1px solid var(--line-machined);
+      border-radius: var(--radius-rack);
+      padding: 16px;
     }
 
-    .bundle-card h2 {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: #FFF;
-      margin-bottom: 8px;
-    }
-
-    .bundle-card p {
-      color: var(--text-muted);
-      font-size: 0.90rem;
-      margin-bottom: 18px;
-    }
-
-    .preview-frame {
-      border-radius: 10px;
-      background: #0B0C0E;
-      padding: 6px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.10);
-      margin-bottom: 18px;
-    }
-
-    .preview-frame img {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 6px;
-    }
-
-    .container {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 0 1.5rem 5rem;
-    }
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .section-title h2 {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #FFF;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-title p {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      max-width: 760px;
-      margin: 0 auto;
-    }
-
-    .workflow-grid {
+    .stage-selector {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 24px;
-      margin-bottom: 5rem;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      padding: 4px;
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--line-subtle);
     }
 
-    .workflow-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 28px;
-    }
-
-    .workflow-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+    .stage-tab {
+      appearance: none;
+      background-color: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.78rem;
       font-weight: 700;
-      color: var(--amber-led);
-      margin-bottom: 10px;
-    }
-
-    .workflow-card h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #FFF;
-      margin-bottom: 10px;
-    }
-
-    .workflow-card p {
-      color: var(--text-muted);
-      font-size: 0.92rem;
-      line-height: 1.6;
-    }
-
-    .manual-block {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: 12px;
-      padding: 36px 32px;
-      margin-bottom: 3rem;
-    }
-
-    .manual-header {
+      padding: 8px 12px;
+      border-radius: var(--radius-ctrl);
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 1.8rem;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 1rem;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: background-color 150ms var(--ease-out-strong), color 150ms var(--ease-out-strong), transform 120ms var(--ease-out-strong), border-color 150ms var(--ease-out-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .stage-tab:hover {
+        color: var(--text-primary);
+        background-color: var(--tab-hover-bg);
+      }
+    }
+
+    .stage-tab:active {
+      transform: scale(0.97);
+    }
+
+    .stage-tab[aria-selected="true"] {
+      background-color: var(--bg-rack-inset);
+      color: var(--text-primary);
+      border-color: var(--line-amber);
+    }
+
+    .stage-viewport {
+      position: relative;
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      border-radius: var(--radius-ctrl);
+      overflow: hidden;
+      border: 1px solid var(--line-subtle);
+      aspect-ratio: 16 / 9.2;
+    }
+
+    /* Without JS or at rest, active slide is visible; inactive slides hidden via .js-enabled */
+    .stage-slide {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      height: 100%;
+    }
+
+    .stage-slide[data-active="false"] {
+      display: none;
+    }
+
+    .js-enabled .stage-slide {
+      display: flex;
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(0.985);
+      pointer-events: none;
+      transition: opacity 220ms var(--ease-out-strong), transform 220ms var(--ease-out-strong);
+    }
+
+    .js-enabled .stage-slide[data-active="true"] {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      position: relative;
+    }
+
+    .stage-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: var(--radius-ctrl);
+      display: block;
+    }
+
+    .stage-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--line-subtle);
+      font-size: 0.82rem;
+    }
+
+    .stage-status-text {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .stage-status-text strong {
+      color: var(--amber-led);
+      font-family: var(--font-mono);
+    }
+
+    .stage-jump-link {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--amber-led);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 150ms var(--ease-out-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .stage-jump-link:hover {
+        color: var(--amber-core);
+      }
+    }
+
+    /* LIVE SIGNAL CHAIN & INTERACTIVE CONSOLE */
+    .signal-console-section {
+      padding: 64px 0;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 32px;
+      margin-bottom: 32px;
       flex-wrap: wrap;
     }
 
-    .manual-header h3 {
-      font-size: 1.6rem;
+    .section-head h2 {
+      font-size: clamp(1.55rem, 2.5vw, 2.15rem);
       font-weight: 800;
-      color: #FFF;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      line-height: 1.18;
     }
 
-    .badge-amber { background: rgba(255, 172, 32, 0.15); color: var(--amber-led); border: 1px solid rgba(255, 172, 32, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-    .badge-blue  { background: rgba(30, 107, 255, 0.15); color: #70B5FF; border: 1px solid rgba(30, 107, 255, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-    .badge-green { background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    .section-head p {
+      color: var(--text-secondary);
+      font-size: 0.96rem;
+      max-width: 62ch;
+    }
 
-    .controls-table {
+    .signal-chain-rack {
+      background-color: var(--bg-rack-bay);
+      color: var(--text-primary);
+      border: 1px solid var(--line-machined);
+      border-radius: var(--radius-rack);
+      padding: 24px;
+    }
+
+    .chain-flow-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
     }
 
-    .ctrl-item {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 8px;
-      padding: 16px 18px;
+    .chain-node {
+      background-color: var(--bg-rack-inset);
+      color: var(--text-primary);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-rack);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      text-decoration: none;
+      transition: transform 180ms var(--ease-out-strong), border-color 180ms var(--ease-out-strong), background-color 180ms var(--ease-out-strong);
     }
 
-    .ctrl-name {
+    @media (hover: hover) and (pointer: fine) {
+      .chain-node:hover {
+        transform: translateY(-2px);
+        border-color: var(--line-amber);
+        background-color: var(--bg-rack-hover);
+      }
+    }
+
+    .chain-node:active {
+      transform: scale(0.98);
+    }
+
+    .node-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 6px;
+      gap: 8px;
     }
 
-    .ctrl-name strong {
-      font-size: 0.95rem;
-      color: #FFF;
-      font-weight: 700;
+    .node-routing-io {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background-color: var(--bg-oled);
+      padding: 4px 8px;
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--line-subtle);
     }
 
-    .ctrl-type {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      color: var(--amber-led);
-      text-transform: uppercase;
+    .chain-node h3 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.015em;
     }
 
-    .ctrl-desc {
-      font-size: 0.88rem;
-      color: var(--text-muted);
+    .chain-node p {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
       line-height: 1.55;
     }
 
-    .install-box {
-      background: #0E1014;
-      border: 1px solid rgba(255, 172, 32, 0.45);
-      border-radius: 12px;
-      padding: 36px 32px;
+    .node-problem-solved {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--amber-led);
+      padding-top: 12px;
+      border-top: 1px solid var(--line-subtle);
     }
 
-    .install-step-list {
+    .chain-node[data-led="cobalt"] .node-problem-solved {
+      color: var(--cobalt-core);
+    }
+
+    .chain-node[data-led="emerald"] .node-problem-solved {
+      color: var(--emerald-core);
+    }
+
+    /* INDIVIDUAL INSTRUMENT WORKBENCHES */
+    .instrument-section {
+      padding: 72px 0;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+
+    /* Authentic Evolver Brushed Aluminum Section Banner */
+    .instrument-faceplate {
+      background: linear-gradient(180deg, var(--alu-light) 0%, var(--alu-base) 54%, var(--alu-dark) 100%);
+      color: var(--alu-text);
+      border: 1px solid var(--alu-bevel);
+      border-radius: var(--radius-rack) var(--radius-rack) 0 0;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .instrument-id {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .instrument-brand {
+      font-family: var(--font-logo);
+      font-size: 1.45rem;
+      color: var(--alu-text);
+      line-height: 1;
+    }
+
+    .instrument-name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--alu-text);
+    }
+
+    .instrument-tagline {
+      font-style: italic;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--alu-muted);
+    }
+
+    .instrument-specs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .spec-pill {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      font-weight: 600;
+      background-color: var(--bg-rack-bay);
+      color: var(--text-primary);
+      padding: 4px 12px;
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--pill-border);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .instrument-chassis {
+      background-color: var(--bg-rack-bay);
+      color: var(--text-primary);
+      border: 1px solid var(--line-machined);
+      border-top: none;
+      border-radius: 0 0 var(--radius-rack) var(--radius-rack);
+      padding: 28px;
+    }
+
+    .workbench-top {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    .workbench-top.reverse {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+
+    .gui-display-bay {
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      border: 1px solid var(--line-machined);
+      border-radius: var(--radius-rack);
+      padding: 8px;
+      overflow: hidden;
+      transition: border-color 180ms var(--ease-out-strong), transform 180ms var(--ease-out-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .gui-display-bay:hover {
+        border-color: var(--line-amber);
+        transform: translateY(-2px);
+      }
+    }
+
+    .gui-display-bay img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: var(--radius-ctrl);
+    }
+
+    .why-it-exists {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin: 1.8rem 0;
+      gap: 16px;
     }
 
-    .install-row {
+    .why-it-exists h3 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.25;
+    }
+
+    .why-it-exists p {
+      font-size: 0.93rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .why-it-exists p strong {
+      color: var(--text-primary);
+    }
+
+    /* Interactive Demo / Telemetry OLED Box inside each plugin */
+    .oled-telemetry-box {
+      background-color: var(--bg-oled);
+      color: var(--text-primary);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-rack);
+      padding: 16px;
+      margin-top: 4px;
+    }
+
+    .oled-header {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--amber-led);
+      flex-wrap: wrap;
+    }
+
+    .oled-header.cobalt {
+      color: var(--cobalt-core);
+    }
+
+    .oled-header.emerald {
+      color: var(--emerald-core);
+    }
+
+    .scenario-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .scenario-list li {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .scenario-list li strong {
+      color: var(--text-primary);
+    }
+
+    /* Silkscreen Hairline Divider with Center Title */
+    .silkscreen-divider {
+      display: flex;
+      align-items: center;
       gap: 16px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 6px;
-      padding: 14px 18px;
+      margin: 24px 0 20px;
+    }
+
+    .silkscreen-divider::before,
+    .silkscreen-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background-color: var(--line-machined);
+    }
+
+    .silkscreen-divider span {
+      font-family: var(--font-sans);
+      font-style: italic;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* Controls Matrix */
+    .controls-matrix {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .ctrl-cell {
+      background-color: var(--bg-rack-inset);
+      color: var(--text-primary);
+      border: 1px solid var(--line-subtle);
+      border-radius: var(--radius-rack);
+      padding: 16px;
+      transition: border-color 160ms var(--ease-out-strong), background-color 160ms var(--ease-out-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .ctrl-cell:hover {
+        border-color: var(--line-machined);
+        background-color: var(--bg-rack-hover);
+      }
+    }
+
+    .ctrl-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .ctrl-head strong {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .ctrl-range {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--amber-led);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ctrl-range.cobalt {
+      color: var(--cobalt-core);
+    }
+
+    .ctrl-range.emerald {
+      color: var(--emerald-core);
+    }
+
+    .ctrl-body {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .ctrl-body code {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-primary);
+      background-color: var(--bg-oled);
+      padding: 0 4px;
+      border-radius: var(--radius-ctrl);
+      border: 1px solid var(--line-subtle);
+    }
+
+    /* INTERACTIVE SIGNAL SIMULATOR */
+    .interactive-oled-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line-subtle);
+      flex-wrap: wrap;
+    }
+
+    .morph-toggle-btn {
+      appearance: none;
+      background-color: var(--bg-rack-inset);
+      border: 1px solid var(--line-amber);
+      color: var(--amber-led);
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: var(--radius-ctrl);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: transform 120ms var(--ease-out-strong), background-color 150ms var(--ease-out-strong), color 150ms var(--ease-out-strong);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .morph-toggle-btn:hover {
+        background-color: var(--amber-dim);
+      }
+    }
+
+    .morph-toggle-btn:active {
+      transform: scale(0.96);
+    }
+
+    .morph-toggle-btn[aria-pressed="true"] {
+      background-color: var(--amber-led);
+      color: var(--text-ink);
+    }
+
+    .morph-readout {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* INSTALLER & SQLITE CACHE CLEANER SECTION */
+    .installer-section {
+      padding: 72px 0 32px;
+    }
+
+    .installer-rack {
+      background-color: var(--bg-rack-bay);
+      color: var(--text-primary);
+      border: 1px solid var(--line-amber);
+      border-radius: var(--radius-rack);
+      padding: 36px;
+    }
+
+    .installer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+      gap: 36px;
       align-items: center;
     }
 
-    .install-num {
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700;
-      color: var(--amber-led);
-      font-size: 1.1rem;
-      min-width: 24px;
+    .installer-copy h2 {
+      font-size: clamp(1.5rem, 2.3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      line-height: 1.2;
     }
 
-    .install-text {
-      font-size: 0.92rem;
-      color: var(--text-main);
+    .installer-copy p {
+      font-size: 0.94rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 20px;
     }
 
-    .install-text code {
-      background: var(--code-bg);
+    .terminal-box {
+      background-color: var(--bg-oled);
+      color: var(--text-secondary);
+      border: 1px solid var(--line-machined);
+      border-radius: var(--radius-rack);
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 12px;
+    }
+
+    .terminal-prompt {
       color: var(--amber-led);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
+      user-select: none;
+    }
+
+    .terminal-ok {
+      color: var(--emerald-core);
+    }
+
+    .terminal-path {
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    /* Scroll Reveal Animations (Visible by default without JS; animated when .js-enabled is present) */
+    .js-enabled [data-reveal="pending"] {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    .js-enabled [data-reveal="visible"] {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 420ms var(--ease-out-strong), transform 420ms var(--ease-out-strong);
+    }
+
+    /* Footer */
+    .studio-footer {
+      border-top: 1px solid var(--line-subtle);
+      padding: 40px 24px;
+      max-width: var(--container-max);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
       font-size: 0.84rem;
+      color: var(--text-secondary);
     }
 
-    footer {
-      border-top: 1px solid var(--border-subtle);
-      padding: 3rem 1.5rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.88rem;
+    .studio-footer a {
+      color: var(--amber-led);
+      text-decoration: none;
+      font-weight: 600;
     }
 
-    footer a { color: var(--amber-led); text-decoration: none; font-weight: 600; }
+    @media (hover: hover) and (pointer: fine) {
+      .studio-footer a:hover {
+        color: var(--amber-core);
+      }
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .hero-grid,
+      .workbench-top,
+      .workbench-top.reverse,
+      .installer-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .chain-flow-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .controls-matrix {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .rack-nav {
+        padding: 12px 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .stage-selector {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .chain-flow-grid,
+      .controls-matrix {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .instrument-chassis,
+      .installer-rack {
+        padding: 20px;
+      }
+
+      .evolver-faceplate-bar {
+        padding: 8px 12px;
+      }
+
+      .faceplate-sub {
+        display: none;
+      }
+    }
+
+    /* Reduced Motion Fallback */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .js-enabled [data-reveal="pending"] {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <header>
-    <a href="#" class="brand">
-      <div class="brand-logo">Orage</div>
-      <div class="brand-badge">COMPLETE BUNDLE v1.3</div>
-    </a>
-    <nav class="nav-links">
-      <a href="#bundle">I 4 Plugin</a>
-      <a href="#vox2d">2D-VOX (Gorillaz)</a>
-      <a href="#levelguard">LevelGuard</a>
-      <a href="#littlecosm">PLF Little Cosm</a>
-      <a href="#pulseforge">PulseForge</a>
-      <a href="#install">Installer .EXE</a>
-    </nav>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-badge">
-      <div class="hero-dot"></div>
-      Orage Audio Complete Studio Bundle v1.3 — 4 VST3 &amp; Standalone Tools
-    </div>
-    <h1>La Suite Completa per Jammare dal Vivo con <span>Synth Analogici &amp; Voce</span></h1>
-    <p>
-      <strong>Orage Audio Bundle v1.3</strong> riunisce nella stessa cartella <strong>Orage Audio</strong> di Ableton Live i 4 plugin creati su misura per il tuo studio:
-      <strong>Orage 2D-VOX (Vox2D)</strong> (processore vocale a latenza zero ispirato ai Gorillaz con Auto-Tune, Megafono, Saturazione, Robot, Armonie e Stereo),
-      <strong>PulseForge</strong> (sequencer generativo polifonico a 3 tracce),
-      <strong>LevelGuard</strong> (controllo psicoacustico del volume percepito e Filter Tamer) e
-      <strong>PLF Little Cosm</strong> (console analogica multi-effetto a 4 moduli riordinabili).
-    </p>
-    <div class="hero-actions">
-      <a href="download/OrageAudio-Bundle-Installer.exe" class="btn btn-primary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        Scarica Installer Diretto (.EXE) — Installa tutti e 4 i Plugin su Ableton
+  <!-- Sticky Studio Rack Header -->
+  <div class="rack-nav-wrap">
+    <header class="rack-nav">
+      <a href="#top" class="brand-link">
+        <span class="jewel-led" aria-hidden="true"></span>
+        <span class="brand-wordmark">Orage</span>
+        <span class="brand-model">Bundle v1.3</span>
       </a>
-      <a href="download/OrageAudio-Bundle-Windows-v1.0.0.zip" class="btn btn-secondary">
-        Scarica Archivio Completo (.ZIP)
-      </a>
-    </div>
-  </section>
 
-  <!-- Quad Plugin Showcase -->
-  <section id="bundle" class="bundle-grid">
-    <!-- Plugin 1: Orage 2D-VOX (NEW!) -->
-    <div class="bundle-card highlight">
-      <div>
-        <span class="bundle-card-tag badge-amber">NOVITÀ — GORILLAZ VOCAL PROCESSOR</span>
-        <h2>Orage 2D-VOX (Vox2D)</h2>
-        <p>
-          Catena vocale a <strong>0.0 ms di latenza</strong> ispirata a Damon Albarn / 2-D: <strong>Auto-Tune &amp; Cyborg Robot</strong>, <strong>Formant Shift</strong>, <strong>Megafono Lo-Fi</strong>, <strong>Tube Dirt</strong>, <strong>Coro Armonico</strong> e tasto <strong>2-D Morph</strong>.
-        </p>
-      </div>
-      <div>
-        <div class="preview-frame">
-          <img src="vox2d_preview.png" alt="Orage 2D-VOX GUI">
-        </div>
-        <a href="#vox2d" class="btn btn-secondary" style="width:100%; justify-content:center;">Manuale Orage 2D-VOX</a>
-      </div>
-    </div>
+      <nav class="nav-links" aria-label="Strumenti del bundle">
+        <a href="#catena">Catena Live</a>
+        <a href="#vox2d">2D-VOX</a>
+        <a href="#pulseforge">PulseForge</a>
+        <a href="#levelguard">LevelGuard</a>
+        <a href="#littlecosm">PLF Little Cosm</a>
+        <a href="#installer">Setup .EXE</a>
+      </nav>
 
-    <!-- Plugin 2: PulseForge -->
-    <div class="bundle-card highlight">
-      <div>
-        <span class="bundle-card-tag badge-amber">02 — GENERATIVE MIDI &amp; SYNTH</span>
-        <h2>Orage PulseForge v1.0</h2>
-        <p>
-          Motore algoritmico a 3 corsie sincronizzate (<strong>Bass</strong>, <strong>Arp</strong>, <strong>Chords</strong>) che genera linee di basso, arpeggi poliritmici e accordi in scala per pilotare i tuoi synth hardware.
-        </p>
-      </div>
-      <div>
-        <div class="preview-frame">
-          <img src="pulseforge_preview.png" alt="Orage PulseForge GUI">
-        </div>
-        <a href="#pulseforge" class="btn btn-secondary" style="width:100%; justify-content:center;">Manuale PulseForge</a>
-      </div>
-    </div>
-
-    <!-- Plugin 3: LevelGuard -->
-    <div class="bundle-card highlight">
-      <div>
-        <span class="bundle-card-tag badge-blue">03 — PERCEIVED LOUDNESS CEILING</span>
-        <h2>Orage LevelGuard v1.0</h2>
-        <p>
-          Tetto unidirezionale sul <strong>volume percepito (LUFS + Fletcher-Munson)</strong> con <strong>Filter Tamer dinamico</strong>: blocca qualsiasi esplosione di volume quando apri i filtri o cambi preset, lasciandoti libero di scendere.
-        </p>
-      </div>
-      <div>
-        <div class="preview-frame">
-          <img src="levelguard_preview.png" alt="Orage LevelGuard GUI">
-        </div>
-        <a href="#levelguard" class="btn btn-secondary" style="width:100%; justify-content:center;">Manuale LevelGuard</a>
-      </div>
-    </div>
-
-    <!-- Plugin 4: PLF Little Cosm -->
-    <div class="bundle-card highlight">
-      <div>
-        <span class="bundle-card-tag badge-green">04 — 4-MODULE ANALOG COLOR CONSOLE</span>
-        <h2>PLF Little Cosm v1.1</h2>
-        <p>
-          Console multi-effetto boutique con <strong>4 moduli riordinabili</strong> (Character, Movement, Diffusion, Texture), <strong>20 algoritmi analogici</strong>, Sustainer Capture, Tilt EQ e 24 preset da studio.
-        </p>
-      </div>
-      <div>
-        <div class="preview-frame">
-          <img src="little_cosm_preview.png" alt="PLF Little Cosm GUI">
-        </div>
-        <a href="#littlecosm" class="btn btn-secondary" style="width:100%; justify-content:center;">Manuale Little Cosm</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="container">
-
-    <!-- ORAGE 2D-VOX FULL MANUAL SECTION -->
-    <section id="vox2d">
-      <div class="section-title">
-        <h2>Orage 2D-VOX (Vox2D) — Gorillaz &amp; Cyborg Vocal Processor</h2>
-        <p>Auto-Tune a Latenza Zero, Megafono Lo-Fi, Saturazione Valvolare, Formant Shift, Coro Diatonico/MIDI e Apertura Stereo Istantanea.</p>
-      </div>
-
-      <div class="preview-frame" style="margin-bottom: 3rem;">
-        <img src="vox2d_preview.png" alt="Orage 2D-VOX Full Resizable Interface">
-      </div>
-
-      <div class="workflow-grid">
-        <div class="workflow-card">
-          <div class="workflow-num">CARATTERISTICA 01</div>
-          <h3>1. Latenza Zero Reale per Cantare Live</h3>
-          <p>
-            A differenza dei normali pitch-shifter basati su FFT che introducono 30-50 ms di ritardo in cuffia, <strong>Orage 2D-VOX</strong> usa un rilevatore monofonico YIN/AMDF nel dominio del tempo e un motore Dual-Grain a finestra ultra-corta: canti al microfono senza alcun ritardo percepibile.
-          </p>
-        </div>
-
-        <div class="workflow-card">
-          <div class="workflow-num">CARATTERISTICA 02</div>
-          <h3>2. Il Vero Suono "Feel Good" &amp; 2-D Morph</h3>
-          <p>
-            Combina il filtro passa-banda risonante del <strong>Megafono di Damon Albarn</strong> con la saturazione asimmetrica <strong>Tube Dirt (con Auto-Gain)</strong>. Premendo <strong>2-D MORPH (VERSE -&gt; CHORUS)</strong>, il megafono si apre e la voce esplode in stereo con armonie di 3a e 5a per il ritornello!
-          </p>
-        </div>
-
-        <div class="workflow-card">
-          <div class="workflow-num">CARATTERISTICA 03</div>
-          <h3>3. Finestra Ridimensionabile &amp; OLED Interattivo</h3>
-          <p>
-            L'interfaccia hardware Orage Evolver (960x540 di base) può essere <strong>allargata e stretta liberamente</strong> trascinando l'angolo inferiore destro. Sul display OLED puoi monitorare l'intonazione in centesimi e trascinare col mouse la curva del Megafono e del Drive.
-          </p>
-        </div>
-      </div>
-
-      <div class="manual-block" style="border-color: rgba(255, 172, 32, 0.45);">
-        <div class="manual-header">
-          <h3>Controlli di Orage 2D-VOX (Vox2D)</h3>
-          <span class="badge-amber">AUTO-TUNE, MEGAPHONE, HARMONY &amp; STEREO</span>
-        </div>
-
-        <div class="controls-table">
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>TUNE &amp; ROBOT (0 - 100%)</strong>
-              <span class="ctrl-type">Auto-Tune &amp; Cyborg</span>
-            </div>
-            <div class="ctrl-desc">
-              Intona automaticamente la voce sulla tonalità e scala scelte (<code>Minor</code>, <code>Major</code>, <code>Dorian Gorillaz</code>, <code>MIDI Lock</code>). Da correzione naturale (30-55%) a <strong>Hard-Tune 0ms (80%)</strong> fino alla sintesi robotica <strong>Cyborg (100%)</strong>.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>2-D FORMANT (-100% .. +100%)</strong>
-              <span class="ctrl-type">Timbro Gola / Cartoon</span>
-            </div>
-            <div class="ctrl-desc">
-              Sposta le risonanze del tratto vocale senza alterare la nota cantata: a sinistra (<code>-100%</code>) voce profonda e oscura stile <em>Demon / Murdoc</em>, a destra (<code>+100%</code>) timbro nasale/sintetico stile <em>2-D / Cyborg Noodle</em>.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>MEGAPHONE (0 - 100%)</strong>
-              <span class="ctrl-type">Filtro Lo-Fi Gorillaz</span>
-            </div>
-            <div class="ctrl-desc">
-              Modella il megafono live e i microfoni telefonici/walkie-talkie dei Gorillaz, stringendo la banda e aggiungendo il picco conico a <code>1.85 kHz</code>. Controllabile anche trascinando orizzontalmente il punto Ambra sul display OLED.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>TUBE DIRT (0 - 100%)</strong>
-              <span class="ctrl-type">Saturazione Auto-Gain</span>
-            </div>
-            <div class="ctrl-desc">
-              Saturazione analogica asimmetrica a doppio stadio (nastro + triodo in stile <em>Decapitator</em>) con compensazione automatica del volume: sporca e scalda la voce senza mai far clippare il canale.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>HARMONIES &amp; VOICING</strong>
-              <span class="ctrl-type">Coro a 3 Voci / MIDI</span>
-            </div>
-            <div class="ctrl-desc">
-              Genera fino a 3 voci armonizzate in tempo reale: <code>1. 2-D Duet (+3rd)</code>, <code>2. Gorillaz Choir (3rd+5th)</code>, <code>3. Demon Sub (-Oct+5th)</code>, <code>4. Octave Stack</code> e <code>5. Robot Power</code>. Supporta anche l'aggancio alle note MIDI!
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>STEREO SPACE &amp; 2-D MORPH</strong>
-              <span class="ctrl-type">Doubler &amp; Slapback</span>
-            </div>
-            <div class="ctrl-desc">
-              <code>STEREO SPACE</code> combina un Micro-Pitch Doubler stereo largo con un eco <em>Tape Slapback</em> corto vintage; il pulsante <code>2-D MORPH</code> spalanca istantaneamente la voce per passare dalla strofa al ritornello.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- LEVELGUARD FULL MANUAL SECTION -->
-    <section id="levelguard" style="margin-top: 5rem;">
-      <div class="section-title">
-        <h2>Orage LevelGuard — Zero Pensieri sul Gain Stage</h2>
-        <p>Creato su misura per Korg Minilogue, Behringer Crave e performance dal vivo con sintetizzatori analogici.</p>
-      </div>
-
-      <div class="preview-frame" style="margin-bottom: 3rem;">
-        <img src="levelguard_preview.png" alt="Orage LevelGuard Full Interface">
-      </div>
-
-      <div class="workflow-grid">
-        <div class="workflow-card">
-          <div class="workflow-num">PROBLEMA RISOLTO 01</div>
-          <h3>1. Apertura Filtri &amp; Risonanza</h3>
-          <p>
-            Quando apri il Cutoff e la Risonanza sul Crave (Moog Ladder 24dB) o sul Minilogue, l'energia esplode tra 1 kHz e 5 kHz dove l'orecchio umano è fino a 15 dB più sensibile. LevelGuard ascolta con la stessa curva del tuo orecchio e blocca il salto percepito.
-          </p>
-        </div>
-
-        <div class="workflow-card">
-          <div class="workflow-num">PROBLEMA RISOLTO 02</div>
-          <h3>2. Solo Tetto in Salita (100% Libero in Discesa)</h3>
-          <p>
-            A differenza dei normali Vocal Rider che alzano il volume quando suoni piano, LevelGuard interviene <strong>0.0 dB sotto la soglia</strong>: puoi chiudere il filtro fino a zero, suonare pianissimo o sfumare in libertà assoluta.
-          </p>
-        </div>
-
-        <div class="workflow-card">
-          <div class="workflow-num">PROBLEMA RISOLTO 03</div>
-          <h3>3. Pulsante "Fissa Volume Ora"</h3>
-          <p>
-            Suona il tuo synth al volume che ti piace nel mix e premi <strong>FISSA VOLUME ORA (LOCK)</strong>: il plugin memorizza gli ultimi 2,5 secondi di suonato e posiziona automaticamente il tetto massimo a quel livello percepito!
-          </p>
-        </div>
-      </div>
-
-      <div class="manual-block" style="border-color: rgba(30, 107, 255, 0.4);">
-        <div class="manual-header">
-          <h3>Controlli di Orage LevelGuard</h3>
-          <span class="badge-blue">PERCEIVED LOUDNESS &amp; FILTER TAMER</span>
-        </div>
-
-        <div class="controls-table">
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>SYNTH PROFILE</strong>
-              <span class="ctrl-type">4 Profili Hardware</span>
-            </div>
-            <div class="ctrl-desc">
-              Calibra i filtri psicoacustici e i tempi di attacco/rilascio per: <code>1. Korg Minilogue (Poly/Filter)</code>, <code>2. Behringer Crave (Mono Ladder 24dB)</code>, <code>3. Preset Guard (Fast Jam)</code> o <code>4. Synth Bus</code>.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>FISSA VOLUME ORA (LOCK)</strong>
-              <span class="ctrl-type">Auto-Lock Istantaneo</span>
-            </div>
-            <div class="ctrl-desc">
-              Cattura il volume percepito della frase che stai suonando (con memoria di 2,5 secondi per darti il tempo di lasciare la tastiera e cliccare col mouse) e imposta la Soglia Max esattamente lì.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>SOGLIA MAX (CEILING)</strong>
-              <span class="ctrl-type">Potenziometro &amp; Linea OLED</span>
-            </div>
-            <div class="ctrl-desc">
-              Il tetto invalicabile del volume percepito (-36..0 dB). Puoi regolarlo anche cliccando e trascinando verticalmente la linea ambra direttamente sul display OLED.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>FILTER TAMER (0 - 100%)</strong>
-              <span class="ctrl-type">De-Harsher Dinamico</span>
-            </div>
-            <div class="ctrl-desc">
-              Quando spalanchi il filtro risonante, attenua dinamicamente solo l'eccesso acido sopra 1.1 kHz prima del rider di volume, così il tuo synth non perde mai i bassi e il corpo!
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>CLAMP SPEED (0 - 100%)</strong>
-              <span class="ctrl-type">Velocità di Reazione</span>
-            </div>
-            <div class="ctrl-desc">
-              Regola la rapidità con cui LevelGuard inchioda i salti di volume quando cambi preset sul synth o apri bruscamente il cutoff.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>ANALOG WARMTH &amp; OUTPUT TRIM</strong>
-              <span class="ctrl-type">Stadio Finale</span>
-            </div>
-            <div class="ctrl-desc">
-              <code>ANALOG WARMTH</code> applica una morbida saturazione analogica progressiva ai picchi risonanti più estremi; <code>OUTPUT TRIM</code> regola il livello finale nel mix.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PLF LITTLE COSM SECTION -->
-    <section id="littlecosm" style="margin-top: 5rem;">
-      <div class="section-title">
-        <h2>PLF Little Cosm v1.1 — 4-Module Analog Color &amp; Texture Console</h2>
-        <p>Console multi-effetto vintage con 4 moduli riordinabili, 20 algoritmi analogici, Tilt EQ e Sustainer Looper.</p>
-      </div>
-
-      <div class="preview-frame" style="margin-bottom: 3rem;">
-        <img src="little_cosm_preview.png" alt="PLF Little Cosm Full Interface">
-      </div>
-
-      <div class="manual-block" style="border-color: rgba(16, 185, 129, 0.4);">
-        <div class="manual-header">
-          <h3>I 4 Moduli Riordinabili &amp; Master Console</h3>
-          <span class="badge-green">20 ALGORITMI ANALOGICI</span>
-        </div>
-
-        <div class="controls-table">
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>[A] CHARACTER</strong>
-              <span class="ctrl-type">Saturazione &amp; Inviluppo</span>
-            </div>
-            <div class="ctrl-desc">
-              5 circuiti: <code>DRIVE</code> (overdrive asimmetrico a valvole), <code>SWEETEN</code> (preamp caldo da studio), <code>FUZZ</code> (silicio vintage), <code>HOWL</code> (filtro risonante aggressivo) e <code>SWELL</code> (auto-volume per pad).
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>[B] MOVEMENT</strong>
-              <span class="ctrl-type">Modulazione &amp; Drift</span>
-            </div>
-            <div class="ctrl-desc">
-              5 algoritmi: <code>DOUBLER</code> (chorus/flanger a nastro), <code>VIBRATO</code> (wow &amp; flutter organico), <code>PHASER</code> (6 stadi all-pass), <code>TREMOLO</code> e <code>PITCH</code> (shimmer d'ottava).
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>[C] DIFFUSION</strong>
-              <span class="ctrl-type">Delay, Nastro &amp; Spazio</span>
-            </div>
-            <div class="ctrl-desc">
-              5 spazi: <code>CASCADE</code> (delay stereo multi-tap), <code>REELS</code> (eco a bobine aperte), <code>SPACE</code> (riverbero plate/cavern), <code>COLLAGE</code> (granulare) e <code>REVERSE</code> (eco inverso).
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>[D] TEXTURE</strong>
-              <span class="ctrl-type">Filtro, Squash &amp; Lo-Fi</span>
-            </div>
-            <div class="ctrl-desc">
-              5 processori di grana: <code>FILTER</code> (SVF risonante), <code>SQUASH</code> (compressore ottico LA-2A), <code>CASSETTE</code> (nastro Type-I), <code>BROKEN</code> e <code>INTERFERE</code>.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>SIGNAL ROUTING &amp; CALIB</strong>
-              <span class="ctrl-type">Catena Flessibile</span>
-            </div>
-            <div class="ctrl-desc">
-              Cambia al volo l'ordine dei 4 moduli senza click (es. Riverbero dentro il Fuzz per muri Shoegaze, o Filtro prima del Drive) e calibra l'headroom d'ingresso.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>CAPTURE, TILT EQ &amp; PRESET MANAGER</strong>
-              <span class="ctrl-type">Master Console</span>
-            </div>
-            <div class="ctrl-desc">
-              <code>CAPTURE</code> congela l'audio in un drone/pad infinito su cui improvvisare; <code>TILT EQ</code> bilancia il timbro globale; include 24 preset di fabbrica + salvataggio/esportazione XML.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PULSEFORGE FULL MANUAL SECTION -->
-    <section id="pulseforge" style="margin-top: 5rem;">
-      <div class="section-title">
-        <h2>Orage PulseForge — 3-Track Generative Synthesizer</h2>
-        <p>Genera al volo linee di basso, arpeggi e progressioni di accordi sincronizzati per i tuoi synth hardware.</p>
-      </div>
-
-      <div class="preview-frame" style="margin-bottom: 3rem;">
-        <img src="pulseforge_preview.png" alt="Orage PulseForge Full Interface">
-      </div>
-
-      <div class="manual-block">
-        <div class="manual-header">
-          <h3>Master Header &amp; Le 3 Corsie Generative</h3>
-          <span class="badge-amber">BASS / ARP / CHORDS</span>
-        </div>
-
-        <div class="controls-table">
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>MUSICAL SCALE &amp; ROOT</strong>
-              <span class="ctrl-type">Armonia Globale</span>
-            </div>
-            <div class="ctrl-desc">
-              Seleziona la scala (Dorian, Phrygian Acid, Minor Natural, Lydian Berlin, ecc.) e la nota fondamentale. Tutte e 3 le tracce generano e traspongono in tempo reale nella stessa tonalità.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>TRIO HARMONIZE &amp; NEW PROGRESSION</strong>
-              <span class="ctrl-type">Motore Armonico</span>
-            </div>
-            <div class="ctrl-desc">
-              <code>TRIO HARMONIZE</code> genera simultaneamente Basso, Arp e Chords in contrappunto; <code>NEW PROGRESSION</code> evolve il giro armonico di 8 battute mantenendo il ritmo.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>ROUTING MIDI OUTPUT DIRETTO</strong>
-              <span class="ctrl-type">Hardware USB / DIN</span>
-            </div>
-            <div class="ctrl-desc">
-              Ogni corsia può inviare il MIDI direttamente alla porta USB/MIDI del tuo synth fisico (es. Seq 1 al Behringer Crave, Seq 2/3 al Korg Minilogue) o alle tracce di Ableton Live.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>SAVE / RECALL SNAPSHOT [S]</strong>
-              <span class="ctrl-type">Memoria Live</span>
-            </div>
-            <div class="ctrl-desc">
-              Tieni premuto per 1 secondo (o click destro) per salvare la sequenza preferita; clicca brevemente per richiamarla all'istante come un ritornello durante la jam!
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>6 POMOLLI EVOLVER (0-10)</strong>
-              <span class="ctrl-type">Modellazione Real-Time</span>
-            </div>
-            <div class="ctrl-desc">
-              Controlla <code>COMPLEXITY</code>, <code>SWING</code>, <code>BASE OCT</code>, <code>ARP OCT</code>, <code>MIDI CH</code> e <code>RATIO</code> per poliritmie istantanee.
-            </div>
-          </div>
-
-          <div class="ctrl-item">
-            <div class="ctrl-name">
-              <strong>MATRICE STEP &amp; EXP +</strong>
-              <span class="ctrl-type">Micro-Editing</span>
-            </div>
-            <div class="ctrl-desc">
-              Attiva/disattiva step col click, trascina verticalmente per cambiare nota in scala, ed espandi <code>EXP +</code> per Accent, Slide 303, Ratchet, Legato e Velocity.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 1-CLICK EXE INSTALLER SECTION -->
-    <section id="install" class="install-box">
-      <div class="manual-header">
-        <h3>Installazione Automatica 1-Click (.EXE) — Tutti e 4 i Plugin in "Orage Audio"</h3>
-        <span class="badge-green">ANTI-CACHE &amp; AUTO-UPDATE</span>
-      </div>
-      <p style="color:var(--text-muted); font-size:0.95rem;">
-        L'installer eseguibile <strong>OrageAudio-Bundle-Installer.exe</strong> installa tutti e 4 i plugin (<strong>Orage 2D-VOX / Vox2D</strong>, <strong>PulseForge</strong>, <strong>LevelGuard</strong> e <strong>PLF Little Cosm</strong>) nella stessa cartella <strong>Orage Audio</strong> di Ableton Live e pulisce automaticamente il database SQLite della cache di Ableton.
-      </p>
-
-      <div class="install-step-list">
-        <div class="install-row">
-          <div class="install-num">1</div>
-          <div class="install-text">
-            Scarica e avvia <code>OrageAudio-Bundle-Installer.exe</code> dal pulsante qui sotto.
-          </div>
-        </div>
-
-        <div class="install-row">
-          <div class="install-num">2</div>
-          <div class="install-text">
-            Clicca su <strong>"INSTALLA E AGGIORNA TUTTO IL BUNDLE (4 PLUGIN) SU ABLETON LIVE"</strong>: l'installer rimuove eventuali vecchie copie duplicate e installa <code>Vox2D.vst3</code>, <code>PulseForge.vst3</code>, <code>LevelGuard.vst3</code> e <code>PLF Little Cosm.vst3</code> in <code>C:\Program Files\Common Files\VST3\Orage Audio\</code>.
-          </div>
-        </div>
-
-        <div class="install-row">
-          <div class="install-num">3</div>
-          <div class="install-text">
-            <strong>Zero Problemi di Cache:</strong> L'installer aggiorna i timestamp dei binari e pulisce automaticamente le voci in cache nei database <code>Live-plugins-1.db</code>, <code>Live-files.db</code> e <code>PluginScanDb.txt</code> di Ableton Live, garantendo che all'apertura Ableton rilevi subito l'ultima versione di tutti e 4 i plugin sotto <strong>Orage Audio</strong>!
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top: 2rem;">
-        <a href="download/OrageAudio-Bundle-Installer.exe" class="btn btn-primary" style="font-size:1.02rem; padding:15px 32px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Scarica OrageAudio-Bundle-Installer.exe (Consigliato)
-        </a>
-        <a href="download/OrageAudio-Bundle-Windows-v1.0.0.zip" class="btn btn-secondary" style="font-size:1.0rem; padding:15px 28px;">
-          Scarica Bundle Portatile (.ZIP)
-        </a>
-      </div>
-    </section>
-
+      <a href="download/OrageAudio-Bundle-Installer.exe" class="nav-cta">Installer .EXE</a>
+    </header>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>
-      <strong>Orage Audio Complete Studio Bundle v1.3 (Orage 2D-VOX, PulseForge, LevelGuard &amp; PLF Little Cosm)</strong> — Progettato per musicisti e jam dal vivo.<br>
-      Repository ufficiale e aggiornamenti su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank">GitHub</a>.
-    </p>
+  <main id="top" class="page-shell">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <!-- Authentic Evolver Brushed Aluminum Rack Strip -->
+      <div class="evolver-faceplate-bar">
+        <div class="faceplate-left">
+          <span class="rack-screw" aria-hidden="true"></span>
+          <span class="jewel-led" aria-hidden="true"></span>
+          <span class="faceplate-title">Orage Evolver Series: Studio Rack Bundle</span>
+          <span class="faceplate-sub">Anodized Aluminum &amp; Zero-Latency Live DSP</span>
+        </div>
+        <div class="faceplate-right">
+          <span class="faceplate-telemetry">VST3 &amp; Standalone / Win 64-bit / 0.0 ms Live</span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Suona synth e voce dal vivo.</h1>
+          <p class="hero-lead">
+            Quattro macchine VST3 e Standalone a latenza zero per Ableton Live.
+          </p>
+          <p class="hero-sublead">
+            Progettate attorno a un vero banco hardware con <strong>Korg Minilogue</strong>, <strong>Behringer Crave</strong> e microfono live: sequenze polifoniche che non stonano mai, voce megafono in tempo reale, tetto sul volume percepito quando spalanchi i filtri e quattro stadi di saturazione e nastro.
+          </p>
+
+          <div class="action-row">
+            <a href="download/OrageAudio-Bundle-Installer.exe" class="btn btn-amber">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Installa Bundle (.EXE)
+            </a>
+            <a href="download/OrageAudio-Bundle-Windows-v1.0.0.zip" class="btn btn-outline">
+              Archivio (.ZIP)
+            </a>
+          </div>
+
+          <div class="hero-spec-strip">
+            <span><strong>Cartella:</strong> Plug-Ins / Orage Audio</span>
+            <span><strong>Database:</strong> Pulizia cache SQLite Ableton</span>
+            <span><strong>CPU:</strong> &lt; 2% per istanza</span>
+          </div>
+        </div>
+
+        <!-- Interactive Hardware Stage Switcher -->
+        <div class="hero-rack-stage" aria-label="Selettore interfaccia plugin">
+          <div class="stage-selector" role="tablist">
+            <button type="button" class="stage-tab" role="tab" aria-selected="true" data-target="slide-vox2d" data-label="Orage 2D-VOX: Latenza 0.0 ms, Auto-Tune, Megafono 1.85 kHz e 2-D Morph" data-link="#vox2d">
+              <span class="jewel-led" aria-hidden="true"></span>
+              2D-VOX
+            </button>
+            <button type="button" class="stage-tab" role="tab" aria-selected="false" data-target="slide-pulseforge" data-label="Orage PulseForge: 3 Sequencer MIDI sincronizzati (Bass, Arp, Chords)" data-link="#pulseforge">
+              <span class="jewel-led" aria-hidden="true"></span>
+              PulseForge
+            </button>
+            <button type="button" class="stage-tab" role="tab" aria-selected="false" data-target="slide-levelguard" data-label="Orage LevelGuard: Tetto LUFS unidirezionale e Filter Tamer per Minilogue e Crave" data-link="#levelguard">
+              <span class="jewel-led cobalt" aria-hidden="true"></span>
+              LevelGuard
+            </button>
+            <button type="button" class="stage-tab" role="tab" aria-selected="false" data-target="slide-littlecosm" data-label="PLF Little Cosm: Console analogica a 4 moduli riordinabili e 20 circuiti" data-link="#littlecosm">
+              <span class="jewel-led emerald" aria-hidden="true"></span>
+              Little Cosm
+            </button>
+          </div>
+
+          <div class="stage-viewport">
+            <div class="stage-slide" id="slide-vox2d" data-active="true" role="tabpanel">
+              <img src="vox2d_preview.png" alt="Interfaccia Orage 2D-VOX Vocal Processor">
+            </div>
+            <div class="stage-slide" id="slide-pulseforge" data-active="false" role="tabpanel">
+              <img src="pulseforge_preview.png" alt="Interfaccia Orage PulseForge 3-Track Sequencer">
+            </div>
+            <div class="stage-slide" id="slide-levelguard" data-active="false" role="tabpanel">
+              <img src="levelguard_preview.png" alt="Interfaccia Orage LevelGuard Perceived Loudness Ceiling">
+            </div>
+            <div class="stage-slide" id="slide-littlecosm" data-active="false" role="tabpanel">
+              <img src="little_cosm_preview.png" alt="Interfaccia PLF Little Cosm 4-Module Analog Console">
+            </div>
+          </div>
+
+          <div class="stage-footer-bar">
+            <span class="stage-status-text" id="stage-readout">
+              <strong>Modulo:</strong> Orage 2D-VOX: Latenza 0.0 ms, Auto-Tune, Megafono 1.85 kHz e 2-D Morph
+            </span>
+            <a href="#vox2d" class="stage-jump-link" id="stage-jump">Vai ai controlli</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SIGNAL CHAIN SECTION -->
+    <section id="catena" class="signal-console-section" data-reveal>
+      <div class="section-head">
+        <div>
+          <h2>Come lavorano insieme durante una jam su Ableton Live</h2>
+        </div>
+        <p>
+          Ogni plugin risolve un ostacolo preciso di chi suona hardware dal vivo: dalla generazione armonica iniziale fino al controllo dei picchi di risonanza sul master.
+        </p>
+      </div>
+
+      <div class="signal-chain-rack">
+        <div class="chain-flow-grid">
+          <a href="#pulseforge" class="chain-node" data-led="amber">
+            <div>
+              <div class="node-top">
+                <span class="jewel-led" aria-hidden="true"></span>
+                <span class="node-routing-io">MIDI Out / USB &amp; DIN</span>
+              </div>
+              <h3 style="margin-top: 12px;">PulseForge</h3>
+              <p>
+                Invia in parallelo il basso acido al <strong>Behringer Crave</strong> (Canale 1) e gli arpeggi o accordi al <strong>Korg Minilogue</strong> (Canali 2 e 3), bloccati nella stessa scala.
+              </p>
+            </div>
+            <div class="node-problem-solved">
+              Evita di programmare clip MIDI a mano
+            </div>
+          </a>
+
+          <a href="#vox2d" class="chain-node" data-led="amber">
+            <div>
+              <div class="node-top">
+                <span class="jewel-led" aria-hidden="true"></span>
+                <span class="node-routing-io">Mic In / 0.0 ms Live</span>
+              </div>
+              <h3 style="margin-top: 12px;">Orage 2D-VOX</h3>
+              <p>
+                Intona la voce sulla stessa tonalità dei synth, applica il megafono radiofonico in strofa e spalanca armonie a 3 voci in stereo nel ritornello con un singolo pulsante.
+              </p>
+            </div>
+            <div class="node-problem-solved">
+              Zero ritardo in cuffia mentre canti
+            </div>
+          </a>
+
+          <a href="#littlecosm" class="chain-node" data-led="emerald">
+            <div>
+              <div class="node-top">
+                <span class="jewel-led emerald" aria-hidden="true"></span>
+                <span class="node-routing-io">Audio FX / 4 Stadi</span>
+              </div>
+              <h3 style="margin-top: 12px;">PLF Little Cosm</h3>
+              <p>
+                Colora i synth o la voce combinando saturazione a valvole, wow &amp; flutter a nastro, delay granulare e riverbero cavernoso, con ordine dei moduli invertibile al volo.
+              </p>
+            </div>
+            <div class="node-problem-solved">
+              Congela accordi in droni con Capture
+            </div>
+          </a>
+
+          <a href="#levelguard" class="chain-node" data-led="cobalt">
+            <div>
+              <div class="node-top">
+                <span class="jewel-led cobalt" aria-hidden="true"></span>
+                <span class="node-routing-io">Synth Bus / LUFS Lock</span>
+              </div>
+              <h3 style="margin-top: 12px;">LevelGuard</h3>
+              <p>
+                Posto a fine catena, doma l’esplosione tra 1 e 5 kHz quando apri il filtro Ladder o cambi preset, lasciando intatta la dinamica quando suoni piano.
+              </p>
+            </div>
+            <div class="node-problem-solved">
+              Addio fader da abbassare in fretta
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTRUMENT 1: ORAGE 2D-VOX -->
+    <section id="vox2d" class="instrument-section" data-reveal>
+      <div class="instrument-faceplate">
+        <div class="instrument-id">
+          <span class="rack-screw" aria-hidden="true"></span>
+          <span class="jewel-led" aria-hidden="true"></span>
+          <span class="instrument-brand">Orage</span>
+          <h2 class="instrument-name">2D-VOX (Vox2D)</h2>
+          <span class="instrument-tagline">Gorillaz Vocal Rig &amp; Zero-Latency Cyborg Processor</span>
+        </div>
+        <div class="instrument-specs">
+          <span class="spec-pill">YIN Time-Domain Pitch</span>
+          <span class="spec-pill">0.0 ms Latency</span>
+          <span class="spec-pill">Resizable GUI</span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="instrument-chassis">
+        <div class="workbench-top">
+          <div class="gui-display-bay">
+            <img src="vox2d_preview.png" alt="Pannello Orage 2D-VOX con curva Megafono OLED e 6 manopole Evolver">
+          </div>
+
+          <div class="why-it-exists">
+            <h3>Canta in cuffia con il timbro di Damon Albarn senza il ritardo dei pitch-shifter FFT.</h3>
+            <p>
+              I normali plugin di intonazione e formant shifting lavorano nel dominio della frequenza (FFT) e aggiungono 35 o 50 ms di latenza: quando canti dal vivo senti la tua voce sdoppiata in cuffia e perdi il timing. <strong>Orage 2D-VOX</strong> usa un rilevatore monofonico nel dominio del tempo accoppiato a un motore Dual-Grain a finestra ultra-corta per rispondere all’istante.
+            </p>
+            <p>
+              In un’unica schermata unisce la voce telefonica sporca di <em>Feel Good Inc.</em> (filtro conico a 1.85 kHz + saturazione valvolare asimmetrica) e l’apertura corale da ritornello tramite la macro <strong>2-D Morph</strong>.
+            </p>
+
+            <div class="oled-telemetry-box">
+              <div class="oled-header">
+                <span>Simulatore Macro: 2-D Morph (Strofa / Ritornello)</span>
+                <span id="morph-state-badge">Stato: Strofa Lo-Fi</span>
+              </div>
+              <ul class="scenario-list" id="morph-details">
+                <li><strong>Megafono &amp; Tube Dirt:</strong> Banda ristretta 320 Hz / 3.4 kHz con risonanza a 1.85 kHz e saturazione triodo al 52% per bucare il mix al centro.</li>
+                <li><strong>Immagine Stereo:</strong> Voce mono compatta (31%) in primo piano sopra basso e batteria.</li>
+              </ul>
+              <div class="interactive-oled-bar">
+                <button type="button" class="morph-toggle-btn" id="btn-2d-morph" aria-pressed="false">
+                  <span class="jewel-led" aria-hidden="true"></span>
+                  2-D Morph: Verse / Chorus
+                </button>
+                <span class="morph-readout" id="morph-readout-val">Megafono: 76% | Coro: 10% | Stereo: 32%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="silkscreen-divider">
+          <span>Catena Vocale 2-D: Tune, Formant, Megafono, Tube Dirt, Armonie &amp; Stereo</span>
+        </div>
+
+        <div class="controls-matrix">
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Tune &amp; Robot</strong>
+              <span class="ctrl-range">0 .. 100%</span>
+            </div>
+            <p class="ctrl-body">
+              Aggancia l’intonazione alla scala impostata (<code>Minor</code>, <code>Major</code>, <code>Dorian Gorillaz</code> o note <code>MIDI Lock</code>). Tra 30% e 55% corregge in modo trasparente; a 80% dà l’Hard-Tune istantaneo; a 100% blocca la fase in sintesi vocale robotica.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>2-D Formant</strong>
+              <span class="ctrl-range">-100% .. +100%</span>
+            </div>
+            <p class="ctrl-body">
+              Trasla le risonanze della gola lasciando intatta la nota cantata. Ruotando a sinistra ottieni un timbro scuro e cavernoso stile <em>Murdoc / Demon</em>; a destra una voce nasale e tagliente stile <em>2-D / Cyborg Noodle</em>.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Megaphone</strong>
+              <span class="ctrl-range">1.85 kHz Horn</span>
+            </div>
+            <p class="ctrl-body">
+              Taglia gli estremi di banda ed enfatizza il cono medio-alto tipico dei megafoni da palco e delle radio walkie-talkie. Puoi anche trascinare direttamente il cursore ambra sul grafico OLED per scolpire curva e drive con un gesto.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Tube Dirt</strong>
+              <span class="ctrl-range">Auto-Gain Triode</span>
+            </div>
+            <p class="ctrl-body">
+              Saturazione analogica a doppio stadio (compressione a nastro + clipping asimmetrico a valvola) con compensazione automatica del volume d’uscita: ingrossa e graffia la voce senza mai mandare in rosso il canale di Ableton.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Harmonies &amp; Voicing</strong>
+              <span class="ctrl-range">5 Modalità Coro</span>
+            </div>
+            <p class="ctrl-body">
+              Genera fino a 3 voci armoniche intelligenti: <code>2-D Duet (+3rd)</code>, <code>Gorillaz Choir (3rd+5th)</code>, <code>Demon Sub (-Oct+5th)</code>, <code>Octave Stack</code> o accordi pilotati via MIDI dalla tastiera.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Stereo Space &amp; Morph</strong>
+              <span class="ctrl-range">Doubler + Slapback</span>
+            </div>
+            <p class="ctrl-body">
+              Allarga la voce nel panorama stereo combinando un micro-pitch doubler L/R con un eco <em>Tape Slapback</em> corto. Il tasto <code>2-D Morph</code> automatizza il passaggio dalla strofa intima al ritornello corale.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTRUMENT 2: ORAGE PULSEFORGE -->
+    <section id="pulseforge" class="instrument-section" data-reveal>
+      <div class="instrument-faceplate">
+        <div class="instrument-id">
+          <span class="rack-screw" aria-hidden="true"></span>
+          <span class="jewel-led" aria-hidden="true"></span>
+          <span class="instrument-brand">Orage</span>
+          <h2 class="instrument-name">PulseForge v1.0</h2>
+          <span class="instrument-tagline">3-Track Generative MIDI Sequencer &amp; Hardware Synth Driver</span>
+        </div>
+        <div class="instrument-specs">
+          <span class="spec-pill">Bass / Arp / Chords</span>
+          <span class="spec-pill">Direct USB &amp; DIN MIDI</span>
+          <span class="spec-pill">Drag &amp; Drop MIDI</span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="instrument-chassis">
+        <div class="workbench-top reverse">
+          <div class="why-it-exists">
+            <h3>Tre sequencer che dialogano nella stessa scala e pilotano i tuoi synth fisici via USB.</h3>
+            <p>
+              Quando improvvisi con più sintetizzatori hardware, cambiare tonalità o creare una variazione tra basso e accordi richiede di fermare la musica o disegnare note nel piano roll. <strong>PulseForge</strong> racchiude tre corsie generative indipendenti (<strong>Seq 1: Bass</strong>, <strong>Seq 2: Arp</strong>, <strong>Seq 3: Chords</strong>) vincolate a un motore armonico centrale.
+            </p>
+            <p>
+              Premi <strong>Trio Harmonize</strong> e le tre macchine costruiscono all’istante un groove complementare: il basso lascia spazio agli accenti dell’arpeggio e gli accordi seguono il giro armonico scelto, inviando il MIDI direttamente alle porte USB del Crave e del Minilogue.
+            </p>
+
+            <div class="oled-telemetry-box">
+              <div class="oled-header">
+                <span>Routing Hardware Tipico in Studio</span>
+                <span>Sync: Ableton Host</span>
+              </div>
+              <ul class="scenario-list">
+                <li><strong>Corsia 1 (Mono Bass / Acid 303):</strong> Porta MIDI diretta su <em>Behringer Crave</em> (Ch 1) con Slide, Accent e Sub-Octave.</li>
+                <li><strong>Corsie 2 &amp; 3 (Arp + Chord Stabs):</strong> Porta MIDI su <em>Korg Minilogue</em> (Ch 2) o synth polifonici di Ableton, più synth di anteprima integrato.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="gui-display-bay">
+            <img src="pulseforge_preview.png" alt="Pannello Orage PulseForge con 3 corsie sequencer Bass, Arp e Chords">
+          </div>
+        </div>
+
+        <div class="silkscreen-divider">
+          <span>Architettura Sequencer: Armonia Globale, 6 Manopole Evolver &amp; Matrice 16 Step</span>
+        </div>
+
+        <div class="controls-matrix">
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Scale, Root &amp; Trio Harmonize</strong>
+              <span class="ctrl-range">Master Harmony</span>
+            </div>
+            <p class="ctrl-body">
+              Imposta tonalità e scala (<code>Dorian House/Funk</code>, <code>Phrygian Acid</code>, <code>Minor Natural</code>, <code>Lydian Berlin</code>). Cambiando la nota <code>Root</code>, tutte e tre le linee si traspongono all’istante senza mai generare dissonanze.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Genre Style &amp; Role</strong>
+              <span class="ctrl-range">Algoritmi Dedicati</span>
+            </div>
+            <p class="ctrl-body">
+              Ogni corsia modella il fraseggio sul genere (<code>Classic House 90s</code>, <code>Acid Techno</code>, <code>Berlin School</code>, <code>Synthwave</code>, <code>Ambient</code>) e sul ruolo: <code>Mono Bass</code>, <code>Rolling Sub</code>, <code>Classic Arp</code>, <code>Chord Stabs</code> o <code>Poly Pad</code>.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Generate, Mutate &amp; Snapshot</strong>
+              <span class="ctrl-range">Performance Live</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Generate</code> scrive un nuovo pattern; <code>Mutate</code> introduce piccole variazioni melodiche per non rendere monotono il loop; <code>Snapshot</code> salva il tuo groove principale per richiamarlo come ritornello con un click.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>6 Manopole Evolver</strong>
+              <span class="ctrl-range">Controllo Tattile</span>
+            </div>
+            <p class="ctrl-body">
+              Modifica al volo densità ritmica (<code>Complexity</code>), groove (<code>Swing</code>), registro (<code>Base Oct</code>), escursione dell’arpeggio (<code>Arp Oct</code>), canale MIDI (<code>MIDI Ch</code>) e divisione temporale (<code>Ratio</code>) per poliritmie.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Matrice Step &amp; Exp +</strong>
+              <span class="ctrl-range">Slide, Ratchet, Accent</span>
+            </div>
+            <p class="ctrl-body">
+              Clicca sui 16 pad per accendere o spegnere gli step, trascina verticalmente per cambiare nota nella scala ed espandi <code>Exp +</code> per programmare legati, ribattuti (Ratchet) e glide in stile TB-303.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Preview Synth &amp; Drag MIDI</strong>
+              <span class="ctrl-range">Export Istantaneo</span>
+            </div>
+            <p class="ctrl-body">
+              Attiva <code>Preview Synth</code> per ascoltare subito le 3 tracce anche senza synth collegati, e trascina il pulsante <code>Drag MIDI</code> direttamente dentro una clip di Ableton Live per esportare le note generate.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTRUMENT 3: ORAGE LEVELGUARD -->
+    <section id="levelguard" class="instrument-section" data-reveal>
+      <div class="instrument-faceplate">
+        <div class="instrument-id">
+          <span class="rack-screw" aria-hidden="true"></span>
+          <span class="jewel-led cobalt" aria-hidden="true"></span>
+          <span class="instrument-brand">Orage</span>
+          <h2 class="instrument-name">LevelGuard v1.0</h2>
+          <span class="instrument-tagline">Perceived Loudness Ceiling &amp; Resonant Filter Tamer</span>
+        </div>
+        <div class="instrument-specs">
+          <span class="spec-pill">Fletcher-Munson LUFS</span>
+          <span class="spec-pill">Minilogue &amp; Crave Profiles</span>
+          <span class="spec-pill">1-Click Auto-Lock</span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="instrument-chassis">
+        <div class="workbench-top">
+          <div class="gui-display-bay">
+            <img src="levelguard_preview.png" alt="Pannello Orage LevelGuard con grafico OLED della soglia percepita e blocco dB">
+          </div>
+
+          <div class="why-it-exists">
+            <h3>Spalanca il cutoff e la risonanza del filtro analogico: il volume percepito non esplode mai.</h3>
+            <p>
+              Un normale limiter guarda solo i picchi elettrici in dBFS. Quando apri il filtro Ladder 24 dB del Crave o la risonanza del Minilogue, l’energia si concentra tra <strong>1 kHz e 5 kHz</strong>, la zona in cui l’orecchio umano è fino a 15 dB più sensibile: anche se il meter di Ableton sale di poco, nelle casse il synth copre tutto il resto del mix.
+            </p>
+            <p>
+              <strong>LevelGuard</strong> pesa il segnale secondo le curve psicoacustiche dell’orecchio e applica un <strong>tetto puramente unidirezionale</strong>: sotto la soglia il guadagno è esattamente <code>0.0 dB</code> (puoi suonare pianissimo o chiudere il filtro a zero senza che alcun compressore tiri su il fruscio), ma appena superi il tetto inchioda l’esplosione.
+            </p>
+
+            <div class="oled-telemetry-box">
+              <div class="oled-header cobalt">
+                <span>Come Usarlo in 3 Secondi Durante il Soundcheck</span>
+                <span>Sotto Soglia: 0.0 dB</span>
+              </div>
+              <ul class="scenario-list">
+                <li><strong>1. Suona il synth al volume giusto nel mix:</strong> LevelGuard tiene in memoria una finestra continua degli ultimi 2,5 secondi di audio.</li>
+                <li><strong>2. Premi “Fissa Volume Ora (Lock)”:</strong> Anche se hai già tolto le mani dalla tastiera per prendere il mouse, il plugin legge il livello appena suonato e posiziona il tetto massimo esattamente lì.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="silkscreen-divider">
+          <span>Controlli Soglia Percepita &amp; Domatore di Risonanza</span>
+        </div>
+
+        <div class="controls-matrix">
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Synth Profile</strong>
+              <span class="ctrl-range cobalt">4 Tarature Hardware</span>
+            </div>
+            <p class="ctrl-body">
+              Adatta la curva di pesatura psicoacustica e le costanti di tempo a: <code>1. Korg Minilogue (Poly)</code>, <code>2. Behringer Crave (Mono Ladder)</code>, <code>3. Preset Guard (Fast Jam)</code> per i cambi di patch improvvisi, o <code>4. Synth Bus</code>.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Fissa Volume Ora (Lock)</strong>
+              <span class="ctrl-range cobalt">Buffer 2.5 Secondi</span>
+            </div>
+            <p class="ctrl-body">
+              Cattura la loudness percepita della frase musicale appena eseguita e allinea automaticamente <code>Soglia Max</code>. Elimina qualsiasi calcolo manuale di decibel mentre stai componendo.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Soglia Max (Ceiling)</strong>
+              <span class="ctrl-range cobalt">-36.0 .. 0.0 dB</span>
+            </div>
+            <p class="ctrl-body">
+              Il limite invalicabile di volume percepito. Puoi regolarlo con la manopola dedicata oppure trascinando verticalmente col mouse la linea ambra direttamente sull’oscilloscopio OLED.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Filter Tamer</strong>
+              <span class="ctrl-range cobalt">De-Harsher Dinamico</span>
+            </div>
+            <p class="ctrl-body">
+              Agisce prima del rider di volume: quando avverte un picco acido di risonanza sopra <code>1.1 kHz</code>, smussa solo la fitta sulle medio-alte lasciando intatti i bassi fondamentali del sintetizzatore.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Clamp Speed</strong>
+              <span class="ctrl-range cobalt">0 .. 100%</span>
+            </div>
+            <p class="ctrl-body">
+              Imposta la velocità di reazione del freno sopra soglia: valori alti bloccano all’istante i salti di volume quando scorri i preset del synth; valori medi accompagnano in modo morbido le aperture lente del cutoff.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Analog Warmth &amp; Trim</strong>
+              <span class="ctrl-range cobalt">Soft Clip &amp; Uscita</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Analog Warmth</code> arrotonda i transienti più spigolosi sulla soglia con una saturazione calda progressiva; <code>Output Trim</code> compensa il livello finale nel canale del mixer.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTRUMENT 4: PLF LITTLE COSM -->
+    <section id="littlecosm" class="instrument-section" data-reveal>
+      <div class="instrument-faceplate">
+        <div class="instrument-id">
+          <span class="rack-screw" aria-hidden="true"></span>
+          <span class="jewel-led emerald" aria-hidden="true"></span>
+          <span class="instrument-brand">Orage</span>
+          <h2 class="instrument-name">PLF Little Cosm v1.1</h2>
+          <span class="instrument-tagline">4-Module Reorderable Analog Color &amp; Texture Console</span>
+        </div>
+        <div class="instrument-specs">
+          <span class="spec-pill">20 Analog Circuits</span>
+          <span class="spec-pill">Free Module Routing</span>
+          <span class="spec-pill">Capture Drone Looper</span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="instrument-chassis">
+        <div class="workbench-top reverse">
+          <div class="why-it-exists">
+            <h3>Il calore imperfetto dei nastri vintage e delle console multi-effetto da tavolo.</h3>
+            <p>
+              Un synth analogico registrato diretto nella scheda audio può suonare piatto o troppo sterile. <strong>PLF Little Cosm</strong> mette in fila quattro banchi colore indipendenti: <strong>[A] Character</strong>, <strong>[B] Movement</strong>, <strong>[C] Diffusion</strong> e <strong>[D] Texture</strong>, ciascuno con 5 circuiti dedicati e tre sole manopole ad escursione musicale.
+            </p>
+            <p>
+              Con un click nella barra superiore inverti l’ordine dei quattro moduli senza interruzioni audio: puoi mandare il riverbero cavernoso <em>dentro</em> il fuzz al silicio per creare muri sonori shoegaze, oppure filtrare e comprimere in stile cassetta Type-I a fine catena.
+            </p>
+
+            <div class="oled-telemetry-box">
+              <div class="oled-header emerald">
+                <span>Funzione Live: Capture Sustainer &amp; Drift</span>
+                <span>24 Preset + XML Export</span>
+              </div>
+              <ul class="scenario-list">
+                <li><strong>Tasto Capture nella Master Console:</strong> Cattura in crossfade l’accordo che stai suonando e lo trasforma in un tappeto continuo infinito su cui puoi improvvisare un assolo.</li>
+                <li><strong>Parametri Drift, Wow e Wear:</strong> Introducono fluttuazioni organiche di intonazione ed età del nastro che danno movimento anche a una singola nota tenuta.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="gui-display-bay">
+            <img src="little_cosm_preview.png" alt="Pannello PLF Little Cosm con i 4 moduli Character, Movement, Diffusion, Texture e Master Console">
+          </div>
+        </div>
+
+        <div class="silkscreen-divider">
+          <span>I 4 Moduli Riordinabili (20 Circuiti) &amp; Master Console</span>
+        </div>
+
+        <div class="controls-matrix">
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>[A] Character</strong>
+              <span class="ctrl-range emerald">5 Circuiti Drive</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Drive</code> (overdrive asimmetrico a valvole), <code>Sweeten</code> (preamp caldo da console anni ’70), <code>Fuzz</code> (distorsione satura al silicio), <code>Howl</code> (filtro risonante reattivo all’inviluppo) e <code>Swell</code> (attacco lento automatico per violini e pad).
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>[B] Movement</strong>
+              <span class="ctrl-range emerald">5 Modulazioni</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Doubler</code> (chorus e flanger a bobina), <code>Vibrato</code> (oscillazione di pitch meccanica con controllo <code>Drift</code>), <code>Phaser</code> (6 stadi all-pass), <code>Tremolo</code> (pulsazione ottica) e <code>Pitch</code> (shimmer d’ottava).
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>[C] Diffusion</strong>
+              <span class="ctrl-range emerald">5 Spazi &amp; Echi</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Cascade</code> (delay stereo multi-tap), <code>Reels</code> (eco a nastro magnetico con controllo <code>Wow</code>), <code>Space</code> (riverbero plate e caverna profonda), <code>Collage</code> (nuvola granulare) e <code>Reverse</code> (eco riavvolto al contrario).
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>[D] Texture</strong>
+              <span class="ctrl-range emerald">5 Filtri &amp; Lo-Fi</span>
+            </div>
+            <p class="ctrl-body">
+              <code>Filter</code> (passa-basso/passa-alto morfabile), <code>Squash</code> (compressore ottico pastoso in stile LA-2A), <code>Cassette</code> (saturazione e compressione nastro Type-I), <code>Broken</code> (drop-out radio) e <code>Interfere</code>.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Routing &amp; Calib</strong>
+              <span class="ctrl-range emerald">Ordine Flessibile</span>
+            </div>
+            <p class="ctrl-body">
+              Scegli al volo il percorso del segnale tra i 4 blocchi (es. <code>Diff &gt; Char &gt; Move &gt; Text</code>) e adatta la sensibilità d’ingresso (<code>Calib: Line / Synth / Hot</code>) per far lavorare i saturatori nel punto ideale.
+            </p>
+          </div>
+
+          <div class="ctrl-cell">
+            <div class="ctrl-head">
+              <strong>Tilt EQ, Mix &amp; Capture</strong>
+              <span class="ctrl-range emerald">Stadio Master</span>
+            </div>
+            <p class="ctrl-body">
+              Bilancia la brillantezza generale con <code>Tilt EQ</code> (Dark / Bright), dosa l’effetto in parallelo con <code>Mix</code> senza perdite di fase e usa <code>Tap</code> o il clock di Ableton per sincronizzare delay e modulazioni.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-CLICK INSTALLER & SQLITE CACHE CLEANER SECTION -->
+    <section id="installer" class="installer-section" data-reveal>
+      <div class="installer-rack">
+        <div class="installer-grid">
+          <div class="installer-copy">
+            <h2>Un solo installer .EXE che aggiorna Ableton Live e pulisce la cache SQLite.</h2>
+            <p>
+              Quando aggiorni un plugin VST3 su Windows, spesso Ableton Live continua a caricare la vecchia interfaccia grafica o ignora i nuovi parametri perché mantiene in cache i vecchi metadati nel suo database interno.
+            </p>
+            <p>
+              <strong>OrageAudio-Bundle-Installer.exe</strong> copia tutti e quattro i moduli nella cartella <code>Orage Audio</code>, rimuove eventuali vecchi file duplicati sparsi nelle sottocartelle VST3 e ripulisce automaticamente le righe in cache nei database di Ableton, così al primo avvio trovi subito le ultime versioni pronte all’uso.
+            </p>
+
+            <div class="action-row" style="margin-top: 24px;">
+              <a href="download/OrageAudio-Bundle-Installer.exe" class="btn btn-amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Scarica Installer (.EXE)
+              </a>
+              <a href="download/OrageAudio-Bundle-Windows-v1.0.0.zip" class="btn btn-outline">
+                Bundle Portatile (.ZIP)
+              </a>
+            </div>
+          </div>
+
+          <div class="terminal-box" aria-label="Riepilogo operazioni eseguite dall’installer">
+            <div class="terminal-line">
+              <span class="terminal-prompt">01</span>
+              <span>Destinazione unificata: <span class="terminal-path">C:\Program Files\Common Files\VST3\Orage Audio\</span></span>
+            </div>
+            <div class="terminal-line" style="margin-top: 8px;">
+              <span class="terminal-prompt">02</span>
+              <span>Installazione moduli: <span class="terminal-ok">Vox2D.vst3</span>, <span class="terminal-ok">PulseForge.vst3</span>, <span class="terminal-ok">LevelGuard.vst3</span>, <span class="terminal-ok">PLF Little Cosm.vst3</span></span>
+            </div>
+            <div class="terminal-line" style="margin-top: 8px;">
+              <span class="terminal-prompt">03</span>
+              <span>Rimozione automatica vecchie copie duplicate fuori dalla cartella Orage Audio.</span>
+            </div>
+            <div class="terminal-line" style="margin-top: 8px;">
+              <span class="terminal-prompt">04</span>
+              <span>Reset cache plugin in <span class="terminal-path">Live-plugins-1.db</span>, <span class="terminal-path">Live-files.db</span> e <span class="terminal-path">PluginScanDb.txt</span> per forzare il caricamento immediato su Ableton Live.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="studio-footer">
+    <div>
+      <strong>Orage Audio: Evolver Studio Bundle v1.3</strong> | Strumenti VST3 &amp; Standalone per jam hardware e voce dal vivo.
+    </div>
+    <div>
+      Codice sorgente e release su <a href="https://github.com/DaMa-sys/PulseForge" target="_blank" rel="noopener">GitHub (DaMa-sys/PulseForge)</a>
+    </div>
   </footer>
 
+  <script>
+    (function () {
+      document.documentElement.classList.add('js-enabled');
+
+      // 1. Hero Hardware Stage Switcher
+      const tabs = document.querySelectorAll('.stage-tab');
+      const slides = document.querySelectorAll('.stage-slide');
+      const readout = document.getElementById('stage-readout');
+      const jumpLink = document.getElementById('stage-jump');
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const targetId = tab.getAttribute('data-target');
+          const label = tab.getAttribute('data-label');
+          const link = tab.getAttribute('data-link');
+
+          tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
+          tab.setAttribute('aria-selected', 'true');
+
+          slides.forEach((s) => {
+            s.setAttribute('data-active', s.id === targetId ? 'true' : 'false');
+          });
+
+          if (readout && label) {
+            readout.innerHTML = '<strong>Modulo:</strong> ' + label;
+          }
+          if (jumpLink && link) {
+            jumpLink.setAttribute('href', link);
+          }
+        });
+      });
+
+      // 2. Interactive 2-D Morph Simulator (Verse Lo-Fi -> Chorus Wide Harmony)
+      const morphBtn = document.getElementById('btn-2d-morph');
+      const morphBadge = document.getElementById('morph-state-badge');
+      const morphDetails = document.getElementById('morph-details');
+      const morphReadout = document.getElementById('morph-readout-val');
+
+      if (morphBtn && morphBadge && morphDetails && morphReadout) {
+        morphBtn.addEventListener('click', () => {
+          const isChorus = morphBtn.getAttribute('aria-pressed') !== 'true';
+          morphBtn.setAttribute('aria-pressed', isChorus ? 'true' : 'false');
+
+          if (isChorus) {
+            morphBadge.textContent = 'Stato: Ritornello 2-D (Chorus)';
+            morphReadout.textContent = 'Megafono: 22% | Coro 3a+5a: 68% | Stereo: 88%';
+            morphDetails.innerHTML =
+              '<li><strong>Apertura Banda &amp; Coro:</strong> Il filtro Megafono si apre su tutto lo spettro e le voci armoniche (+3rd / +5th) salgono al 68% in tonalità Dorian.</li>' +
+              '<li><strong>Esplosione Stereo:</strong> Micro-Pitch Doubler e Tape Slapback si allargano all’88% per riempire il ritornello.</li>';
+          } else {
+            morphBadge.textContent = 'Stato: Strofa Lo-Fi (Verse)';
+            morphReadout.textContent = 'Megafono: 76% | Coro: 10% | Stereo: 32%';
+            morphDetails.innerHTML =
+              '<li><strong>Megafono &amp; Tube Dirt:</strong> Banda ristretta 320 Hz / 3.4 kHz con risonanza a 1.85 kHz e saturazione triodo al 52% per bucare il mix al centro.</li>' +
+              '<li><strong>Immagine Stereo:</strong> Voce mono compatta (31%) in primo piano sopra basso e batteria.</li>';
+          }
+        });
+      }
+
+      // 3. Scroll Reveal Observer (Compositor-only opacity + translateY)
+      const revealEls = document.querySelectorAll('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        revealEls.forEach((el) => el.setAttribute('data-reveal', 'pending'));
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.setAttribute('data-reveal', 'visible');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.08, rootMargin: '0px 0px -24px 0px' }
+        );
+        revealEls.forEach((el) => io.observe(el));
+      }
+    })();
+  </script>
 </body>
 </html>
